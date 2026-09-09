@@ -1,0 +1,2176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>NnlGharPro - Book Service</title>
+    <meta name="google-site-verification" content="w6qm7tonraRh8hHgflqJmZaubqzFv7_CYz-vrh1Zbmw" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- 🔥 RAZORPAY SCRIPT - LIVE -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); min-height: 100vh; padding: 12px; color: #fff; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+        input, textarea { -webkit-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text; }
+        .container { max-width: 480px; margin: 0 auto; }
+        
+        .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: flex; justify-content: center; align-items: center; z-index: 9999; padding: 20px; }
+        .login-overlay.hidden { display: none; }
+        .login-box { background: rgba(255,255,255,0.05); padding: 30px; border-radius: 20px; max-width: 350px; width: 100%; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+        .login-box h2 { font-size: 24px; margin-bottom: 20px; }
+        .login-box input { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #fff; font-size: 14px; outline: none; }
+        .login-box input:focus { border-color: #FF6B35; }
+        .login-box .btn-primary { width: 100%; padding: 12px; background: linear-gradient(135deg, #FF6B35, #FF8C42); border: none; border-radius: 10px; color: #fff; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 5px; transition: 0.3s; }
+        .login-box .btn-primary:hover { opacity: 0.9; transform: scale(1.02); }
+        .login-box .btn-secondary { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: #fff; font-weight: 600; cursor: pointer; margin-top: 5px; transition: 0.3s; }
+        .login-box .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+        .login-box .login-error { color: #FF4757; font-size: 12px; margin-top: 5px; display: none; word-break: break-word; }
+        .login-box .auth-toggle { color: rgba(255,255,255,0.4); font-size: 12px; cursor: pointer; margin-top: 10px; display: block; transition: 0.3s; }
+        .login-box .auth-toggle:hover { color: #FF6B35; }
+        .login-box .forgot-link { color: rgba(255,255,255,0.3); font-size: 11px; cursor: pointer; display: block; margin-top: 8px; transition: 0.3s; }
+        .login-box .forgot-link:hover { color: #FF6B35; text-decoration: underline; }
+        .login-box .login-sub-text { color: rgba(255,255,255,0.5); margin-bottom: 20px; }
+        
+        #mainApp { display: none; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; flex-wrap: wrap; gap: 10px; }
+        .logo-text { font-size: 24px; font-weight: 800; background: linear-gradient(135deg, #FF6B35, #FFD93D); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .user-info { font-size: 12px; background: rgba(255,255,255,0.05); padding: 4px 12px; border-radius: 20px; display: flex; align-items: center; gap: 8px; }
+        .user-info button { background: #FF4757; border: none; color: #fff; padding: 4px 12px; border-radius: 12px; cursor: pointer; font-size: 10px; font-weight: 600; }
+        
+        .alert-bar { background: rgba(255,255,255,0.04); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05); border-radius: 14px; padding: 10px 14px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+        .alert-bar .left { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #FF6B35; }
+        .alert-bar .left i { color: #4ECDC4; }
+        .alert-bar .right { display: flex; align-items: center; gap: 12px; font-size: 12px; color: rgba(255,255,255,0.6); }
+        .alert-bar .right .weather { display: flex; align-items: center; gap: 6px; }
+        .alert-bar .right .weather i { color: #FFD93D; }
+        
+        .broadcast-banner { background: linear-gradient(135deg, #FF6B35, #FF8C42); border-radius: 12px; padding: 12px 16px; margin-bottom: 15px; color: #fff; display: none; align-items: center; gap: 12px; }
+        .broadcast-banner.show { display: flex; }
+        .broadcast-banner .b-content { flex: 1; font-size: 13px; line-height: 1.4; }
+        .broadcast-banner .b-content a { color: #fff; text-decoration: underline; font-weight: 700; }
+        .broadcast-banner .b-close { cursor: pointer; font-size: 18px; opacity: 0.7; }
+        
+        .pincode-wrap { display: flex; gap: 10px; margin-bottom: 15px; }
+        .pincode-wrap input { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #fff; font-size: 16px; text-align: center; }
+        .pincode-wrap button { padding: 12px 20px; background: linear-gradient(135deg, #4ECDC4, #44B3A8); border: none; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; }
+        
+        .section-title { font-size: 18px; font-weight: 700; margin: 15px 0 10px; display: flex; align-items: center; gap: 8px; }
+        .section-title i { color: #FF6B35; }
+        .service-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .service-btn { border-radius: 16px; padding: 20px 5px; text-align: center; cursor: pointer; transition: all 0.3s; font-size: 11px; font-weight: 700; border: 2px solid transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 90px; }
+        .service-btn:hover { transform: translateY(-3px); }
+        .service-btn.active { border-color: #FFD93D; box-shadow: 0 0 20px rgba(255,217,61,0.2); }
+        .service-btn i { font-size: 26px; margin-bottom: 8px; }
+        .s-plumbing { background: linear-gradient(135deg, #0077b6, #00b4d8); }
+        .s-electrician { background: linear-gradient(135deg, #f77f00, #fcbf49); }
+        .s-mobile-laptop { background: linear-gradient(135deg, #2a9d8f, #52b788); }
+        .s-home-decor { background: linear-gradient(135deg, #9b5de5, #f15bb5); }
+        .s-painting { background: linear-gradient(135deg, #ef476f, #ff6b6b); }
+        .s-ac-repair { background: linear-gradient(135deg, #118ab2, #06d6a0); }
+        .s-cctv { background: linear-gradient(135deg, #264653, #2a9d8f); }
+        .s-food-restaurant { background: linear-gradient(135deg, #e63946, #f4a261); }
+        .s-taxi { background: linear-gradient(135deg, #1b4332, #40916c); }
+        .s-ro-service { background: linear-gradient(135deg, #0077b6, #48cae4); }
+        .s-cinema { background: linear-gradient(135deg, #6d597a, #b56576); }
+        .s-hospital { background: linear-gradient(135deg, #d90429, #ef233c); }
+        .s-lab { background: linear-gradient(135deg, #3a0ca3, #7209b7); }
+        .s-school { background: linear-gradient(135deg, #3d5a80, #98c1d9); }
+        .s-hotel { background: linear-gradient(135deg, #e65100, #f57c00); }
+        .s-insurance { background: linear-gradient(135deg, #0d47a1, #1976d2); }
+        .s-ecommerce { background: linear-gradient(135deg, #FF6B35, #FF8C42); }
+        .s-tv { background: linear-gradient(135deg, #b5179e, #7209b7); }
+        .s-car-wash { background: linear-gradient(135deg, #0096c7, #023e8a); }
+        .s-gym-fitness { background: linear-gradient(135deg, #e85d04, #dc2f02); }
+        .s-other { background: linear-gradient(135deg, #455a64, #78909c); }
+        
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 9999; padding: 16px; }
+        .modal-overlay.show { display: flex; }
+        .modal-box { background: #1a1a2e; padding: 24px; border-radius: 20px; max-width: 420px; width: 100%; max-height: 90vh; overflow-y: auto; border: 1px solid rgba(255,255,255,0.08); animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-box .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .modal-box .modal-header h3 { font-size: 18px; margin: 0; display: flex; align-items: center; gap: 8px; }
+        .modal-box .modal-header h3 i { color: #FF6B35; }
+        .modal-box .modal-header .close-btn { background: none; border: none; color: rgba(255,255,255,0.4); font-size: 22px; cursor: pointer; }
+        .modal-box .modal-sub { font-size: 13px; color: rgba(255,255,255,0.4); margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 5px; }
+        
+        .provider-list-box { max-height: 250px; overflow-y: auto; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 4px; background: rgba(255,255,255,0.02); }
+        .provider-list-box::-webkit-scrollbar { width: 4px; }
+        .provider-list-box::-webkit-scrollbar-thumb { background: #FF6B35; border-radius: 10px; }
+        .provider-item { padding: 12px 14px; cursor: pointer; transition: 0.2s; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid transparent; margin-bottom: 4px; }
+        .provider-item:hover { background: rgba(255,255,255,0.05); }
+        .provider-item.selected { border-color: #4ECDC4; background: rgba(78,205,196,0.1); }
+        .provider-item .p-name { font-weight: 600; font-size: 14px; color: #fff; }
+        .provider-item .p-detail { font-size: 12px; color: rgba(255,255,255,0.5); }
+        .provider-item .p-select-icon { color: rgba(255,255,255,0.1); }
+        .provider-item .p-website { font-size: 11px; color: #4ECDC4; text-decoration: none; }
+        .provider-item .p-website:hover { text-decoration: underline; }
+        .provider-item .p-onboard-status { font-size: 9px; padding: 2px 8px; border-radius: 10px; }
+        .p-onboard-status.active { background: rgba(0,200,83,0.12); color: #00C853; }
+        .p-onboard-status.pending { background: rgba(255,152,0,0.12); color: #FF9800; }
+        .p-onboard-status.inactive { background: rgba(255,71,87,0.12); color: #FF4757; }
+        
+        .booking-form { display: none; margin-top: 5px; }
+        .booking-form .form-group { margin-bottom: 12px; }
+        .booking-form .form-group label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.4); display: block; margin-bottom: 4px; }
+        .booking-form input, .booking-form textarea { width: 100%; padding: 12px 14px; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; background: rgba(255,255,255,0.03); color: #fff; font-size: 14px; font-family: 'Inter', sans-serif; }
+        .booking-form input:focus, .booking-form textarea:focus { outline: none; border-color: #FF6B35; }
+        .booking-form .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        
+        .items-section { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; }
+        .items-section .items-title { font-size: 13px; font-weight: 700; color: #FFD93D; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .items-section .items-title i { color: #FF6B35; }
+        .items-section .items-title .open-popup-btn { margin-left: auto; background: rgba(255,107,53,0.12); border: 1px solid rgba(255,107,53,0.15); color: #FF6B35; padding: 4px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .items-section .items-title .open-popup-btn:hover { background: rgba(255,107,53,0.2); }
+        .selected-items-summary { font-size: 12px; color: rgba(255,255,255,0.3); padding: 6px 0; border-top: 1px solid rgba(255,255,255,0.03); margin-top: 6px; }
+        .selected-items-summary .summary-item { display: flex; justify-content: space-between; padding: 2px 0; font-size: 12px; }
+        .selected-items-summary .summary-item .s-name { color: rgba(255,255,255,0.5); }
+        .selected-items-summary .summary-item .s-qty { color: #4ECDC4; font-weight: 600; }
+        .selected-items-summary .summary-item .s-price { color: #fff; }
+        
+        /* 🔥 PAYMENT SECTION - RAZORPAY */
+        .payment-section { background: rgba(78,205,196,0.04); border: 1px solid rgba(78,205,196,0.08); border-radius: 14px; padding: 16px; margin-bottom: 12px; display: none; }
+        .payment-section .payment-title { font-size: 14px; font-weight: 700; color: #4ECDC4; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .payment-section .payment-title i { color: #FFD93D; }
+        .payment-section .total-row { display: flex; justify-content: space-between; align-items: center; font-size: 18px; font-weight: 800; color: #FFD93D; }
+        .payment-section .total-row .total-amount { font-size: 22px; color: #fff; }
+        .payment-section .fee-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: rgba(255,255,255,0.3); margin-top: 2px; }
+        .payment-section .fee-row .fee-amount { color: #4ECDC4; font-weight: 600; }
+        
+        /* 🔥 RAZORPAY PAY BUTTON */
+        .razorpay-pay-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #5F259F, #8B5CF6);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .razorpay-pay-btn:hover { transform: scale(1.02); box-shadow: 0 8px 30px rgba(91, 37, 159, 0.4); }
+        .razorpay-pay-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .razorpay-pay-btn i { font-size: 22px; }
+        
+        /* 🔥 NOT PAID BUTTON (For non-onboarded providers) */
+        .not-paid-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #FF6B35, #FF8C42);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .not-paid-btn:hover { transform: scale(1.02); box-shadow: 0 8px 30px rgba(255,107,53,0.4); }
+        
+        .payment-note {
+            font-size: 11px;
+            color: rgba(255,255,255,0.3);
+            text-align: center;
+            margin-top: 6px;
+            padding: 6px;
+            background: rgba(78,205,196,0.05);
+            border-radius: 8px;
+        }
+        .payment-note i { color: #4ECDC4; margin-right: 4px; }
+        
+        .payment-options { display: flex; gap: 10px; margin: 8px 0; flex-wrap: wrap; }
+        .payment-options .pay-opt { flex: 1; padding: 10px; border-radius: 10px; border: 2px solid rgba(255,255,255,0.05); text-align: center; cursor: pointer; transition: .3s; min-width: 80px; }
+        .payment-options .pay-opt:hover { border-color: rgba(78,205,196,0.3); }
+        .payment-options .pay-opt.selected { border-color: #4ECDC4; background: rgba(78,205,196,0.05); }
+        .payment-options .pay-opt .opt-label { font-size: 11px; font-weight: 600; color: #fff; }
+        .payment-options .pay-opt .opt-desc { font-size: 9px; color: rgba(255,255,255,0.3); }
+        
+        .provider-payment-info { background: rgba(255,215,0,0.05); border: 1px solid rgba(255,215,0,0.1); border-radius: 10px; padding: 10px 12px; margin: 8px 0; }
+        .provider-payment-info .info-title { font-size: 12px; font-weight: 600; color: #FFD93D; margin-bottom: 4px; }
+        .provider-payment-info .info-detail { font-size: 12px; color: rgba(255,255,255,0.5); }
+        
+        .booking-restriction-note {
+            font-size: 10px;
+            color: rgba(255,217,61,0.4);
+            padding: 4px 10px;
+            background: rgba(255,217,61,0.03);
+            border-radius: 6px;
+            margin-top: 6px;
+            border-left: 2px solid rgba(255,217,61,0.1);
+        }
+        .booking-restriction-note i { color: #FFD93D; margin-right: 4px; }
+        
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); color: #fff; padding: 12px 24px; border-radius: 30px; display: none; font-size: 14px; z-index: 10000; border: 1px solid rgba(255,255,255,0.05); text-align: center; max-width: 90%; }
+        .toast.success { border-color: rgba(78,205,196,0.3); }
+        .toast.error { border-color: rgba(255,71,87,0.3); }
+        .debug-box { background: rgba(0,0,0,0.5); border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; font-family: monospace; font-size: 11px; color: #4ECDC4; border: 1px solid rgba(78,205,196,0.15); max-height: 120px; overflow-y: auto; display: none; line-height: 1.6; }
+        
+        .footer { text-align: center; padding: 18px 0 8px 0; border-top: 2px solid rgba(78, 205, 196, 0.15); margin-top: 16px; }
+        .footer p { font-size: 16px; color: rgba(255, 255, 255, 0.8); letter-spacing: 2px; font-weight: 700; text-shadow: 0 0 20px rgba(78, 205, 196, 0.1); }
+        .footer p i { color: #4ECDC4; margin: 0 6px; }
+        .footer .brand-highlight { color: #4ECDC4; font-weight: 800; font-size: 17px; background: linear-gradient(135deg, #4ECDC4, #44B3A8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .footer-links { margin-top: 10px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; font-size: 11px; }
+        .footer-links a { color: rgba(255,255,255,0.4); text-decoration: none; transition: 0.3s; padding: 4px 8px; border-radius: 6px; background: rgba(255,255,255,0.02); }
+        .footer-links a:hover { color: #4ECDC4; background: rgba(78,205,196,0.08); }
+        
+        .receipt-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 99999; padding: 20px; }
+        .receipt-container.show { display: flex; }
+        .receipt-wrapper { background: #fff; border-radius: 16px; padding: 20px; max-width: 380px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.5); position: relative; color: #222; }
+        .receipt-wrapper .receipt-close-btn { position: sticky; top: 0; float: right; background: rgba(255,71,87,0.1); border: none; color: #FF4757; font-size: 20px; cursor: pointer; padding: 4px 12px; border-radius: 50%; z-index: 10; transition: .3s; }
+        .receipt-wrapper .receipt-close-btn:hover { background: rgba(255,71,87,0.2); transform: rotate(90deg); }
+        .receipt-wrapper .receipt-header { text-align: center; border-bottom: 2px dashed #333; padding-bottom: 10px; margin-bottom: 10px; }
+        .receipt-wrapper .receipt-header h2 { font-size: 18px; color: #1a237e; margin: 0; }
+        .receipt-wrapper .receipt-header h2 span { color: #283593; }
+        .receipt-wrapper .receipt-header p { font-size: 10px; color: #666; margin: 2px 0; }
+        .receipt-wrapper .receipt-divider { text-align: center; font-size: 9px; color: #aaa; padding: 4px 0; letter-spacing: 2px; }
+        .receipt-wrapper .receipt-row { display: flex; justify-content: space-between; padding: 2px 0; font-size: 12px; }
+        .receipt-wrapper .receipt-row .label { color: #666; font-weight: 500; }
+        .receipt-wrapper .receipt-row .value { font-weight: 600; color: #222; text-align: right; word-break: break-word; max-width: 60%; }
+        .receipt-wrapper .receipt-total { display: flex; justify-content: space-between; font-size: 15px; font-weight: 800; padding: 6px 0; border-top: 2px solid #333; margin-top: 4px; }
+        .receipt-wrapper .receipt-total .total-label { color: #222; }
+        .receipt-wrapper .receipt-total .total-amount { color: #1a237e; font-size: 16px; }
+        .receipt-wrapper .payment-status-section { margin-top: 12px; padding: 12px; background: rgba(0,0,0,0.03); border-radius: 10px; border: 1px solid rgba(0,0,0,0.06); }
+        .receipt-wrapper .payment-status-section .status-row { display: flex; justify-content: space-between; align-items: center; }
+        .receipt-wrapper .payment-status-section .status-label { font-size: 14px; font-weight: 600; color: #666; }
+        .receipt-wrapper .payment-status-section .status-value { font-size: 14px; font-weight: 800; padding: 4px 16px; border-radius: 20px; }
+        .receipt-wrapper .receipt-footer { text-align: center; font-size: 9px; color: #888; border-top: 2px dashed #333; padding-top: 8px; margin-top: 8px; }
+        .receipt-wrapper .receipt-footer .print-btn { padding: 6px 16px; background: linear-gradient(135deg, #1a237e, #283593); border: none; border-radius: 8px; color: #fff; font-weight: 700; font-size: 12px; cursor: pointer; margin-top: 4px; }
+        
+        /* POPUP STYLES */
+        .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 10001; padding: 16px; }
+        .popup-overlay.show { display: flex; }
+        .popup-box { background: #1a1a2e; padding: 24px; border-radius: 20px; max-width: 420px; width: 100%; max-height: 80vh; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.08); animation: slideUp 0.3s ease; }
+        .popup-box .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .popup-box .modal-header h3 { font-size: 18px; margin: 0; display: flex; align-items: center; gap: 8px; }
+        .popup-box .modal-header h3 i { color: #FF6B35; }
+        .popup-box .modal-header .close-btn { background: none; border: none; color: rgba(255,255,255,0.4); font-size: 22px; cursor: pointer; }
+        .popup-items-list { flex: 1; overflow-y: auto; margin-bottom: 10px; }
+        .popup-items-list::-webkit-scrollbar { width: 4px; }
+        .popup-items-list::-webkit-scrollbar-thumb { background: #4ECDC4; border-radius: 10px; }
+        .popup-main-item { border-bottom: 1px solid rgba(255,255,255,0.04); margin-bottom: 10px; }
+        .main-item-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; cursor: pointer; color: #FFD93D; font-size: 14px; font-weight: 600; }
+        .main-item-header .main-count { color: rgba(255,255,255,0.3); font-weight: 400; font-size: 11px; }
+        .main-item-header .main-toggle { transition: transform 0.3s; }
+        .main-item-header .main-toggle.open { transform: rotate(180deg); }
+        .sub-items { display: block !important; padding: 4px 0 10px 10px; }
+        .sub-item-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(255,255,255,0.03); border-radius: 8px; margin-bottom: 6px; border-left: 3px solid rgba(78,205,196,0.2); }
+        .sub-item-row .sub-name { flex: 1; font-size: 13px; color: #fff; font-weight: 500; }
+        .sub-item-row .sub-category { font-size: 10px; color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 10px; margin-right: 5px; }
+        .sub-item-row .sub-price { font-weight: 700; font-size: 14px; color: #FFD93D; margin: 0 10px; min-width: 50px; text-align: right; }
+        .qty-control { display: flex; align-items: center; gap: 6px; }
+        .btn-minus, .btn-plus { width: 26px; height: 26px; border: none; background: rgba(78,205,196,0.15); color: #4ECDC4; font-weight: 700; border-radius: 6px; cursor: pointer; font-size: 14px; }
+        .btn-minus:hover, .btn-plus:hover { background: rgba(78,205,196,0.3); }
+        .qty-num { min-width: 24px; text-align: center; font-size: 14px; font-weight: 600; color: #fff; }
+        .popup-footer { border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .popup-footer .popup-total { font-size: 16px; font-weight: 700; color: #FFD93D; }
+        .popup-footer .btn-primary { padding: 10px 20px; background: linear-gradient(135deg, #4ECDC4, #44B3A8); border: none; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; }
+        .popup-footer .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        @media (max-width:600px) { 
+            .service-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; } 
+            .service-btn { min-height: 70px; padding: 12px 2px; font-size: 9px; } 
+            .service-btn i { font-size: 20px; } 
+            .alert-bar { flex-direction: column; align-items: flex-start; gap: 4px; }
+            .footer p { font-size: 13px; }
+            .receipt-wrapper { max-width: 340px; padding: 14px; }
+            .sub-item-row { flex-wrap: wrap; gap: 4px; }
+            .payment-options .pay-opt { padding: 8px; min-width: 60px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- LOGIN SCREEN -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-box">
+            <h2>🏠 NnlGharPro</h2>
+            <p class="login-sub-text">Login to book trusted services</p>
+            <input type="email" id="loginEmail" placeholder="Email Address">
+            <input type="password" id="loginPassword" placeholder="Password (min 6 chars)">
+            <button class="btn-primary" id="loginBtn" onclick="loginUser()">
+                <i class="fas fa-lock"></i> Login
+            </button>
+            <span class="auth-toggle" id="authToggle" onclick="toggleAuthMode()">
+                Don't have an account? <strong style="color:#FF6B35;">Create Account</strong>
+            </span>
+            <span class="forgot-link" onclick="forgotPassword()">
+                <i class="fas fa-key"></i> Forgot Password?
+            </span>
+            <div style="margin-top:15px;">
+                <button class="btn-secondary" id="googleLoginBtn" onclick="googleLogin()">
+                    <i class="fab fa-google" style="color:#EA4335;"></i> Continue with Google
+                </button>
+            </div>
+            <div class="login-error" id="loginError">❌ Invalid credentials</div>
+            <p style="font-size:10px; color:rgba(255,255,255,0.1); margin-top:12px;">🔒 Secure • Powered by NnlGharPro</p>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div class="container" id="mainApp" style="display:none;">
+        <div class="header">
+            <div class="logo-text">🏠 NnlGharPro</div>
+            <div class="user-info" id="userInfo">
+                <a href="mailto:nnlgharpro@gmail.com" style="display:flex; align-items:center; gap:4px; text-decoration:none; color:#4ECDC4; font-size:12px; background:rgba(78,205,196,0.08); padding:4px 10px; border-radius:12px; border:1px solid rgba(78,205,196,0.15);">
+                    <i class="fas fa-envelope"></i> <span style="font-size:10px; font-weight:600;">nnlgharpro@gmail.com</span>
+                </a>
+                <button onclick="logoutUser()" style="background:#FF4757; border:none; color:#fff; padding:4px 12px; border-radius:12px; cursor:pointer; font-size:10px; font-weight:600;">Logout</button>
+            </div>
+        </div>
+
+        <div class="alert-bar">
+            <div class="left"><i class="fas fa-calendar-alt"></i> <span id="currentDate">Loading...</span></div>
+            <div class="right">
+                <div class="time"><i class="fas fa-clock"></i> <span id="currentTime">--:-- --</span></div>
+                <div class="weather"><span id="weatherIcon">☀️</span> <span id="weatherTemp">--°C</span></div>
+            </div>
+        </div>
+
+        <div class="broadcast-banner" id="broadcastBanner">
+            <i class="fas fa-bullhorn"></i>
+            <div class="b-content" id="broadcastMessage">Loading announcement...</div>
+            <div class="b-close" onclick="closeBroadcast()">✕</div>
+        </div>
+
+        <div class="debug-box" id="debugBox">🔍 Ready...</div>
+
+        <div class="section-title"><i class="fas fa-map-pin" style="color:#FF6B35;"></i> Where do you need service?</div>
+        <div class="pincode-wrap">
+            <input type="text" id="pincode" placeholder="Enter 6-digit pincode" maxlength="6" inputmode="numeric" value="123001">
+            <button onclick="searchServices()"><i class="fas fa-search"></i> Search</button>
+        </div>
+
+        <div class="section-title"><i class="fas fa-tools" style="color:#FF6B35;"></i> Select Service</div>
+        <div class="service-grid">
+            <div class="service-btn s-plumbing" onclick="selectService('Plumbing')"><i class="fas fa-wrench"></i> Plumbing</div>
+            <div class="service-btn s-electrician" onclick="selectService('Electrician')"><i class="fas fa-bolt"></i> Electrician</div>
+            <div class="service-btn s-mobile-laptop" onclick="selectService('Mobile & Laptop')"><i class="fas fa-laptop"></i> Mobile & Laptop</div>
+            <div class="service-btn s-home-decor" onclick="selectService('Home Decor')"><i class="fas fa-paint-brush"></i> Home Decor</div>
+            <div class="service-btn s-painting" onclick="selectService('Painting')"><i class="fas fa-paint-roller"></i> Painting</div>
+            <div class="service-btn s-ac-repair" onclick="selectService('AC Repair')"><i class="fas fa-snowflake"></i> AC Repair</div>
+            <div class="service-btn s-cctv" onclick="selectService('CCTV')"><i class="fas fa-video"></i> CCTV</div>
+            <div class="service-btn s-food-restaurant" onclick="selectService('Food & Restaurant')"><i class="fas fa-utensils"></i> Food & Restaurant</div>
+            <div class="service-btn s-taxi" onclick="selectService('Taxi')"><i class="fas fa-taxi"></i> Taxi</div>
+            <div class="service-btn s-ro-service" onclick="selectService('RO Service')"><i class="fas fa-tint"></i> RO Service</div>
+            <div class="service-btn s-cinema" onclick="selectService('Cinema')"><i class="fas fa-film"></i> Cinema</div>
+            <div class="service-btn s-hospital" onclick="selectService('Hospital')"><i class="fas fa-hospital"></i> Hospital</div>
+            <div class="service-btn s-lab" onclick="selectService('Lab')"><i class="fas fa-flask"></i> Lab</div>
+            <div class="service-btn s-school" onclick="selectService('School')"><i class="fas fa-school"></i> School</div>
+            <div class="service-btn s-hotel" onclick="selectService('Hotel')"><i class="fas fa-hotel"></i> Hotel</div>
+            <div class="service-btn s-insurance" onclick="selectService('Insurance')"><i class="fas fa-shield-alt"></i> Insurance</div>
+            <div class="service-btn s-ecommerce" onclick="openEcommerceModal()"><i class="fas fa-store"></i> E-Commerce</div>
+            <div class="service-btn s-tv" onclick="selectService('TV Repair')"><i class="fas fa-tv"></i> TV Repair</div>
+            <div class="service-btn s-car-wash" onclick="selectService('Car Wash')"><i class="fas fa-car"></i> Car Wash</div>
+            <div class="service-btn s-gym-fitness" onclick="selectService('Gym & Fitness')"><i class="fas fa-dumbbell"></i> Gym & Fitness</div>
+            <div class="service-btn s-other" onclick="selectService('Other')"><i class="fas fa-ellipsis-h"></i> Other</div>
+        </div>
+        
+        <div class="footer">
+            <p>
+                <i class="fas fa-crown"></i>
+                Managed by <span class="brand-highlight">Randhawa Enterprises</span>
+                <i class="fas fa-crown"></i>
+            </p>
+            <div class="footer-links">
+                <a href="/about.html"><i class="fas fa-info-circle"></i> About</a>
+                <a href="/contact.html"><i class="fas fa-phone"></i> Contact</a>
+                <a href="/privacy.html"><i class="fas fa-lock"></i> Privacy</a>
+                <a href="/terms.html"><i class="fas fa-file-contract"></i> Terms</a>
+                <a href="https://wa.me/919588562553" target="_blank"><i class="fab fa-whatsapp"></i> Support</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ECOMMERCE MODAL -->
+    <div class="modal-overlay" id="ecommerceModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3><i class="fas fa-store" style="color:#FFD93D;"></i> Partner Stores</h3>
+                <button class="close-btn" onclick="closeEcommerceModal()">✕</button>
+            </div>
+            <div id="ecommerceStoreList"><div style="text-align:center; padding:20px; color:rgba(255,255,255,0.2);"><i class="fas fa-spinner fa-spin"></i> Loading stores...</div></div>
+        </div>
+    </div>
+
+    <!-- BOOKING MODAL -->
+    <div class="modal-overlay" id="bookingModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3><i class="fas fa-tools"></i> Book <span id="modalServiceName">Service</span></h3>
+                <button class="close-btn" onclick="closeBookingModal()">✕</button>
+            </div>
+            <div class="modal-sub">
+                <span>📍 <span id="modalPincode">N/A</span></span>
+            </div>
+
+            <div id="providerListContainer">
+                <div style="font-size:12px; color:rgba(255,255,255,0.3); margin-bottom:8px; font-weight:600;">👤 Select a Provider:</div>
+                <div class="provider-list-box" id="providerList"></div>
+            </div>
+
+            <div class="booking-form" id="bookingForm">
+                <div style="font-size:12px; color:#4ECDC4; margin-bottom:8px; font-weight:600;">✅ Selected: <span id="selectedProviderName">None</span></div>
+
+                <div class="items-section" id="itemsSection">
+                    <div class="items-title">
+                        <i class="fas fa-list"></i> Select Items / Services
+                        <button class="open-popup-btn" id="openItemsPopupBtn" onclick="openItemsPopup()">
+                            <i class="fas fa-edit"></i> Select Items
+                        </button>
+                    </div>
+                    <div id="selectedItemsSummary" class="selected-items-summary">
+                        <div style="color:rgba(255,255,255,0.2); font-size:12px; padding:6px 0;">
+                            <i class="fas fa-info-circle"></i> Click "Select Items" to choose items
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 🔥 PAYMENT SECTION - RAZORPAY -->
+                <div class="payment-section" id="paymentSection">
+                    <div class="payment-title">
+                        <i class="fas fa-credit-card"></i> 💳 Payment via Razorpay
+                    </div>
+                    <div class="total-row">
+                        <span>💰 Total Amount</span>
+                        <span class="total-amount" id="totalAmount">₹0</span>
+                    </div>
+                    <div class="fee-row">
+                        <span>⚡ Payment Charges</span>
+                        <span class="fee-amount">2% + GST</span>
+                    </div>
+                    
+                    <!-- 🔥 Payment Options -->
+                    <div class="payment-options" id="paymentOptions">
+                        <div class="pay-opt selected" onclick="selectPaymentOption('online')">
+                            <div class="opt-label">💳 Online</div>
+                            <div class="opt-desc">Pay via Razorpay</div>
+                        </div>
+                        <div class="pay-opt" onclick="selectPaymentOption('notpaid')">
+                            <div class="opt-label">📝 Not Paid</div>
+                            <div class="opt-desc">Pay later to provider</div>
+                        </div>
+                    </div>
+
+                    <!-- Provider Payment Info -->
+                    <div class="provider-payment-info" id="providerPaymentInfo">
+                        <div class="info-title"><i class="fas fa-info-circle"></i> Payment Info</div>
+                        <div class="info-detail" id="paymentInfoText">Pay online via Razorpay</div>
+                    </div>
+
+                    <!-- 🔥 RAZORPAY PAY BUTTON -->
+                    <button class="razorpay-pay-btn" id="payBtn" onclick="processRazorpayPayment()" disabled>
+                        <i class="fas fa-credit-card"></i> Pay ₹<span id="payAmount">0</span> via Razorpay
+                    </button>
+                    
+                    <!-- 🔥 NOT PAID BUTTON -->
+                    <button class="not-paid-btn" id="notPaidBtn" onclick="processNotPaidBooking()" style="display:none;">
+                        <i class="fas fa-check-circle"></i> Book Now (Pay Later)
+                    </button>
+                    
+                    <div class="payment-note">
+                        <i class="fas fa-info-circle"></i> Razorpay accepts UPI, Cards, Net Banking
+                    </div>
+                    
+                    <div class="booking-restriction-note">
+                        <i class="fas fa-info-circle"></i> One booking per mobile number at a time
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-pen"></i> Special Instructions / Notes</label>
+                    <textarea id="custNotes" rows="2" placeholder="Any special instructions..."></textarea>
+                </div>
+
+                <div class="row-2">
+                    <div class="form-group">
+                        <label><i class="fas fa-calendar"></i> Date</label>
+                        <input type="date" id="bookingDate">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-clock"></i> Time</label>
+                        <input type="time" id="bookingTime">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> Full Name</label>
+                    <input type="text" id="custName" placeholder="Your full name">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-phone"></i> WhatsApp / Mobile</label>
+                    <input type="tel" id="custMobile" placeholder="10-digit mobile number">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-map-marker-alt"></i> Service Address</label>
+                    <input type="text" id="custAddress" placeholder="Your full address">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ITEMS POPUP MODAL -->
+    <div class="popup-overlay" id="itemsPopupOverlay">
+        <div class="popup-box">
+            <div class="modal-header">
+                <h3><i class="fas fa-list"></i> <span id="popupProviderName">Select Items</span></h3>
+                <button class="close-btn" onclick="closeItemsPopup()">✕</button>
+            </div>
+            <div class="popup-items-list" id="popupItemsList">
+                <div style="text-align:center;padding:40px 20px;color:rgba(255,255,255,0.25);">
+                    <i class="fas fa-spinner fa-spin" style="font-size:32px;display:block;margin-bottom:12px;opacity:0.5;"></i>
+                    <div style="font-size:16px;font-weight:600;color:rgba(255,255,255,0.4);">Loading Items...</div>
+                    <div style="font-size:12px;margin-top:6px;opacity:0.5;">Please wait while we fetch items</div>
+                </div>
+            </div>
+            <div class="popup-footer">
+                <div class="popup-total">Total: <span id="popupTotalAmount">₹0</span></div>
+                <button class="btn-primary" id="confirmItemsBtn" onclick="confirmItemsSelection()" disabled>Confirm Items</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- RECEIPT MODAL -->
+    <div class="receipt-container" id="receiptContainer">
+        <div class="receipt-wrapper">
+            <button class="receipt-close-btn" onclick="closeReceipt()">✕</button>
+            <div class="receipt-header">
+                <h2>🏠 Nnl<span>GharPro</span></h2>
+                <p>Booking Receipt</p>
+            </div>
+            <div id="receiptDetails"></div>
+            <div class="receipt-divider">━━━━━━━━━━━━━━━━━━━</div>
+            <div class="receipt-total">
+                <span class="total-label">💰 Total Amount</span>
+                <span class="total-amount" id="receiptTotal">₹0</span>
+            </div>
+            <div class="payment-status-section" id="receiptPaymentSection">
+                <div class="status-row">
+                    <span class="status-label">💳 Payment Status</span>
+                    <span class="status-value" id="receiptPaymentStatus">⏳ Pending</span>
+                </div>
+            </div>
+            <div class="receipt-footer">
+                <p>Thank you for choosing NnlGharPro! 🙏</p>
+                <button class="print-btn" onclick="window.print()">🖨️ Print Receipt</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ABOUT, CONTACT, PRIVACY, TERMS PAGES -->
+    <div id="aboutPage" style="display:none;"><div style="max-width:480px; margin:0 auto; padding:20px;"><div style="background:rgba(255,255,255,0.04); border-radius:20px; padding:24px; border:1px solid rgba(255,255,255,0.06);"><h1 style="color:#4ECDC4; font-size:28px; margin-bottom:6px;">🏠 Nnl<span style="color:#FF6B35;">GharPro</span></h1><p style="font-size:13px; color:rgba(255,255,255,0.3); margin-bottom:16px;">India's Trusted Home Service Platform</p><h2 style="color:#FFD93D; font-size:18px; margin-top:16px; margin-bottom:8px;">📖 About Us</h2><p style="color:rgba(255,255,255,0.6); line-height:1.7; font-size:14px; margin-bottom:12px;"><strong>NnlGharPro</strong> is a premium home service provider platform managed by <span style="color:#4ECDC4; font-weight:600;">Randhawa Enterprises</span>. We connect verified service professionals with customers across India.</p><h2 style="color:#FFD93D; font-size:18px; margin-top:16px; margin-bottom:8px;">🎯 Our Mission</h2><p style="color:rgba(255,255,255,0.6); line-height:1.7; font-size:14px; margin-bottom:12px;">To provide <span style="color:#4ECDC4; font-weight:600;">reliable, transparent, and professional</span> home services to every household. We ensure quality service through verified providers and secure payments.</p><h2 style="color:#FFD93D; font-size:18px; margin-top:16px; margin-bottom:8px;">✨ Why Choose Us?</h2><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;"><div style="background:rgba(78,205,196,0.06); padding:12px; border-radius:10px; border-left:3px solid #4ECDC4;"><h3 style="color:#4ECDC4; font-size:13px;">✅ Verified Professionals</h3><p style="font-size:11px; color:rgba(255,255,255,0.4); margin-top:4px;">All service providers are verified and trusted.</p></div><div style="background:rgba(78,205,196,0.06); padding:12px; border-radius:10px; border-left:3px solid #4ECDC4;"><h3 style="color:#4ECDC4; font-size:13px;">💰 No Hidden Charges</h3><p style="font-size:11px; color:rgba(255,255,255,0.4); margin-top:4px;">Transparent pricing with no hidden fees.</p></div><div style="background:rgba(78,205,196,0.06); padding:12px; border-radius:10px; border-left:3px solid #4ECDC4;"><h3 style="color:#4ECDC4; font-size:13px;">🔒 Secure Payments</h3><p style="font-size:11px; color:rgba(255,255,255,0.4); margin-top:4px;">UPI and digital payments with full security.</p></div><div style="background:rgba(78,205,196,0.06); padding:12px; border-radius:10px; border-left:3px solid #4ECDC4;"><h3 style="color:#4ECDC4; font-size:13px;">📞 24/7 Support</h3><p style="font-size:11px; color:rgba(255,255,255,0.4); margin-top:4px;">Dedicated tech support team always available.</p></div></div><h2 style="color:#FFD93D; font-size:18px; margin-top:16px; margin-bottom:8px;">👨‍💼 Management</h2><p style="color:rgba(255,255,255,0.6); line-height:1.7; font-size:14px;"><span style="color:#4ECDC4; font-weight:600;">Er. Gaganjeet Singh</span><br>Tech Support & Operations Head<br>📞 <a href="tel:+919588562553" style="color:#4ECDC4; text-decoration:none;">9588562553</a></p><h2 style="color:#FFD93D; font-size:18px; margin-top:16px; margin-bottom:8px;">📅 Since</h2><p style="color:rgba(255,255,255,0.6); font-size:14px;">Established in 2024, serving thousands of happy customers.</p><button onclick="closePage()" style="margin-top:20px; background:linear-gradient(135deg,#1a237e,#283593); border:none; padding:12px 24px; border-radius:12px; color:#fff; font-weight:700; cursor:pointer; width:100%;">🏠 Back to Home</button></div></div></div>
+    <div id="contactPage" style="display:none;"><div style="max-width:480px; margin:0 auto; padding:20px;"><div style="background:rgba(255,255,255,0.04); border-radius:20px; padding:24px; border:1px solid rgba(255,255,255,0.06);"><h1 style="color:#4ECDC4; font-size:28px; margin-bottom:6px;">📞 Contact <span style="color:#FF6B35;">NnlGharPro</span></h1><p style="font-size:13px; color:rgba(255,255,255,0.3); margin-bottom:16px;">We're here to help you 24/7</p><h2 style="color:#FFD93D; font-size:18px; margin-top:16px; margin-bottom:8px;">📱 Quick Contacts</h2><div style="background:rgba(78,205,196,0.06); padding:14px 16px; border-radius:12px; margin-bottom:10px; border-left:3px solid #4ECDC4;"><div style="font-size:10px; color:rgba(255,255,255,0.3); text-transform:uppercase;">📞 Tech Support</div><div style="font-size:18px; font-weight:700; color:#4ECDC4;"><a href="tel:+919588562553" style="color:#4ECDC4; text-decoration:none;">+91 9588562553</a></div><div style="font-size:12px; color:rgba(255,255,255,0.3);">Er. Gaganjeet Singh</div></div><div style="background:rgba(78,205,196,0.06); padding:14px 16px; border-radius:12px; margin-bottom:10px; border-left:3px solid #4ECDC4;"><div style="font-size:10px; color:rgba(255,255,255,0.3); text-transform:uppercase;">💬 WhatsApp</div><div style="font-size:18px; font-weight:700; color:#25D366;"><a href="https://wa.me/919588562553" target="_blank" style="color:#25D366; text-decoration:none;">Chat on WhatsApp</a></div></div><div style="background:rgba(78,205,196,0.06); padding:14px 16px; border-radius:12px; margin-bottom:10px; border-left:3px solid #4ECDC4;"><div style="font-size:10px; color:rgba(255,255,255,0.3); text-transform:uppercase;">📧 Email</div><div style="font-size:16px; font-weight:700; color:#4ECDC4;"><a href="mailto:nnlgharpro@gmail.com" style="color:#4ECDC4; text-decoration:none;">nnlgharpro@gmail.com</a></div></div><div style="background:rgba(78,205,196,0.06); padding:14px 16px; border-radius:12px; margin-bottom:10px; border-left:3px solid #4ECDC4;"><div style="font-size:10px; color:rgba(255,255,255,0.3); text-transform:uppercase;">📍 Address</div><div style="font-size:16px; font-weight:700; color:#fff;">Randhawa Enterprises</div><div style="font-size:13px; color:rgba(255,255,255,0.5);">India</div></div><h2 style="color:#FFD93D; font-size:18px; margin-top:16px; margin-bottom:8px;">🕐 Support Hours</h2><div style="background:rgba(255,255,255,0.02); padding:14px; border-radius:12px; margin-bottom:12px;"><p style="color:rgba(255,255,255,0.5); font-size:13px; margin-bottom:4px;">🕐 <strong style="color:#fff;">Monday - Saturday:</strong> 9:00 AM - 9:00 PM</p><p style="color:rgba(255,255,255,0.5); font-size:13px; margin-bottom:4px;">🕐 <strong style="color:#fff;">Sunday:</strong> 10:00 AM - 6:00 PM</p><p style="color:rgba(255,255,255,0.5); font-size:13px;">📞 <strong style="color:#4ECDC4;">Emergency Support:</strong> 24/7 Available</p></div><div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px;"><a href="tel:+919588562553" style="flex:1; text-align:center; background:#25D366; color:#fff; padding:12px; border-radius:12px; text-decoration:none; font-weight:600; min-width:100px;">📞 Call Now</a><a href="https://wa.me/919588562553" target="_blank" style="flex:1; text-align:center; background:#25D366; color:#fff; padding:12px; border-radius:12px; text-decoration:none; font-weight:600; min-width:100px;">💬 WhatsApp</a><a href="mailto:support@nnlgharpro.top" style="flex:1; text-align:center; background:#1a237e; color:#fff; padding:12px; border-radius:12px; text-decoration:none; font-weight:600; min-width:100px;">✉️ Email</a></div><button onclick="closePage()" style="width:100%; background:linear-gradient(135deg,#1a237e,#283593); border:none; padding:12px 24px; border-radius:12px; color:#fff; font-weight:700; cursor:pointer;">🏠 Back to Home</button></div></div></div>
+    <div id="privacyPage" style="display:none;"><div style="max-width:480px; margin:0 auto; padding:20px;"><div style="background:rgba(255,255,255,0.04); border-radius:20px; padding:24px; border:1px solid rgba(255,255,255,0.06);"><h1 style="color:#4ECDC4; font-size:28px; margin-bottom:6px;">🔒 Privacy <span style="color:#FF6B35;">Policy</span></h1><p style="font-size:13px; color:rgba(255,255,255,0.3); margin-bottom:16px;">Your privacy matters to us</p><h2 style="color:#FFD93D; font-size:16px; margin-top:14px; margin-bottom:6px;">1. Introduction</h2><p style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; margin-bottom:10px;">NnlGharPro ("we", "our", "us") respects your privacy. This Privacy Policy explains how we collect, use, and protect your personal information when you use our platform.</p><h2 style="color:#FFD93D; font-size:16px; margin-top:14px; margin-bottom:6px;">2. Information We Collect</h2><ul style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; padding-left:18px; margin-bottom:10px;"><li><strong style="color:#fff;">Personal Information:</strong> Name, email, phone number, address</li><li><strong style="color:#fff;">Service Details:</strong> Booking history, service preferences</li><li><strong style="color:#fff;">Payment Information:</strong> UPI ID, transaction details</li><li><strong style="color:#fff;">Device Information:</strong> IP address, browser type, device type</li></ul><h2 style="color:#FFD93D; font-size:16px; margin-top:14px; margin-bottom:6px;">3. How We Use Your Information</h2><ul style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; padding-left:18px; margin-bottom:10px;"><li>✅ To provide and improve our services</li><li>✅ To process bookings and payments</li><li>✅ To communicate with you about your bookings</li><li>✅ To send service updates and notifications</li><li>✅ To ensure platform security and prevent fraud</li></ul><h2 style="color:#FFD93D; font-size:16px; margin-top:14px; margin-bottom:6px;">4. Information Sharing</h2><p style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; margin-bottom:10px;">We do <strong style="color:#FF4757;">not</strong> sell or share your personal information with third parties except:</p><ul style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; padding-left:18px; margin-bottom:10px;"><li>With service providers to complete your booking</li><li>When required by law or legal process</li><li>With your explicit consent</li></ul><h2 style="color:#FFD93D; font-size:16px; margin-top:14px; margin-bottom:6px;">5. Data Security</h2><ul style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; padding-left:18px; margin-bottom:10px;"><li>🔐 SSL encryption (HTTPS)</li><li>🔐 Secure Firebase authentication</li><li>🔐 Regular security audits</li><li>🔐 Limited employee access to user data</li></ul><h2 style="color:#FFD93D; font-size:16px; margin-top:14px; margin-bottom:6px;">6. Your Rights</h2><ul style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; padding-left:18px; margin-bottom:10px;"><li>Access your personal data</li><li>Correct inaccurate data</li><li>Request data deletion</li><li>Opt-out of marketing communications</li></ul><h2 style="color:#FFD93D; font-size:16px; margin-top:14px; margin-bottom:6px;">7. Contact Us</h2><p style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; margin-bottom:10px;">For any privacy-related questions, contact us at:<br>📞 <a href="tel:+919588562553" style="color:#4ECDC4; text-decoration:none;">9588562553</a><br>📧 <a href="mailto:nnlgharpro@gmail.com" style="color:#4ECDC4; text-decoration:none;">nnlgharpro@gmail.com</a></p><div style="font-size:11px; color:rgba(255,255,255,0.2); margin-top:16px;">Last Updated: August 28, 2024</div><button onclick="closePage()" style="margin-top:16px; width:100%; background:linear-gradient(135deg,#1a237e,#283593); border:none; padding:12px 24px; border-radius:12px; color:#fff; font-weight:700; cursor:pointer;">🏠 Back to Home</button></div></div></div>
+    <div id="termsPage" style="display:none;"><div style="max-width:480px; margin:0 auto; padding:20px;"><div style="background:rgba(255,255,255,0.04); border-radius:20px; padding:24px; border:1px solid rgba(255,255,255,0.06);"><h1 style="color:#4ECDC4; font-size:28px; margin-bottom:6px;">📋 Terms & <span style="color:#FF6B35;">Conditions</span></h1><p style="font-size:13px; color:rgba(255,255,255,0.3); margin-bottom:16px;">Please read these terms carefully</p><h2 style="color:#FFD93D; font-size:16px; margin-top:14px; margin-bottom:6px;">1. Acceptance of Terms</h2><p style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; margin-bottom:10px;">By using NnlGharPro, you agree to these Terms & Conditions. If you do not agree, please do not use our platform.</p><h2 style="color:#FFD93D; font-size:16px; margin-top:14px; margin-bottom:6px;">2. Services</h2><p style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; margin-bottom:10px;">NnlGharPro connects customers with verified service providers. We facilitate bookings but are not responsible for the quality of services provided by third-party professionals.</p><h2 style="color:#FFD93D; font-size:16px; margin-top:14px; margin-bottom:6px;">3. User Responsibilities</h2><ul style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; padding-left:18px; margin-bottom:10px;"><li>Provide accurate and complete information</li><li>Maintain confidentiality of your account</li><li>Not use the platform for illegal purposes</li><li>Not harass or harm service providers</li><li>Pay for services as agreed</li></ul><h2 style="color:#FFD93D; font-size:16px; margin-top:14px; margin-bottom:6px;">4. Payments</h2><ul style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; padding-left:18px; margin-bottom:10px;"><li>Payments are processed through Razorpay</li><li>All prices are in Indian Rupees (INR)</li><li>Refunds are subject to provider policy</li><li>We are not responsible for payment failures</li></ul><h2 style="color:#FFD93D; font-size:16px; margin-top:14px; margin-bottom:6px;">5. Cancellation Policy</h2><ul style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; padding-left:18px; margin-bottom:10px;"><li>Customers can cancel up to 2 hours before service</li><li>Cancellation fees may apply</li><li>Providers can cancel due to emergencies</li></ul><h2 style="color:#FFD93D; font-size:16px; margin-top:14px; margin-bottom:6px;">6. Disclaimer</h2><p style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; margin-bottom:10px;">NnlGharPro provides services <span style="color:#FFD93D;">"as is"</span> and <span style="color:#FFD93D;">"as available"</span>. We do not guarantee that services will meet your expectations.</p><h2 style="color:#FFD93D; font-size:16px; margin-top:14px; margin-bottom:6px;">7. Limitation of Liability</h2><p style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; margin-bottom:10px;">NnlGharPro is not liable for any damages arising from:</p><ul style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; padding-left:18px; margin-bottom:10px;"><li>Service provider performance</li><li>Payment processing errors</li><li>Third-party actions</li><li>Technical issues</li></ul><h2 style="color:#FFD93D; font-size:16px; margin-top:14px; margin-bottom:6px;">8. Governing Law</h2><p style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; margin-bottom:10px;">These terms are governed by the laws of <span style="color:#4ECDC4; font-weight:600;">India</span>. Any disputes will be resolved in Indian courts.</p><h2 style="color:#FFD93D; font-size:16px; margin-top:14px; margin-bottom:6px;">9. Contact Us</h2><p style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; margin-bottom:10px;">For any questions about these terms:<br>📞 <a href="tel:+919588562553" style="color:#4ECDC4; text-decoration:none;">9588562553</a><br>📧 <a href="mailto:nnlgharpro@gmail.com" style="color:#4ECDC4; text-decoration:none;">nnlgharpro@gmail.com</a></p><div style="font-size:11px; color:rgba(255,255,255,0.2); margin-top:16px;">Last Updated: August 28, 2024</div><button onclick="closePage()" style="margin-top:16px; width:100%; background:linear-gradient(135deg,#1a237e,#283593); border:none; padding:12px 24px; border-radius:12px; color:#fff; font-weight:700; cursor:pointer;">🏠 Back to Home</button></div></div></div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+
+    <script>
+        // ============================================================
+        // SECURITY
+        // ============================================================
+        document.addEventListener('contextmenu', function(e) { e.preventDefault(); showToast('🔒 Right-click disabled', true); });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) || (e.ctrlKey && e.key === 'u') || e.key === 'PrintScreen') {
+                e.preventDefault(); showToast('🔒 Disabled', true); return false;
+            }
+        });
+        document.addEventListener('dragstart', function(e) { e.preventDefault(); });
+        document.addEventListener('copy', function(e) { e.preventDefault(); showToast('🔒 Copy disabled', true); });
+
+        // ============================================================
+        // FIREBASE CONFIG
+        // ============================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyCBa8UmWUB-djAksNNvp14qoCY2y0HISoE",
+            authDomain: "gharproindia.firebaseapp.com",
+            projectId: "gharproindia",
+            storageBucket: "gharproindia.firebasestorage.app",
+            messagingSenderId: "374168845849",
+            appId: "1:374168845849:web:36aeca99558917c34ff488"
+        };
+        
+        try { firebase.initializeApp(firebaseConfig); } catch(e) { console.log('Firebase already initialized'); }
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // ============================================================
+        // 🔥 RAZORPAY LIVE CONFIG - UPDATE YOUR SECRET KEY HERE
+        // ============================================================
+       const RAZORPAY_CONFIG = {
+    KEY_ID: "rzp_live_TZVMRcs8uXxici",  // 🔥 LIVE Key ID
+    KEY_SECRET: "Wloz0yWfmxPwT3Um8Maw93P4",  // 🔥 LIVE Key Secret
+    WEBHOOK_SECRET: "nnlgharpro@123456" // 🔥
+};
+
+        // ============================================================
+        // GLOBALS
+        // ============================================================
+        let currentUser = null;
+        let selectedService = null;
+        let selectedProviderId = null;
+        let selectedProviderData = null;
+        let allProviders = [];
+        let isBookingSubmitting = false;
+        let isLoginMode = true;
+        let providerItems = [];
+        let cart = {};
+        let popupCart = {};
+        let currentBookingId = null;
+        let currentPaymentStatus = '';
+        let selectedPaymentOption = 'online';
+
+        // ============================================================
+        // TOAST & DEBUG
+        // ============================================================
+        function showToast(msg, err = false) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = 'toast ' + (err ? 'error' : 'success');
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 4000);
+        }
+
+        function updateDebug(msg, type = 'info') {
+            const el = document.getElementById('debugBox');
+            el.style.display = 'block';
+            el.className = 'debug-box';
+            el.innerHTML = '🔍 ' + msg;
+            console.log('DEBUG:', msg);
+        }
+
+        // ============================================================
+        // PAYMENT OPTION SELECT
+        // ============================================================
+        window.selectPaymentOption = function(option) {
+            selectedPaymentOption = option;
+            
+            document.querySelectorAll('.pay-opt').forEach(el => el.classList.remove('selected'));
+            
+            if (option === 'online') {
+                document.querySelector('.pay-opt:first-child').classList.add('selected');
+                document.getElementById('payBtn').style.display = 'block';
+                document.getElementById('notPaidBtn').style.display = 'none';
+                document.getElementById('paymentInfoText').textContent = 'Pay online via Razorpay - Secure UPI, Cards, Net Banking';
+                updateTotalAndPayment();
+            } else {
+                document.querySelector('.pay-opt:last-child').classList.add('selected');
+                document.getElementById('payBtn').style.display = 'none';
+                document.getElementById('notPaidBtn').style.display = 'block';
+                document.getElementById('paymentInfoText').textContent = 'You will pay the provider directly. Booking confirmed without payment.';
+                updateTotalAndPayment();
+            }
+        };
+
+        // ============================================================
+        // LOGIN FUNCTIONS
+        // ============================================================
+        window.toggleAuthMode = function() {
+            isLoginMode = !isLoginMode;
+            const btn = document.getElementById('loginBtn');
+            const toggle = document.getElementById('authToggle');
+            const subText = document.querySelector('.login-sub-text');
+            if (isLoginMode) {
+                btn.innerHTML = '<i class="fas fa-lock"></i> Login';
+                toggle.innerHTML = 'Don\'t have an account? <strong style="color:#FF6B35;">Create Account</strong>';
+                subText.textContent = 'Login to book trusted services';
+            } else {
+                btn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+                toggle.innerHTML = 'Already have an account? <strong style="color:#FF6B35;">Login</strong>';
+                subText.textContent = 'Create your account';
+            }
+            document.getElementById('loginError').style.display = 'none';
+        };
+
+        window.forgotPassword = function() {
+            const email = document.getElementById('loginEmail').value.trim();
+            if (!email) { showToast('⚠️ Please enter your email first!', true); return; }
+            auth.sendPasswordResetEmail(email)
+                .then(() => { showToast('✅ Reset link sent to ' + email); })
+                .catch((e) => { showToast('❌ ' + e.message, true); });
+        };
+
+        window.loginUser = async function() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const pass = document.getElementById('loginPassword').value.trim();
+            const errEl = document.getElementById('loginError');
+            errEl.style.display = 'none';
+
+            if (!email || !pass) {
+                errEl.textContent = '❌ Enter email & password';
+                errEl.style.display = 'block';
+                return;
+            }
+
+            if (pass.length < 6) {
+                errEl.textContent = '❌ Password must be at least 6 characters';
+                errEl.style.display = 'block';
+                return;
+            }
+
+            document.getElementById('loginBtn').disabled = true;
+            document.getElementById('loginBtn').textContent = 'Processing...';
+
+            try {
+                let userCred;
+                if (isLoginMode) {
+                    userCred = await auth.signInWithEmailAndPassword(email, pass);
+                } else {
+                    userCred = await auth.createUserWithEmailAndPassword(email, pass);
+                }
+                currentUser = userCred.user;
+                showMainApp();
+            } catch (error) {
+                errEl.textContent = '❌ ' + error.message;
+                errEl.style.display = 'block';
+            }
+            document.getElementById('loginBtn').disabled = false;
+            document.getElementById('loginBtn').textContent = isLoginMode ? 'Login' : 'Create Account';
+        };
+
+        window.googleLogin = async function() {
+            const btn = document.getElementById('googleLoginBtn');
+            btn.disabled = true;
+            btn.textContent = 'Loading...';
+            try {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                provider.addScope('email');
+                provider.addScope('profile');
+                provider.setCustomParameters({ 'prompt': 'select_account' });
+                const result = await auth.signInWithPopup(provider);
+                currentUser = result.user;
+                showMainApp();
+            } catch (error) {
+                if (error.code === 'auth/popup-closed-by-user') {
+                    showToast('⚠️ Login cancelled', true);
+                } else {
+                    document.getElementById('loginError').textContent = '❌ Google Login: ' + error.message;
+                    document.getElementById('loginError').style.display = 'block';
+                    showToast('❌ Google Login failed', true);
+                }
+            }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fab fa-google" style="color:#EA4335;"></i> Continue with Google';
+        };
+
+        function checkSession() {
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    currentUser = user;
+                    loadBroadcast();
+                    showMainApp();
+                }
+            });
+        }
+
+        function showMainApp() {
+            document.getElementById('loginOverlay').classList.add('hidden');
+            document.getElementById('mainApp').style.display = 'block';
+            updateDateTime();
+            updateWeather();
+            setInterval(updateDateTime, 30000);
+            setInterval(updateWeather, 300000);
+            showToast('✅ Welcome, ' + (currentUser.displayName || currentUser.email || 'User') + '!');
+            updateDebug('Logged in as: ' + currentUser.email);
+            document.getElementById('aboutPage').style.display = 'none';
+            document.getElementById('contactPage').style.display = 'none';
+            document.getElementById('privacyPage').style.display = 'none';
+            document.getElementById('termsPage').style.display = 'none';
+        }
+
+        window.logoutUser = function() {
+            auth.signOut();
+            currentUser = null;
+            document.getElementById('mainApp').style.display = 'none';
+            document.getElementById('loginOverlay').classList.remove('hidden');
+            showToast('Logged out');
+            document.getElementById('aboutPage').style.display = 'none';
+            document.getElementById('contactPage').style.display = 'none';
+            document.getElementById('privacyPage').style.display = 'none';
+            document.getElementById('termsPage').style.display = 'none';
+        };
+
+        document.getElementById('loginEmail').addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') document.getElementById('loginPassword').focus();
+        });
+        document.getElementById('loginPassword').addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') loginUser();
+        });
+
+        // ============================================================
+        // DATE, TIME & WEATHER
+        // ============================================================
+        function updateDateTime() {
+            const now = new Date();
+            const options = { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' };
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('en-IN', options);
+            let hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12;
+            document.getElementById('currentTime').textContent = hours + ':' + minutes + ' ' + ampm;
+        }
+
+        function updateWeather() {
+            const weatherData = [{ icon: '☀️', temp: 32 }, { icon: '⛅', temp: 28 }, { icon: '🌤️', temp: 30 }, { icon: '🌦️', temp: 24 }, { icon: '☁️', temp: 26 }, { icon: '🌧️', temp: 22 }];
+            const w = weatherData[Math.floor(Math.random() * weatherData.length)];
+            document.getElementById('weatherIcon').textContent = w.icon;
+            document.getElementById('weatherTemp').textContent = w.temp + '°C';
+        }
+
+        // ============================================================
+        // BROADCAST
+        // ============================================================
+        async function loadBroadcast() {
+            try {
+                const doc = await db.collection('broadcast').doc('current').get();
+                if (doc.exists && doc.data().message) {
+                    let message = doc.data().message || '';
+                    const urlRegex = /(https?:\/\/[^\s]+)/g;
+                    message = message.replace(urlRegex, url => `<a href="${url}" target="_blank">${url}</a>`);
+                    document.getElementById('broadcastMessage').innerHTML = message;
+                    document.getElementById('broadcastBanner').classList.add('show');
+                }
+            } catch (e) {}
+        }
+
+        function closeBroadcast() { document.getElementById('broadcastBanner').classList.remove('show'); }
+
+        // ============================================================
+        // E-COMMERCE
+        // ============================================================
+        window.openEcommerceModal = async function() {
+            if (!currentUser) { showToast('Please login first!', true); return; }
+            document.getElementById('ecommerceModal').classList.add('show');
+            await loadEcommerceStores();
+        };
+        window.closeEcommerceModal = function() { document.getElementById('ecommerceModal').classList.remove('show'); };
+
+        async function loadEcommerceStores() {
+            const container = document.getElementById('ecommerceStoreList');
+            container.innerHTML = '<div style="text-align:center; padding:20px; color:rgba(255,255,255,0.2);"><i class="fas fa-spinner fa-spin"></i> Loading stores...</div>';
+            try {
+                const snapshot = await db.collection('stores').where('status', '==', 'active').get();
+                if (snapshot.empty) {
+                    container.innerHTML = '<div style="text-align:center; padding:30px; color:rgba(255,255,255,0.2);">No stores available yet.</div>';
+                    return;
+                }
+                let html = '';
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const link = data.link || '';
+                    const hasLink = link && link.startsWith('http');
+                    html += `
+                        <div class="store-card" onclick="${hasLink ? `window.open('${link}', '_blank')` : `showToast('⚠️ Store link not configured!', true)`}" style="cursor:${hasLink ? 'pointer' : 'default'}; opacity:${hasLink ? '1' : '0.6'}; background:rgba(255,255,255,0.03); padding:14px; border-radius:12px; margin-bottom:8px; display:flex; align-items:center; gap:12px; border:1px solid rgba(255,255,255,0.05); transition:0.3s;">
+                            <div style="font-size:28px;">${data.icon || '🏪'}</div>
+                            <div style="flex:1;">
+                                <div style="font-size:14px; font-weight:600; color:#fff;">${data.name || 'Store'}</div>
+                                <div style="font-size:11px; color:rgba(255,255,255,0.4);">${data.category || 'Store'}</div>
+                            </div>
+                            <div style="color:${hasLink ? '#4ECDC4' : 'rgba(255,255,255,0.2)'}; font-size:12px;">${hasLink ? 'Visit ➜' : 'No Link'}</div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            } catch (e) {
+                container.innerHTML = '<div style="text-align:center; padding:30px; color:#FF4757;">Error loading stores</div>';
+            }
+        }
+
+        // ============================================================
+        // SELECT SERVICE
+        // ============================================================
+        window.selectService = function(service) {
+            if (!currentUser) { showToast('Please login first!', true); return; }
+            if (service === 'E-Commerce') { openEcommerceModal(); return; }
+
+            selectedService = service;
+            selectedProviderId = null;
+
+            document.querySelectorAll('.service-btn').forEach(b => b.classList.remove('active'));
+            const btns = document.querySelectorAll(`.service-btn[onclick*="${service}"]`);
+            if (btns.length > 0) btns[0].classList.add('active');
+
+            showToast('✅ Selected: ' + service);
+            updateDebug('Service selected: ' + service);
+
+            const pincode = document.getElementById('pincode').value.trim();
+            if (pincode && pincode.length === 6) {
+                searchServices();
+            } else {
+                showToast('⚠️ Please enter a pincode!', true);
+            }
+        };
+
+        // ============================================================
+        // SEARCH SERVICES - FAST OPTIMIZED
+        // ============================================================
+        window.searchServices = async function() {
+            if (!selectedService) { showToast('Please select a service first!', true); return; }
+
+            const pincode = document.getElementById('pincode').value.trim();
+            if (!pincode || pincode.length !== 6) { showToast('Enter valid 6-digit pincode!', true); return; }
+
+            updateDebug('🔍 Searching for: ' + selectedService + ' in pincode: ' + pincode, 'info');
+
+            document.getElementById('bookingModal').classList.add('show');
+            document.getElementById('providerList').innerHTML = '<div style="text-align:center; padding:20px; color:rgba(255,255,255,0.2);"><i class="fas fa-spinner fa-spin"></i> Searching providers...</div>';
+            document.getElementById('modalServiceName').textContent = selectedService;
+            document.getElementById('modalPincode').textContent = pincode;
+
+            document.getElementById('bookingForm').style.display = 'none';
+            document.getElementById('providerListContainer').style.display = 'block';
+
+            providerItems = [];
+            cart = {};
+            popupCart = {};
+            document.getElementById('paymentSection').style.display = 'none';
+            
+            document.getElementById('popupItemsList').innerHTML = 
+                '<div style="text-align:center;padding:40px 20px;color:rgba(255,255,255,0.25);">' +
+                '<i class="fas fa-spinner fa-spin" style="font-size:32px;display:block;margin-bottom:12px;opacity:0.5;"></i>' +
+                '<div style="font-size:16px;font-weight:600;color:rgba(255,255,255,0.4);">Loading Items...</div>' +
+                '<div style="font-size:12px;margin-top:6px;opacity:0.5;">Please wait while we fetch items</div>' +
+                '</div>';
+
+            try {
+                const snapshot = await db.collection('providers').where('status', '==', 'active').get();
+                allProviders = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const onboardStatus = data.onboardStatus || 'pending';
+                    allProviders.push({ id: doc.id, ...data, onboardStatus: onboardStatus });
+                });
+
+                updateDebug('📋 Total active providers in DB: ' + allProviders.length, 'info');
+
+                if (allProviders.length === 0) {
+                    updateDebug('⚠️ No providers in DB! Using DEMO providers for testing.', 'warning');
+                    allProviders = [
+                        { id: 'demo1', name: 'Ramesh Plumbing Services', phone: '9876543210', pincode: '123001', servicePincodes: ['123001'], services: 'Plumbing, Electrician, Insurance, AC Repair', rating: '4.8', status: 'active', upiId: 'ramesh@upi', website: 'https://rameshplumbing.com', onboardStatus: 'active' },
+                        { id: 'demo2', name: 'Singh Insurance Agency', phone: '9876543211', pincode: '123001', servicePincodes: ['123001', '110001'], services: 'Insurance, Taxi, Hotel, Car Wash', rating: '4.6', status: 'active', upiId: 'singh@upi', website: 'https://singhinsurance.in', onboardStatus: 'pending' },
+                        { id: 'demo3', name: 'Kumar Electrician & AC', phone: '9876543212', pincode: '123001', servicePincodes: ['123001'], services: 'Electrician, AC Repair, TV Repair, CCTV', rating: '4.9', status: 'active', upiId: 'kumar@upi', website: 'https://kumarelectrician.com', onboardStatus: 'active' },
+                        { id: 'demo4', name: 'Gupta General Services', phone: '9876543213', pincode: '123001', servicePincodes: ['123001'], services: 'all', rating: '4.5', status: 'active', upiId: 'gupta@upi', website: '', onboardStatus: 'inactive' },
+                        { id: 'demo5', name: 'Verma Insurance Solutions', phone: '9876543214', pincode: '123001', servicePincodes: ['123001'], services: 'Insurance, Home Decor, Painting', rating: '4.7', status: 'active', upiId: 'verma@upi', website: 'https://vermainssurance.com', onboardStatus: 'active' },
+                        { id: 'demo6', name: 'NnlGharPro Premium Service', phone: '9588562553', pincode: '123001', servicePincodes: ['123001'], services: 'all', rating: '5.0', status: 'active', upiId: 'nnlgharpro@upi', website: 'https://nnlgharpro.com', isAdsOnly: true, onboardStatus: 'active' }
+                    ];
+                    updateDebug('📋 Added ' + allProviders.length + ' DEMO providers', 'success');
+                }
+
+                const availableProviders = allProviders;
+
+                const pincodeMatched = availableProviders.filter(p => {
+                    const matchesPincode = (p.pincode && p.pincode === pincode) ||
+                        (p.servicePincodes && Array.isArray(p.servicePincodes) && p.servicePincodes.includes(pincode));
+                    return matchesPincode;
+                });
+
+                updateDebug('📍 Pincode matched: ' + pincodeMatched.length + ' providers', 'info');
+
+                const serviceLower = selectedService.toLowerCase().trim();
+                const filtered = pincodeMatched.filter(p => {
+                    if (!p.services) return true;
+                    if (p.services === 'all') return true;
+                    const servicesStr = (p.services || "").toString().toLowerCase().trim();
+                    return servicesStr.includes(serviceLower);
+                });
+
+                updateDebug('🎯 Final matched providers: ' + filtered.length, filtered.length > 0 ? 'success' : 'error');
+
+                if (filtered.length === 0) {
+                    document.getElementById('providerList').innerHTML = `
+                        <div style="padding:30px; text-align:center; color:rgba(255,255,255,0.4);">
+                            <i class="fas fa-search" style="font-size:28px; display:block; margin-bottom:12px; color:#FF6B35;"></i>
+                            <div style="font-size:14px; font-weight:600; color:#fff; margin-bottom:6px;">No providers found</div>
+                            <div style="font-size:12px; color:rgba(255,255,255,0.3);">For "${selectedService}" in pincode ${pincode}</div>
+                            <div style="font-size:11px; color:rgba(255,255,255,0.2); margin-top:10px;">💡 Try different pincode or service</div>
+                        </div>
+                    `;
+                    showToast('⚠️ No providers found for ' + selectedService + ' in ' + pincode, true);
+                    return;
+                }
+
+                let html = '';
+                filtered.forEach(p => {
+                    const rating = p.rating || '4.5';
+                    const upiDisplay = p.upiId ? '✅ UPI' : '⚠️ No UPI';
+                    const websiteDisplay = p.website ? `<a href="${p.website}" target="_blank" class="p-website" onclick="event.stopPropagation();"><i class="fas fa-globe"></i> ${p.website.replace(/^https?:\/\//, '')}</a>` : '';
+                    
+                    let onboardBadge = '';
+                    if (p.onboardStatus === 'active') {
+                        onboardBadge = `<span class="p-onboard-status active">✅ Online Payment</span>`;
+                    } else {
+                        onboardBadge = `<span class="p-onboard-status pending">📝 Pay at Service</span>`;
+                    }
+                    
+                    html += `
+                        <div class="provider-item" onclick="selectProvider('${p.id}')">
+                            <div>
+                                <div class="p-name">${p.name}</div>
+                                <div class="p-detail">
+                                    <i class="fas fa-phone" style="font-size:10px;"></i> ${p.phone || 'N/A'} 
+                                    • <i class="fas fa-star" style="color:#FFD93D; font-size:10px;"></i> ${rating}
+                                    • <span style="color:${p.upiId ? '#4ECDC4' : '#FF4757'}; font-size:9px;">${upiDisplay}</span>
+                                    ${p.services ? `<span style="color:rgba(255,255,255,0.2); font-size:8px; margin-left:4px;">${p.services}</span>` : ''}
+                                    <br>${onboardBadge}
+                                </div>
+                                ${websiteDisplay ? `<div class="p-detail" style="margin-top:2px;">${websiteDisplay}</div>` : ''}
+                            </div>
+                            <div class="p-select-icon"><i class="fas fa-chevron-right"></i></div>
+                        </div>
+                    `;
+                });
+                document.getElementById('providerList').innerHTML = html;
+                showToast(`✅ ${filtered.length} providers found!`);
+                updateDebug('✅ Displaying ' + filtered.length + ' providers', 'success');
+            } catch (e) {
+                console.error('Search Error:', e);
+                showToast('Error loading providers: ' + e.message, true);
+                updateDebug('❌ Error: ' + e.message, 'error');
+                document.getElementById('providerList').innerHTML =
+                    '<div style="padding:30px; text-align:center; color:#FF4757;">Error loading data.<br><small>' +
+                    e.message + '</small></div>';
+            }
+        };
+
+        // ============================================================
+        // SELECT PROVIDER
+        // ============================================================
+        window.selectProvider = async function(id) {
+            selectedProviderId = id;
+            selectedProviderData = allProviders.find(p => p.id === id);
+
+            document.querySelectorAll('.provider-item').forEach(el => el.classList.remove('selected'));
+            const el = document.querySelector(`.provider-item[onclick*="'${id}'"]`);
+            if (el) el.classList.add('selected');
+
+            document.getElementById('selectedProviderName').textContent = selectedProviderData ? selectedProviderData.name : 'Unknown';
+
+            updateDebug('✅ Selected provider: ' + (selectedProviderData ? selectedProviderData.name : 'Unknown'), 'success');
+
+            providerItems = [];
+            cart = {};
+            popupCart = {};
+            
+            document.getElementById('popupItemsList').innerHTML = 
+                '<div style="text-align:center;padding:40px 20px;color:rgba(255,255,255,0.25);">' +
+                '<i class="fas fa-spinner fa-spin" style="font-size:32px;display:block;margin-bottom:12px;opacity:0.5;"></i>' +
+                '<div style="font-size:16px;font-weight:600;color:rgba(255,255,255,0.4);">Loading Items...</div>' +
+                '<div style="font-size:12px;margin-top:6px;opacity:0.5;">Please wait while we fetch items</div>' +
+                '</div>';
+            
+            await loadProviderItems(id);
+
+            document.getElementById('providerListContainer').style.display = 'none';
+            document.getElementById('bookingForm').style.display = 'block';
+
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('bookingDate').value = tomorrow.toISOString().split('T')[0];
+            document.getElementById('bookingTime').value = '10:00';
+
+            document.getElementById('custName').value = '';
+            document.getElementById('custMobile').value = '';
+            document.getElementById('custAddress').value = '';
+            document.getElementById('custNotes').value = '';
+
+            document.getElementById('popupProviderName').textContent = selectedProviderData ? selectedProviderData.name : 'Items';
+            
+            const isOnboarded = selectedProviderData && selectedProviderData.onboardStatus === 'active';
+            
+            if (isOnboarded) {
+                document.getElementById('paymentOptions').style.display = 'flex';
+                document.getElementById('payBtn').style.display = 'block';
+                document.getElementById('notPaidBtn').style.display = 'none';
+                document.getElementById('paymentInfoText').textContent = '✅ This provider accepts online payments via Razorpay';
+                selectedPaymentOption = 'online';
+                document.querySelectorAll('.pay-opt').forEach(el => el.classList.remove('selected'));
+                document.querySelector('.pay-opt:first-child').classList.add('selected');
+            } else {
+                document.getElementById('paymentOptions').style.display = 'none';
+                document.getElementById('payBtn').style.display = 'none';
+                document.getElementById('notPaidBtn').style.display = 'block';
+                document.getElementById('paymentInfoText').textContent = '📝 This provider accepts payment directly. No online payment needed.';
+                selectedPaymentOption = 'notpaid';
+            }
+            
+            updateTotalAndPayment();
+            updateSelectedItemsSummary();
+        };
+
+        // ============================================================
+        // LOAD PROVIDER ITEMS - FAST & OPTIMIZED
+        // ============================================================
+        async function loadProviderItems(providerId) {
+            try {
+                updateDebug('🔄 Fetching items for ' + (selectedProviderData ? selectedProviderData.name : providerId) + '...');
+                console.log('🔍 loadProviderItems() called with providerId:', providerId);
+                
+                let rawItems = [];
+                let allSubItems = [];
+                
+                // 1. CHECK providerItems COLLECTION
+                console.log('📦 Checking providerItems collection...');
+                const snap1 = await db.collection('providerItems')
+                    .where('providerId', '==', providerId)
+                    .get();
+                
+                console.log(`📦 providerItems collection: ${snap1.size} items found`);
+                snap1.forEach(doc => {
+                    const data = doc.data();
+                    console.log(`  ├── ${data.name || 'Unnamed'} (isMain: ${data.isMain})`);
+                    console.log(`  │   subItems:`, data.subItems || 'None');
+                    if (data && data.name && data.name !== 'undefined' && data.name.trim() !== '') {
+                        rawItems.push({ id: doc.id, ...data });
+                        if (data.subItems && Array.isArray(data.subItems)) {
+                            data.subItems.forEach(sub => {
+                                allSubItems.push({ ...sub, mainName: data.name });
+                            });
+                        }
+                    }
+                });
+                
+                // 2. IF NOT FOUND, CHECK providers/{id}/items
+                if (rawItems.length === 0) {
+                    console.log('📦 No items in providerItems, checking providers subcollection...');
+                    const snap2 = await db.collection('providers')
+                        .doc(providerId)
+                        .collection('items')
+                        .get();
+                    
+                    console.log(`📦 providers/{id}/items subcollection: ${snap2.size} items found`);
+                    snap2.forEach(doc => {
+                        const data = doc.data();
+                        console.log(`  ├── ${data.name || 'Unnamed'}`);
+                        console.log(`  │   subItems:`, data.subItems || 'None');
+                        if (data && data.name && data.name !== 'undefined' && data.name.trim() !== '') {
+                            rawItems.push({ id: doc.id, ...data });
+                            if (data.subItems && Array.isArray(data.subItems)) {
+                                data.subItems.forEach(sub => {
+                                    allSubItems.push({ ...sub, mainName: data.name });
+                                });
+                            }
+                        }
+                    });
+                }
+                
+                // 3. IF NO ITEMS FOUND
+                if (rawItems.length === 0 && allSubItems.length === 0) {
+                    console.log('❌ No items found anywhere!');
+                    providerItems = [];
+                    document.getElementById('popupItemsList').innerHTML = 
+                        '<div style="text-align:center;padding:40px 20px;color:rgba(255,255,255,0.25);">' +
+                        '<i class="fas fa-box-open" style="font-size:48px;display:block;margin-bottom:12px;opacity:0.3;"></i>' +
+                        '<div style="font-size:16px;font-weight:600;color:rgba(255,255,255,0.4);">No Items Available</div>' +
+                        '<div style="font-size:12px;margin-top:6px;opacity:0.5;">This provider has not added any items yet.</div>' +
+                        '</div>';
+                    document.getElementById('selectedItemsSummary').innerHTML = 
+                        '<div style="color:rgba(255,255,255,0.2); font-size:12px; padding:6px 0;">' +
+                        '<i class="fas fa-info-circle"></i> No items available</div>';
+                    document.getElementById('paymentSection').style.display = 'none';
+                    
+                    showToast('ℹ️ No items available for this provider');
+                    return providerItems;
+                }
+                
+                console.log('📦 Total raw items found:', rawItems.length);
+                console.log('📦 Total sub-items found:', allSubItems.length);
+                
+                // 4. PROCESS - If we have sub-items but no main items with isMain=true
+                if (rawItems.length > 0 && allSubItems.length > 0) {
+                    const hasMainWithSubItems = rawItems.some(item => 
+                        item.isMain === true && item.subItems && item.subItems.length > 0
+                    );
+                    
+                    if (!hasMainWithSubItems) {
+                        console.log('📦 Creating main items from sub-items...');
+                        const mainName = selectedProviderData ? selectedProviderData.name : 'Services';
+                        const syntheticMain = {
+                            id: 'synthetic_main_' + Date.now(),
+                            name: mainName,
+                            isMain: true,
+                            subItems: allSubItems.map(sub => ({
+                                id: sub.id || 'sub_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+                                name: sub.name || 'Item',
+                                price: sub.price || 0,
+                                category: sub.category || 'General'
+                            })),
+                            price: 0,
+                            category: 'General',
+                            createdAt: new Date().toISOString()
+                        };
+                        rawItems = [syntheticMain];
+                        console.log('✅ Created synthetic main item with sub-items:', syntheticMain.subItems.length);
+                    }
+                }
+                
+                // 5. PROCESS ITEMS
+                const mainItems = rawItems.filter(item => item.isMain === true);
+                console.log('📦 Main items:', mainItems.length);
+                
+                if (mainItems.length > 0) {
+                    providerItems = rawItems;
+                    console.log('✅ Loaded ' + providerItems.length + ' items with Main structure');
+                    providerItems.forEach(item => {
+                        if (item.isMain && item.subItems) {
+                            console.log(`  📦 ${item.name} has ${item.subItems.length} sub-items`);
+                            item.subItems.forEach(sub => {
+                                console.log(`    🔹 ${sub.name} - ₹${sub.price}`);
+                            });
+                        }
+                    });
+                } else {
+                    const grouped = {};
+                    rawItems.forEach(item => {
+                        const mainKey = item.mainItem || item.category || 'Items';
+                        if (!grouped[mainKey]) grouped[mainKey] = [];
+                        grouped[mainKey].push(item);
+                    });
+                    providerItems = grouped;
+                    console.log('✅ Grouped into ' + Object.keys(grouped).length + ' categories');
+                }
+                
+                console.log('📦 Final providerItems:', providerItems);
+                
+                // 6. SETUP CART
+                cart = {};
+                popupCart = {};
+                
+                if (Array.isArray(providerItems)) {
+                    providerItems.forEach(item => {
+                        if (item.isMain && item.subItems && Array.isArray(item.subItems)) {
+                            item.subItems.forEach(sub => {
+                                if (sub && sub.id) {
+                                    cart[sub.id] = 0;
+                                    popupCart[sub.id] = 0;
+                                    console.log(`  🛒 Added to cart: ${sub.name} (${sub.id})`);
+                                }
+                            });
+                        } else if (item.id) {
+                            cart[item.id] = 0;
+                            popupCart[item.id] = 0;
+                        }
+                    });
+                }
+                
+                // 7. RENDER ITEMS
+                renderPopupItems();
+                updateSelectedItemsSummary();
+                updateTotalAndPayment();
+                
+                showToast('✅ ' + rawItems.length + ' items loaded!');
+                return providerItems;
+                
+            } catch (error) {
+                console.error("❌ Error loading provider items:", error);
+                updateDebug('❌ Error: ' + error.message);
+                providerItems = [];
+                document.getElementById('popupItemsList').innerHTML = 
+                    '<div style="text-align:center;padding:40px 20px;color:#FF4757;">' +
+                    '<i class="fas fa-exclamation-circle" style="font-size:40px;display:block;margin-bottom:12px;"></i>' +
+                    'Error loading items<br><span style="font-size:12px;opacity:0.6;">' + error.message + '</span>' +
+                    '</div>';
+                return providerItems;
+            }
+        }
+
+        // ============================================================
+        // RENDER POPUP ITEMS
+        // ============================================================
+        function renderPopupItems() {
+            const container = document.getElementById('popupItemsList');
+            
+            console.log('🔄 renderPopupItems() called');
+            console.log('📦 providerItems:', providerItems);
+            
+            let itemsArray = [];
+            if (Array.isArray(providerItems)) {
+                itemsArray = providerItems;
+            } else if (typeof providerItems === 'object' && providerItems !== null) {
+                for (const key in providerItems) {
+                    if (Array.isArray(providerItems[key])) {
+                        itemsArray = itemsArray.concat(providerItems[key]);
+                    }
+                }
+            }
+            
+            console.log('📦 itemsArray:', itemsArray);
+            
+            const validItems = itemsArray.filter(item => 
+                item && 
+                item.name && 
+                item.name !== 'undefined' && 
+                item.name.trim() !== ''
+            );
+            
+            console.log('📦 validItems:', validItems);
+            
+            if (validItems.length === 0) {
+                container.innerHTML = 
+                    '<div style="text-align:center;padding:40px 20px;color:rgba(255,255,255,0.25);">' +
+                    '<i class="fas fa-box-open" style="font-size:48px;display:block;margin-bottom:12px;opacity:0.3;"></i>' +
+                    '<div style="font-size:16px;font-weight:600;color:rgba(255,255,255,0.4);">No Items Available</div>' +
+                    '<div style="font-size:12px;margin-top:6px;opacity:0.5;">This provider has not added any items yet.</div>' +
+                    '</div>';
+                return;
+            }
+
+            const mainItems = validItems.filter(item => item.isMain === true);
+            const flatItems = validItems.filter(item => !item.isMain);
+            
+            console.log('📦 mainItems:', mainItems);
+            console.log('📦 flatItems:', flatItems);
+            
+            if (mainItems.length === 0) {
+                let html = '';
+                flatItems.forEach(item => {
+                    const qty = popupCart[item.id] || 0;
+                    html += `
+                        <div class="popup-main-item">
+                            <div class="main-item-header" style="cursor:default;">
+                                <span class="main-name">🍽️ ${item.name}</span>
+                            </div>
+                            <div class="sub-items">
+                                <div class="sub-item-row">
+                                    <span class="sub-name">${item.name}</span>
+                                    <span class="sub-price">₹${item.price || 0}</span>
+                                    <div class="qty-control">
+                                        <button class="btn-minus" onclick="updatePopupQty('${item.id}', -1)">−</button>
+                                        <span class="qty-num" id="popup-qty-${item.id}">${qty}</span>
+                                        <button class="btn-plus" onclick="updatePopupQty('${item.id}', 1)">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+                updatePopupTotal();
+                return;
+            }
+
+            let html = '';
+            mainItems.forEach((item, index) => {
+                const subItems = item.subItems || [];
+                const subCount = subItems.length;
+                
+                console.log(`📦 ${item.name} has ${subCount} sub-items:`, subItems);
+
+                html += `
+                    <div class="popup-main-item">
+                        <div class="main-item-header" onclick="toggleSubItems(this)">
+                            <span class="main-name">
+                                🍽️ ${item.name}
+                                <span class="main-count">(${subCount} items)</span>
+                            </span>
+                            <span class="main-toggle"><i class="fas fa-chevron-down"></i></span>
+                        </div>
+                        <div class="sub-items">
+                `;
+                
+                if (subItems.length > 0) {
+                    subItems.forEach(sub => {
+                        const qty = popupCart[sub.id] || 0;
+                        const subPrice = sub.price || 0;
+                        const subName = sub.name || 'Unnamed';
+                        console.log(`  🔹 Rendering sub-item: ${subName} (₹${subPrice})`);
+                        html += `
+                            <div class="sub-item-row">
+                                <span class="sub-name">${subName}</span>
+                                ${sub.category ? `<span class="sub-category">${sub.category}</span>` : ''}
+                                <span class="sub-price">₹${subPrice}</span>
+                                <div class="qty-control">
+                                    <button class="btn-minus" onclick="updatePopupQty('${sub.id}', -1)">−</button>
+                                    <span class="qty-num" id="popup-qty-${sub.id}">${qty}</span>
+                                    <button class="btn-plus" onclick="updatePopupQty('${sub.id}', 1)">+</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    const qty = popupCart[item.id] || 0;
+                    html += `
+                        <div class="sub-item-row">
+                            <span class="sub-name">${item.name}</span>
+                            <span class="sub-price">₹${item.price || 0}</span>
+                            <div class="qty-control">
+                                <button class="btn-minus" onclick="updatePopupQty('${item.id}', -1)">−</button>
+                                <span class="qty-num" id="popup-qty-${item.id}">${qty}</span>
+                                <button class="btn-plus" onclick="updatePopupQty('${item.id}', 1)">+</button>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                html += `</div></div>`;
+            });
+
+            container.innerHTML = html;
+            updatePopupTotal();
+        }
+
+        // ============================================================
+        // TOGGLE SUB-ITEMS
+        // ============================================================
+        window.toggleSubItems = function(header) {
+            const subItems = header.nextElementSibling;
+            const icon = header.querySelector('.main-toggle i');
+            if (!subItems) return;
+            
+            if (subItems.classList.contains('show')) {
+                subItems.classList.remove('show');
+                if (icon) icon.className = 'fas fa-chevron-right';
+            } else {
+                subItems.classList.add('show');
+                if (icon) icon.className = 'fas fa-chevron-down';
+            }
+        };
+
+        // ============================================================
+        // POPUP QTY UPDATE
+        // ============================================================
+        window.updatePopupQty = function(itemId, delta) {
+            if (!popupCart.hasOwnProperty(itemId)) return;
+            popupCart[itemId] = Math.max(0, (popupCart[itemId] || 0) + delta);
+            const qtyEl = document.getElementById('popup-qty-' + itemId);
+            if (qtyEl) qtyEl.textContent = popupCart[itemId];
+            updatePopupTotal();
+        };
+
+        function updatePopupTotal() {
+            let total = 0;
+            for (const [id, qty] of Object.entries(popupCart)) {
+                if (qty > 0) {
+                    let item = null;
+                    if (Array.isArray(providerItems)) {
+                        for (const main of providerItems) {
+                            if (main.isMain && main.subItems) {
+                                const found = main.subItems.find(s => s.id === id);
+                                if (found) { item = found; break; }
+                            } else if (main.id === id) {
+                                item = main;
+                                break;
+                            }
+                        }
+                    }
+                    if (item) {
+                        total += (item.price || 0) * qty;
+                    }
+                }
+            }
+            document.getElementById('popupTotalAmount').textContent = '₹' + total;
+            
+            const confirmBtn = document.getElementById('confirmItemsBtn');
+            confirmBtn.disabled = total <= 0;
+        }
+
+        // ============================================================
+        // OPEN / CLOSE ITEMS POPUP
+        // ============================================================
+        window.openItemsPopup = function() {
+            for (const [id, qty] of Object.entries(cart)) {
+                popupCart[id] = qty || 0;
+            }
+            renderPopupItems();
+            document.getElementById('itemsPopupOverlay').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        };
+
+        window.closeItemsPopup = function() {
+            document.getElementById('itemsPopupOverlay').classList.remove('show');
+            document.body.style.overflow = 'auto';
+        };
+
+        // ============================================================
+        // CONFIRM ITEMS SELECTION
+        // ============================================================
+        window.confirmItemsSelection = function() {
+            let total = 0;
+            for (const [id, qty] of Object.entries(popupCart)) {
+                cart[id] = qty || 0;
+                let item = null;
+                if (Array.isArray(providerItems)) {
+                    for (const main of providerItems) {
+                        if (main.isMain && main.subItems) {
+                            const found = main.subItems.find(s => s.id === id);
+                            if (found) { item = found; break; }
+                        } else if (main.id === id) {
+                            item = main;
+                            break;
+                        }
+                    }
+                }
+                if (item) {
+                    total += (item.price || 0) * (qty || 0);
+                }
+            }
+            
+            if (total <= 0) {
+                showToast('⚠️ Please select at least one item!', true);
+                return;
+            }
+            
+            closeItemsPopup();
+            updateSelectedItemsSummary();
+            updateTotalAndPayment();
+            showToast('✅ Items selected: ₹' + total);
+        };
+
+        // ============================================================
+        // UPDATE SELECTED ITEMS SUMMARY
+        // ============================================================
+        function updateSelectedItemsSummary() {
+            const container = document.getElementById('selectedItemsSummary');
+            let hasItems = false;
+            let html = '';
+            let total = 0;
+            
+            for (const [id, qty] of Object.entries(cart)) {
+                if (qty > 0) {
+                    let item = null;
+                    let itemName = '';
+                    if (Array.isArray(providerItems)) {
+                        for (const main of providerItems) {
+                            if (main.isMain && main.subItems) {
+                                const found = main.subItems.find(s => s.id === id);
+                                if (found) { 
+                                    item = found; 
+                                    itemName = found.name;
+                                    break; 
+                                }
+                            } else if (main.id === id) {
+                                item = main;
+                                itemName = main.name;
+                                break;
+                            }
+                        }
+                    }
+                    if (item) {
+                        hasItems = true;
+                        const price = item.price || 0;
+                        total += price * qty;
+                        html += `
+                            <div class="summary-item">
+                                <span class="s-name">${itemName}</span>
+                                <span class="s-qty">x${qty}</span>
+                                <span class="s-price">₹${price * qty}</span>
+                            </div>
+                        `;
+                    }
+                }
+            }
+            
+            if (hasItems) {
+                container.innerHTML = html;
+            } else {
+                container.innerHTML = `
+                    <div style="color:rgba(255,255,255,0.2); font-size:12px; padding:6px 0;">
+                        <i class="fas fa-info-circle"></i> Click "Select Items" to choose items
+                    </div>
+                `;
+            }
+            
+            updateTotalAndPayment();
+        }
+
+        // ============================================================
+        // UPDATE TOTAL & PAYMENT
+        // ============================================================
+        function updateTotalAndPayment() {
+            let total = 0;
+            let hasItems = false;
+            
+            for (const [id, qty] of Object.entries(cart)) {
+                if (qty > 0) {
+                    let item = null;
+                    if (Array.isArray(providerItems)) {
+                        for (const main of providerItems) {
+                            if (main.isMain && main.subItems) {
+                                const found = main.subItems.find(s => s.id === id);
+                                if (found) { item = found; break; }
+                            } else if (main.id === id) {
+                                item = main;
+                                break;
+                            }
+                        }
+                    }
+                    if (item) {
+                        hasItems = true;
+                        total += (item.price || 0) * qty;
+                    }
+                }
+            }
+            
+            document.getElementById('totalAmount').textContent = '₹' + total;
+            document.getElementById('payAmount').textContent = total;
+            document.getElementById('popupTotalAmount').textContent = '₹' + total;
+            
+            const section = document.getElementById('paymentSection');
+            const payBtn = document.getElementById('payBtn');
+
+            if (hasItems && total > 0) {
+                section.style.display = 'block';
+                if (selectedPaymentOption === 'online') {
+                    payBtn.innerHTML = `<i class="fas fa-credit-card"></i> Pay ₹${total} via Razorpay`;
+                    payBtn.disabled = false;
+                }
+            } else {
+                section.style.display = 'none';
+                payBtn.disabled = true;
+            }
+        }
+
+        // ============================================================
+        // GET TOTAL & ITEMS SUMMARY
+        // ============================================================
+        function getTotal() {
+            let total = 0;
+            for (const [id, qty] of Object.entries(cart)) {
+                if (qty > 0) {
+                    let item = null;
+                    if (Array.isArray(providerItems)) {
+                        for (const main of providerItems) {
+                            if (main.isMain && main.subItems) {
+                                const found = main.subItems.find(s => s.id === id);
+                                if (found) { item = found; break; }
+                            } else if (main.id === id) {
+                                item = main;
+                                break;
+                            }
+                        }
+                    }
+                    if (item) {
+                        total += (item.price || 0) * qty;
+                    }
+                }
+            }
+            return total;
+        }
+
+        function getItemsSummary() {
+            let summary = '';
+            for (const [id, qty] of Object.entries(cart)) {
+                if (qty > 0) {
+                    let item = null;
+                    let itemName = '';
+                    if (Array.isArray(providerItems)) {
+                        for (const main of providerItems) {
+                            if (main.isMain && main.subItems) {
+                                const found = main.subItems.find(s => s.id === id);
+                                if (found) { 
+                                    item = found; 
+                                    itemName = found.name;
+                                    break; 
+                                }
+                            } else if (main.id === id) {
+                                item = main;
+                                itemName = main.name;
+                                break;
+                            }
+                        }
+                    }
+                    if (item) {
+                        summary += `${itemName} x${qty} = ₹${(item.price||0)*qty}, `;
+                    }
+                }
+            }
+            return summary.slice(0, -2) || 'No items selected';
+        }
+
+        // ============================================================
+        // 🔥 RAZORPAY PAYMENT
+        // ============================================================
+        window.processRazorpayPayment = function() {
+            const total = getTotal();
+            if (total <= 0) { showToast('⚠️ Please select at least one item!', true); return; }
+            
+            const name = document.getElementById('custName').value.trim();
+            const mobile = document.getElementById('custMobile').value.trim();
+            const address = document.getElementById('custAddress').value.trim();
+            
+            if (!name || !mobile || !address) {
+                showToast('⚠️ Please fill Name, Mobile & Address first!', true);
+                return;
+            }
+            
+            if (mobile.length < 10) {
+                showToast('⚠️ Enter a valid 10-digit mobile number!', true);
+                return;
+            }
+            
+            const date = document.getElementById('bookingDate').value;
+            if (!date) { showToast('⚠️ Please select a booking date!', true); return; }
+            
+            const time = document.getElementById('bookingTime').value;
+            if (!time) { showToast('⚠️ Please select a booking time!', true); return; }
+            
+            const selectedDate = new Date(date + 'T' + (time || '10:00'));
+            if (selectedDate < new Date()) {
+                showToast('⚠️ Please select a future date and time!', true);
+                return;
+            }
+            
+            if (selectedProviderData && selectedProviderData.onboardStatus !== 'active') {
+                showToast('⚠️ This provider does not accept online payments. Use "Not Paid" option.', true);
+                return;
+            }
+            
+            checkExistingBooking(mobile).then((hasBooking) => {
+                if (hasBooking) {
+                    showToast('⚠️ You already have an active booking with this mobile! Complete it first.', true);
+                    return;
+                }
+                createRazorpayPayment();
+            });
+        };
+
+        function createRazorpayPayment() {
+            const total = getTotal();
+            const name = document.getElementById('custName').value.trim();
+            const mobile = document.getElementById('custMobile').value.trim();
+            const address = document.getElementById('custAddress').value.trim();
+            const notes = document.getElementById('custNotes').value.trim();
+            const date = document.getElementById('bookingDate').value;
+            const time = document.getElementById('bookingTime').value;
+            const itemsSummary = getItemsSummary();
+            const provider = allProviders.find(p => p.id === selectedProviderId);
+            
+            if (!provider) {
+                showToast('❌ Provider not found!', true);
+                return;
+            }
+            
+            if (isBookingSubmitting) return;
+            isBookingSubmitting = true;
+            showLoading(true);
+            
+            try {
+                const bookingData = {
+                    service: selectedService || '',
+                    providerId: selectedProviderId || '',
+                    providerName: provider.name || 'Unknown',
+                    providerUpiId: provider.upiId || '',
+                    providerPhone: provider.phone || '',
+                    providerWebsite: provider.website || '',
+                    bookingDate: date || '',
+                    bookingTime: time || '',
+                    customerName: name || '',
+                    customerMobile: mobile || '',
+                    customerAddress: address || '',
+                    customerNotes: notes || '',
+                    customerPincode: document.getElementById('pincode').value.trim() || '',
+                    customerEmail: currentUser ? currentUser.email : '',
+                    customerUid: currentUser ? currentUser.uid : '',
+                    items: itemsSummary || '',
+                    totalAmount: total || 0,
+                    platformFee: Math.round(total * 0.02),
+                    providerAmount: Math.round(total * 0.98),
+                    paymentMethod: 'Razorpay',
+                    paymentStatus: 'pending',
+                    paymentConfirmed: false,
+                    paymentOption: 'online',
+                    status: 'pending',
+                    assignedTo: selectedProviderId || '',
+                    createdAt: new Date().toISOString(),
+                    bookingType: 'customer',
+                    isAdsOnly: provider.isAdsOnly || false
+                };
+                
+                db.collection('bookings').add(bookingData)
+                    .then((docRef) => {
+                        const bookingId = docRef.id;
+                        currentBookingId = bookingId;
+                        
+                        const options = {
+                            key: RAZORPAY_CONFIG.KEY_ID,
+                            amount: total * 100,
+                            currency: "INR",
+                            name: "Randhawa Enterprises",
+                            description: `${selectedService} - ${bookingId}`,
+                            image: "https://nnlgharpro.in/logo.png",
+                            prefill: {
+                                name: name,
+                                contact: mobile,
+                                email: currentUser ? currentUser.email : ''
+                            },
+                            notes: {
+                                bookingId: bookingId,
+                                provider: provider.name,
+                                service: selectedService || ''
+                            },
+                            theme: {
+                                color: "#FF6B35"
+                            },
+                            modal: {
+                                ondismiss: function() {
+                                    showToast('⚠️ Payment cancelled', true);
+                                    showLoading(false);
+                                    isBookingSubmitting = false;
+                                }
+                            },
+                            handler: function(response) {
+                                console.log('✅ Payment Success:', response);
+                                verifyRazorpayPayment(bookingId, response);
+                            }
+                        };
+                        
+                        const rzp = new Razorpay(options);
+                        rzp.open();
+                        showLoading(false);
+                        isBookingSubmitting = false;
+                    })
+                    .catch((error) => {
+                        console.error('Booking error:', error);
+                        showToast('❌ Error: ' + error.message, true);
+                        isBookingSubmitting = false;
+                        showLoading(false);
+                    });
+            } catch (error) {
+                console.error('Payment error:', error);
+                showToast('❌ Error: ' + error.message, true);
+                isBookingSubmitting = false;
+                showLoading(false);
+            }
+        }
+
+        async function verifyRazorpayPayment(bookingId, response) {
+            showLoading(true);
+            try {
+                await db.collection('bookings').doc(bookingId).update({
+                    paymentStatus: 'paid',
+                    paymentConfirmed: true,
+                    transactionId: response.razorpay_payment_id,
+                    razorpayOrderId: response.razorpay_order_id,
+                    razorpaySignature: response.razorpay_signature,
+                    status: 'assigned',
+                    updatedAt: new Date().toISOString()
+                });
+                
+                showToast('✅ Payment successful! Booking confirmed.');
+                showReceipt(bookingId, 'paid');
+                closeBookingModal();
+                document.querySelectorAll('.service-btn').forEach(b => b.classList.remove('active'));
+                selectedService = null;
+                
+            } catch (error) {
+                console.error('Verification error:', error);
+                showToast('❌ Payment verification failed: ' + error.message, true);
+            }
+            showLoading(false);
+        }
+
+        // ============================================================
+        // 🔥 NOT PAID BOOKING (For non-onboarded providers)
+        // ============================================================
+        window.processNotPaidBooking = function() {
+            const total = getTotal();
+            if (total <= 0) { showToast('⚠️ Please select at least one item!', true); return; }
+            
+            const name = document.getElementById('custName').value.trim();
+            const mobile = document.getElementById('custMobile').value.trim();
+            const address = document.getElementById('custAddress').value.trim();
+            
+            if (!name || !mobile || !address) {
+                showToast('⚠️ Please fill Name, Mobile & Address first!', true);
+                return;
+            }
+            
+            if (mobile.length < 10) {
+                showToast('⚠️ Enter a valid 10-digit mobile number!', true);
+                return;
+            }
+            
+            const date = document.getElementById('bookingDate').value;
+            if (!date) { showToast('⚠️ Please select a booking date!', true); return; }
+            
+            const time = document.getElementById('bookingTime').value;
+            if (!time) { showToast('⚠️ Please select a booking time!', true); return; }
+            
+            const selectedDate = new Date(date + 'T' + (time || '10:00'));
+            if (selectedDate < new Date()) {
+                showToast('⚠️ Please select a future date and time!', true);
+                return;
+            }
+            
+            checkExistingBooking(mobile).then((hasBooking) => {
+                if (hasBooking) {
+                    showToast('⚠️ You already have an active booking!', true);
+                    return;
+                }
+                createNotPaidBooking();
+            });
+        };
+
+        function createNotPaidBooking() {
+            const total = getTotal();
+            const name = document.getElementById('custName').value.trim();
+            const mobile = document.getElementById('custMobile').value.trim();
+            const address = document.getElementById('custAddress').value.trim();
+            const notes = document.getElementById('custNotes').value.trim();
+            const date = document.getElementById('bookingDate').value;
+            const time = document.getElementById('bookingTime').value;
+            const itemsSummary = getItemsSummary();
+            const provider = allProviders.find(p => p.id === selectedProviderId);
+            
+            if (!provider) {
+                showToast('❌ Provider not found!', true);
+                return;
+            }
+            
+            if (isBookingSubmitting) return;
+            isBookingSubmitting = true;
+            showLoading(true);
+            
+            try {
+                const bookingData = {
+                    service: selectedService || '',
+                    providerId: selectedProviderId || '',
+                    providerName: provider.name || 'Unknown',
+                    providerUpiId: provider.upiId || '',
+                    providerPhone: provider.phone || '',
+                    providerWebsite: provider.website || '',
+                    bookingDate: date || '',
+                    bookingTime: time || '',
+                    customerName: name || '',
+                    customerMobile: mobile || '',
+                    customerAddress: address || '',
+                    customerNotes: notes || '',
+                    customerPincode: document.getElementById('pincode').value.trim() || '',
+                    customerEmail: currentUser ? currentUser.email : '',
+                    customerUid: currentUser ? currentUser.uid : '',
+                    items: itemsSummary || '',
+                    totalAmount: total || 0,
+                    platformFee: 0,
+                    providerAmount: total,
+                    paymentMethod: 'Not Paid',
+                    paymentStatus: 'not_paid',
+                    paymentConfirmed: false,
+                    paymentOption: 'notpaid',
+                    status: 'pending',
+                    assignedTo: selectedProviderId || '',
+                    createdAt: new Date().toISOString(),
+                    bookingType: 'customer',
+                    isAdsOnly: provider.isAdsOnly || false
+                };
+                
+                db.collection('bookings').add(bookingData)
+                    .then((docRef) => {
+                        const bookingId = docRef.id;
+                        currentBookingId = bookingId;
+                        
+                        showToast('✅ Booking confirmed! Pay directly to provider.');
+                        showReceipt(bookingId, 'not_paid');
+                        closeBookingModal();
+                        document.querySelectorAll('.service-btn').forEach(b => b.classList.remove('active'));
+                        selectedService = null;
+                        isBookingSubmitting = false;
+                        showLoading(false);
+                    })
+                    .catch((error) => {
+                        console.error('Booking error:', error);
+                        showToast('❌ Error: ' + error.message, true);
+                        isBookingSubmitting = false;
+                        showLoading(false);
+                    });
+            } catch (error) {
+                console.error('Booking error:', error);
+                showToast('❌ Error: ' + error.message, true);
+                isBookingSubmitting = false;
+                showLoading(false);
+            }
+        }
+
+        // ============================================================
+        // CHECK EXISTING BOOKING
+        // ============================================================
+        async function checkExistingBooking(mobile) {
+            if (!mobile) return false;
+            try {
+                const snapshot = await db.collection('bookings')
+                    .where('customerMobile', '==', mobile)
+                    .where('status', 'in', ['pending', 'assigned', 'accepted'])
+                    .get();
+                
+                if (!snapshot.empty) {
+                    for (let doc of snapshot.docs) {
+                        const data = doc.data();
+                        if (data.status !== 'completed' && data.status !== 'rejected') {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            } catch (e) {
+                console.error('Check existing booking error:', e);
+                return false;
+            }
+        }
+
+        // ============================================================
+        // RECEIPT FUNCTIONS
+        // ============================================================
+        function showReceipt(bookingId, paymentStatus) {
+            const receipt = document.getElementById('receiptContainer');
+            const details = document.getElementById('receiptDetails');
+            
+            db.collection('bookings').doc(bookingId).get().then((doc) => {
+                if (!doc.exists) { showToast('❌ Booking not found!', true); return; }
+                
+                const data = doc.data();
+                
+                let statusLabel = '';
+                let statusColor = '';
+                let statusBg = '';
+                
+                if (paymentStatus === 'paid') {
+                    statusLabel = '✅ PAID';
+                    statusColor = '#00C853';
+                    statusBg = 'rgba(0,200,83,0.1)';
+                } else {
+                    statusLabel = '📝 Not Paid';
+                    statusColor = '#FFD93D';
+                    statusBg = 'rgba(255,217,61,0.1)';
+                }
+                
+                details.innerHTML = `
+                    <div class="receipt-row"><span class="label">Booking ID</span><span class="value">#${bookingId.substring(0,8)}</span></div>
+                    <div class="receipt-row"><span class="label">Date</span><span class="value">${data.bookingDate || new Date().toLocaleDateString('en-IN')}</span></div>
+                    <div class="receipt-row"><span class="label">Time</span><span class="value">${data.bookingTime || 'N/A'}</span></div>
+                    <div class="receipt-row"><span class="label">Customer</span><span class="value">${data.customerName || 'N/A'}</span></div>
+                    <div class="receipt-row"><span class="label">Mobile</span><span class="value">${data.customerMobile || 'N/A'}</span></div>
+                    <div class="receipt-row"><span class="label">Service</span><span class="value">${data.service || 'N/A'}</span></div>
+                    <div class="receipt-row"><span class="label">Provider</span><span class="value">${data.providerName || 'N/A'}</span></div>
+                    <div class="receipt-row"><span class="label">Items</span><span class="value">${data.items || 'N/A'}</span></div>
+                    <div class="receipt-row"><span class="label">Total Amount</span><span class="value">₹${data.totalAmount || 0}</span></div>
+                    <div class="receipt-row"><span class="label">Payment Method</span><span class="value">${data.paymentMethod || 'Razorpay'}</span></div>
+                    <div class="receipt-row"><span class="label">Payment Status</span><span class="value">${paymentStatus === 'paid' ? '✅ Paid' : '📝 Not Paid'}</span></div>
+                `;
+                
+                document.getElementById('receiptTotal').textContent = '₹' + (data.totalAmount || 0);
+                
+                const statusEl = document.getElementById('receiptPaymentStatus');
+                statusEl.textContent = statusLabel;
+                statusEl.style.color = statusColor;
+                statusEl.style.background = statusBg;
+                
+                receipt.classList.add('show');
+                document.body.style.overflow = 'hidden';
+                currentBookingId = bookingId;
+                currentPaymentStatus = paymentStatus;
+                
+            }).catch((error) => {
+                console.error('Error fetching booking:', error);
+                showToast('❌ Error loading receipt', true);
+            });
+        }
+
+        window.closeReceipt = function() {
+            document.getElementById('receiptContainer').classList.remove('show');
+            document.body.style.overflow = 'auto';
+            currentBookingId = null;
+        };
+
+        // ============================================================
+        // LOADING
+        // ============================================================
+        function showLoading(show) {
+            let el = document.getElementById('loading');
+            if (!el) {
+                const div = document.createElement('div');
+                div.id = 'loading';
+                div.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);display:none;justify-content:center;align-items:center;z-index:99998;';
+                div.innerHTML = '<div style="width:44px;height:44px;border:3px solid rgba(255,255,255,0.05);border-top-color:#4ECDC4;border-radius:50%;animation:spin 0.8s linear infinite;"></div>';
+                document.body.appendChild(div);
+                const style = document.createElement('style');
+                style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+                document.head.appendChild(style);
+            }
+            document.getElementById('loading').style.display = show ? 'flex' : 'none';
+        }
+
+        // ============================================================
+        // MODAL FUNCTIONS
+        // ============================================================
+        window.closeBookingModal = function() {
+            document.getElementById('bookingModal').classList.remove('show');
+            document.getElementById('providerListContainer').style.display = 'block';
+            document.getElementById('bookingForm').style.display = 'none';
+            document.getElementById('paymentSection').style.display = 'none';
+            selectedProviderId = null;
+            selectedProviderData = null;
+            providerItems = [];
+            cart = {};
+            popupCart = {};
+            document.body.style.overflow = 'auto';
+        };
+
+        document.getElementById('pincode').addEventListener('keyup', function(e) { if (e.key === 'Enter') searchServices(); });
+
+        // ============================================================
+        // PAGE NAVIGATION
+        // ============================================================
+        function showPage(pageId) {
+            document.getElementById('mainApp').style.display = 'none';
+            document.getElementById('aboutPage').style.display = 'none';
+            document.getElementById('contactPage').style.display = 'none';
+            document.getElementById('privacyPage').style.display = 'none';
+            document.getElementById('termsPage').style.display = 'none';
+            if (pageId) {
+                document.getElementById(pageId).style.display = 'block';
+            } else {
+                document.getElementById('mainApp').style.display = 'block';
+            }
+        }
+
+        function closePage() {
+            showPage(null);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.footer-links a').forEach(function(link) {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const href = this.getAttribute('href');
+                    if (href === '/about.html') showPage('aboutPage');
+                    else if (href === '/contact.html') showPage('contactPage');
+                    else if (href === '/privacy.html') showPage('privacyPage');
+                    else if (href === '/terms.html') showPage('termsPage');
+                    else if (href.includes('wa.me')) {
+                        window.open(href, '_blank');
+                    }
+                });
+            });
+        });
+
+        // ============================================================
+        // INIT
+        // ============================================================
+        checkSession();
+        updateDateTime();
+        updateWeather();
+
+        console.log('✅ NnlGharPro Customer Portal v26.0 - RAZORPAY INTEGRATED');
+        console.log('📦 Features:');
+        console.log('  1. 🔥 Razorpay Payment Gateway (Live)');
+        console.log('  2. 📝 Not Paid Option for non-onboarded providers');
+        console.log('  3. 💳 Provider Onboarding Status Check');
+        console.log('  4. ✅ Fast & Optimized Performance');
+        console.log('  5. 📋 Complete Booking Flow');
+        console.log('✅ Tech Support: Er.Gaganjeet Singh - 9588562553');
+    </script>
+</body>
+</html>

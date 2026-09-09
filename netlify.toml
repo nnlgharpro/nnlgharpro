@@ -1,0 +1,9 @@
+[build]
+  publish = "."
+  functions = "functions"
+  environment = { SECRETS_SCAN_ENABLED = "false" }
+
+[[redirects]]
+  from = "/api/smart-collect"
+  to = "/.netlify/functions/smart-collect"
+  status = 200
