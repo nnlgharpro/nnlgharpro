@@ -288,11 +288,11 @@
         const db = firebase.firestore();
 
         // ============================================================
-        // 🔥 RAZORPAY LIVE CONFIG
+        // 🔥 RAZORPAY LIVE CONFIG (FIXED - Subscription_id & plan_id)
         // ============================================================
         const RAZORPAY_CONFIG = {
-            KEY_ID: "rzp_live_TUIiRB57IOF52",
-            KEY_SECRET: "YOUR_RAZORPAY_KEY_SECRET",
+            KEY_ID: "rzp_live_TZVMRcs8uXxici",
+            KEY_SECRET: "Wloz0yWfmxPwT3Um8Maw93P4",
             PLAN_ID: "plan_TZ1qfaNS4VhGUg",
         };
 
@@ -453,7 +453,7 @@
         }
 
         // ============================================================
-        // 🔥 RAZORPAY SUBSCRIPTION
+        // 🔥 RAZORPAY SUBSCRIPTION (FIXED)
         // ============================================================
         async function loadSubscription() {
             if (!currentUser) return;
@@ -524,12 +524,10 @@
                 }
             }
             
-            // Create subscription via Razorpay
-          const RAZORPAY_CONFIG = {
-    KEY_ID: "rzp_live_TZVMRcs8uXxici",
-    KEY_SECRET: "Wloz0yWfmxPwT3Um8Maw93P4",
-    PLAN_ID: "plan_TZ1qfaNS4VhGUg" // 🔥 यह Plan ID है!
-};
+            // ✅ FIXED: Plan ID use karo (subscription_id nahi)
+            const options = {
+                key: RAZORPAY_CONFIG.KEY_ID,
+                plan_id: RAZORPAY_CONFIG.PLAN_ID,  // ✅ Yahan plan_id hai
                 name: "Randhawa Enterprises",
                 description: "NnlGharPro - Provider ₹500/month",
                 image: "https://nnlgharpro.in/logo.png",
