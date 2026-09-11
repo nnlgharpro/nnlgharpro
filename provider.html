@@ -294,6 +294,7 @@
             KEY_ID: "rzp_live_TZVMRcs8uXxici",
             KEY_SECRET: "Wloz0yWfmxPwT3Um8Maw93P4",
             PLAN_ID: "plan_TZ1qfaNS4VhGUg",
+            SUBSCRIPTION_ID: "sub_TabyNdDiblmEBS" // 🔥 Yahan Subscription ID daalein
         };
 
         // ============================================================
@@ -527,7 +528,7 @@
             // ✅ FIXED: Plan ID use karo (subscription_id nahi)
             const options = {
                 key: RAZORPAY_CONFIG.KEY_ID,
-                plan_id: RAZORPAY_CONFIG.PLAN_ID,  // ✅ Yahan plan_id hai
+                subscription_id: RAZORPAY_CONFIG.SUBSCRIPTION_ID,
                 name: "Randhawa Enterprises",
                 description: "NnlGharPro - Provider ₹500/month",
                 image: "https://nnlgharpro.in/logo.png",
@@ -749,6 +750,37 @@
                 onboardStatus = 'pending';
                 updateOnboardUI();
                 showToast('✅ Onboarding submitted! Admin will verify within 24 hours.');
+                                    // 🔥 RAZORPAY SMART COLLECT API CALL (AUTOMATIC)
+                    try {
+                        const smartCollectResponse = await fetch('/api/smart-collect', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                providerId: currentUser.id,
+                                providerName: currentUser.name,
+                                providerEmail: currentUser.email,
+                                providerMobile: currentUser.mobile || '9588562553',
+                                ifscCode: ifsc,
+                                bankAccount: account,
+                                accountHolder: holder
+                            })
+                        });
+                        
+                        const smartCollectData = await smartCollectResponse.json();
+                        
+                        if (smartCollectData.success) {
+                            showToast('✅ Smart Collect ID: ' + smartCollectData.virtualAccountId);
+                            await db.collection('providers').doc(currentUser.id).update({
+                                virtualAccountId: smartCollectData.virtualAccountId,
+                                upiId: smartCollectData.upiId,
+                                onboardStatus: 'active'
+                            });
+                        } else {
+                            console.log('Razorpay API:', smartCollectData.message);
+                        }
+                    } catch(e) {
+                        console.log('Smart Collect Error:', e);
+                    }
                 
             } catch(e) {
                 showToast('❌ ' + e.message, true);
