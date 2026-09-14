@@ -7,7 +7,6 @@
     <meta name="google-site-verification" content="w6qm7tonraRh8hHgflqJmZaubqzFv7_CYz-vrh1Zbmw" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <!-- 🔥 RAZORPAY SCRIPT - LIVE -->
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -80,7 +79,7 @@
         .s-insurance { background: linear-gradient(135deg, #0d47a1, #1976d2); }
         .s-ecommerce { background: linear-gradient(135deg, #FF6B35, #FF8C42); }
         .s-tv { background: linear-gradient(135deg, #b5179e, #7209b7); }
-        .s-car-wash { background: linear-gradient(135deg, #0096c7, #023e8a); }
+        .s-local-bazar { background: linear-gradient(135deg, #0096c7, #023e8a); }
         .s-gym-fitness { background: linear-gradient(135deg, #e85d04, #dc2f02); }
         .s-other { background: linear-gradient(135deg, #455a64, #78909c); }
         
@@ -128,7 +127,6 @@
         .selected-items-summary .summary-item .s-qty { color: #4ECDC4; font-weight: 600; }
         .selected-items-summary .summary-item .s-price { color: #fff; }
         
-        /* 🔥 PAYMENT SECTION - RAZORPAY */
         .payment-section { background: rgba(78,205,196,0.04); border: 1px solid rgba(78,205,196,0.08); border-radius: 14px; padding: 16px; margin-bottom: 12px; display: none; }
         .payment-section .payment-title { font-size: 14px; font-weight: 700; color: #4ECDC4; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
         .payment-section .payment-title i { color: #FFD93D; }
@@ -137,7 +135,6 @@
         .payment-section .fee-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: rgba(255,255,255,0.3); margin-top: 2px; }
         .payment-section .fee-row .fee-amount { color: #4ECDC4; font-weight: 600; }
         
-        /* 🔥 RAZORPAY PAY BUTTON */
         .razorpay-pay-btn {
             width: 100%;
             padding: 14px;
@@ -159,7 +156,6 @@
         .razorpay-pay-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         .razorpay-pay-btn i { font-size: 22px; }
         
-        /* 🔥 NOT PAID BUTTON (For non-onboarded providers) */
         .not-paid-btn {
             width: 100%;
             padding: 14px;
@@ -248,7 +244,6 @@
         .receipt-wrapper .receipt-footer { text-align: center; font-size: 9px; color: #888; border-top: 2px dashed #333; padding-top: 8px; margin-top: 8px; }
         .receipt-wrapper .receipt-footer .print-btn { padding: 6px 16px; background: linear-gradient(135deg, #1a237e, #283593); border: none; border-radius: 8px; color: #fff; font-weight: 700; font-size: 12px; cursor: pointer; margin-top: 4px; }
         
-        /* POPUP STYLES */
         .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 10001; padding: 16px; }
         .popup-overlay.show { display: flex; }
         .popup-box { background: #1a1a2e; padding: 24px; border-radius: 20px; max-width: 420px; width: 100%; max-height: 80vh; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.08); animation: slideUp 0.3s ease; }
@@ -374,7 +369,7 @@
             <div class="service-btn s-insurance" onclick="selectService('Insurance')"><i class="fas fa-shield-alt"></i> Insurance</div>
             <div class="service-btn s-ecommerce" onclick="openEcommerceModal()"><i class="fas fa-store"></i> E-Commerce</div>
             <div class="service-btn s-tv" onclick="selectService('TV Repair')"><i class="fas fa-tv"></i> TV Repair</div>
-            <div class="service-btn s-car-wash" onclick="selectService('Car Wash')"><i class="fas fa-car"></i> Car Wash</div>
+            <div class="service-btn s-local-bazar" onclick="selectService('Local Bazar')"><i class="fas fa-shopping-basket"></i> Local Bazar</div>
             <div class="service-btn s-gym-fitness" onclick="selectService('Gym & Fitness')"><i class="fas fa-dumbbell"></i> Gym & Fitness</div>
             <div class="service-btn s-other" onclick="selectService('Other')"><i class="fas fa-ellipsis-h"></i> Other</div>
         </div>
@@ -439,7 +434,6 @@
                     </div>
                 </div>
 
-                <!-- 🔥 PAYMENT SECTION - RAZORPAY -->
                 <div class="payment-section" id="paymentSection">
                     <div class="payment-title">
                         <i class="fas fa-credit-card"></i> 💳 Payment via Razorpay
@@ -453,7 +447,6 @@
                         <span class="fee-amount">2% + GST</span>
                     </div>
                     
-                    <!-- 🔥 Payment Options -->
                     <div class="payment-options" id="paymentOptions">
                         <div class="pay-opt selected" onclick="selectPaymentOption('online')">
                             <div class="opt-label">💳 Online</div>
@@ -465,18 +458,15 @@
                         </div>
                     </div>
 
-                    <!-- Provider Payment Info -->
                     <div class="provider-payment-info" id="providerPaymentInfo">
                         <div class="info-title"><i class="fas fa-info-circle"></i> Payment Info</div>
                         <div class="info-detail" id="paymentInfoText">Pay online via Razorpay</div>
                     </div>
 
-                    <!-- 🔥 RAZORPAY PAY BUTTON -->
                     <button class="razorpay-pay-btn" id="payBtn" onclick="processRazorpayPayment()" disabled>
                         <i class="fas fa-credit-card"></i> Pay ₹<span id="payAmount">0</span> via Razorpay
                     </button>
                     
-                    <!-- 🔥 NOT PAID BUTTON -->
                     <button class="not-paid-btn" id="notPaidBtn" onclick="processNotPaidBooking()" style="display:none;">
                         <i class="fas fa-check-circle"></i> Book Now (Pay Later)
                     </button>
@@ -569,19 +559,13 @@
         </div>
     </div>
 
-    <!-- ABOUT, CONTACT, PRIVACY, TERMS PAGES -->
-    <div id="aboutPage" style="display:none;"><div style="max-width:480px; margin:0 auto; padding:20px;"><div style="background:rgba(255,255,255,0.04); border-radius:20px; padding:24px; border:1px solid rgba(255,255,255,0.06);"><h1 style="color:#4ECDC4; font-size:28px; margin-bottom:6px;">🏠 Nnl<span style="color:#FF6B35;">GharPro</span></h1><p style="font-size:13px; color:rgba(255,255,255,0.3); margin-bottom:16px;">India's Trusted Home Service Platform</p><h2 style="color:#FFD93D; font-size:18px; margin-top:16px; margin-bottom:8px;">📖 About Us</h2><p style="color:rgba(255,255,255,0.6); line-height:1.7; font-size:14px; margin-bottom:12px;"><strong>NnlGharPro</strong> is a premium home service provider platform managed by <span style="color:#4ECDC4; font-weight:600;">Randhawa Enterprises</span>. We connect verified service professionals with customers across India.</p><h2 style="color:#FFD93D; font-size:18px; margin-top:16px; margin-bottom:8px;">🎯 Our Mission</h2><p style="color:rgba(255,255,255,0.6); line-height:1.7; font-size:14px; margin-bottom:12px;">To provide <span style="color:#4ECDC4; font-weight:600;">reliable, transparent, and professional</span> home services to every household. We ensure quality service through verified providers and secure payments.</p><h2 style="color:#FFD93D; font-size:18px; margin-top:16px; margin-bottom:8px;">✨ Why Choose Us?</h2><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;"><div style="background:rgba(78,205,196,0.06); padding:12px; border-radius:10px; border-left:3px solid #4ECDC4;"><h3 style="color:#4ECDC4; font-size:13px;">✅ Verified Professionals</h3><p style="font-size:11px; color:rgba(255,255,255,0.4); margin-top:4px;">All service providers are verified and trusted.</p></div><div style="background:rgba(78,205,196,0.06); padding:12px; border-radius:10px; border-left:3px solid #4ECDC4;"><h3 style="color:#4ECDC4; font-size:13px;">💰 No Hidden Charges</h3><p style="font-size:11px; color:rgba(255,255,255,0.4); margin-top:4px;">Transparent pricing with no hidden fees.</p></div><div style="background:rgba(78,205,196,0.06); padding:12px; border-radius:10px; border-left:3px solid #4ECDC4;"><h3 style="color:#4ECDC4; font-size:13px;">🔒 Secure Payments</h3><p style="font-size:11px; color:rgba(255,255,255,0.4); margin-top:4px;">UPI and digital payments with full security.</p></div><div style="background:rgba(78,205,196,0.06); padding:12px; border-radius:10px; border-left:3px solid #4ECDC4;"><h3 style="color:#4ECDC4; font-size:13px;">📞 24/7 Support</h3><p style="font-size:11px; color:rgba(255,255,255,0.4); margin-top:4px;">Dedicated tech support team always available.</p></div></div><h2 style="color:#FFD93D; font-size:18px; margin-top:16px; margin-bottom:8px;">👨‍💼 Management</h2><p style="color:rgba(255,255,255,0.6); line-height:1.7; font-size:14px;"><span style="color:#4ECDC4; font-weight:600;">Er. Gaganjeet Singh</span><br>Tech Support & Operations Head<br>📞 <a href="tel:+919588562553" style="color:#4ECDC4; text-decoration:none;">9588562553</a></p><h2 style="color:#FFD93D; font-size:18px; margin-top:16px; margin-bottom:8px;">📅 Since</h2><p style="color:rgba(255,255,255,0.6); font-size:14px;">Established in 2024, serving thousands of happy customers.</p><button onclick="closePage()" style="margin-top:20px; background:linear-gradient(135deg,#1a237e,#283593); border:none; padding:12px 24px; border-radius:12px; color:#fff; font-weight:700; cursor:pointer; width:100%;">🏠 Back to Home</button></div></div></div>
-    <div id="contactPage" style="display:none;"><div style="max-width:480px; margin:0 auto; padding:20px;"><div style="background:rgba(255,255,255,0.04); border-radius:20px; padding:24px; border:1px solid rgba(255,255,255,0.06);"><h1 style="color:#4ECDC4; font-size:28px; margin-bottom:6px;">📞 Contact <span style="color:#FF6B35;">NnlGharPro</span></h1><p style="font-size:13px; color:rgba(255,255,255,0.3); margin-bottom:16px;">We're here to help you 24/7</p><h2 style="color:#FFD93D; font-size:18px; margin-top:16px; margin-bottom:8px;">📱 Quick Contacts</h2><div style="background:rgba(78,205,196,0.06); padding:14px 16px; border-radius:12px; margin-bottom:10px; border-left:3px solid #4ECDC4;"><div style="font-size:10px; color:rgba(255,255,255,0.3); text-transform:uppercase;">📞 Tech Support</div><div style="font-size:18px; font-weight:700; color:#4ECDC4;"><a href="tel:+919588562553" style="color:#4ECDC4; text-decoration:none;">+91 9588562553</a></div><div style="font-size:12px; color:rgba(255,255,255,0.3);">Er. Gaganjeet Singh</div></div><div style="background:rgba(78,205,196,0.06); padding:14px 16px; border-radius:12px; margin-bottom:10px; border-left:3px solid #4ECDC4;"><div style="font-size:10px; color:rgba(255,255,255,0.3); text-transform:uppercase;">💬 WhatsApp</div><div style="font-size:18px; font-weight:700; color:#25D366;"><a href="https://wa.me/919588562553" target="_blank" style="color:#25D366; text-decoration:none;">Chat on WhatsApp</a></div></div><div style="background:rgba(78,205,196,0.06); padding:14px 16px; border-radius:12px; margin-bottom:10px; border-left:3px solid #4ECDC4;"><div style="font-size:10px; color:rgba(255,255,255,0.3); text-transform:uppercase;">📧 Email</div><div style="font-size:16px; font-weight:700; color:#4ECDC4;"><a href="mailto:nnlgharpro@gmail.com" style="color:#4ECDC4; text-decoration:none;">nnlgharpro@gmail.com</a></div></div><div style="background:rgba(78,205,196,0.06); padding:14px 16px; border-radius:12px; margin-bottom:10px; border-left:3px solid #4ECDC4;"><div style="font-size:10px; color:rgba(255,255,255,0.3); text-transform:uppercase;">📍 Address</div><div style="font-size:16px; font-weight:700; color:#fff;">Randhawa Enterprises</div><div style="font-size:13px; color:rgba(255,255,255,0.5);">India</div></div><h2 style="color:#FFD93D; font-size:18px; margin-top:16px; margin-bottom:8px;">🕐 Support Hours</h2><div style="background:rgba(255,255,255,0.02); padding:14px; border-radius:12px; margin-bottom:12px;"><p style="color:rgba(255,255,255,0.5); font-size:13px; margin-bottom:4px;">🕐 <strong style="color:#fff;">Monday - Saturday:</strong> 9:00 AM - 9:00 PM</p><p style="color:rgba(255,255,255,0.5); font-size:13px; margin-bottom:4px;">🕐 <strong style="color:#fff;">Sunday:</strong> 10:00 AM - 6:00 PM</p><p style="color:rgba(255,255,255,0.5); font-size:13px;">📞 <strong style="color:#4ECDC4;">Emergency Support:</strong> 24/7 Available</p></div><div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px;"><a href="tel:+919588562553" style="flex:1; text-align:center; background:#25D366; color:#fff; padding:12px; border-radius:12px; text-decoration:none; font-weight:600; min-width:100px;">📞 Call Now</a><a href="https://wa.me/919588562553" target="_blank" style="flex:1; text-align:center; background:#25D366; color:#fff; padding:12px; border-radius:12px; text-decoration:none; font-weight:600; min-width:100px;">💬 WhatsApp</a><a href="mailto:support@nnlgharpro.top" style="flex:1; text-align:center; background:#1a237e; color:#fff; padding:12px; border-radius:12px; text-decoration:none; font-weight:600; min-width:100px;">✉️ Email</a></div><button onclick="closePage()" style="width:100%; background:linear-gradient(135deg,#1a237e,#283593); border:none; padding:12px 24px; border-radius:12px; color:#fff; font-weight:700; cursor:pointer;">🏠 Back to Home</button></div></div></div>
-    <div id="privacyPage" style="display:none;"><div style="max-width:480px; margin:0 auto; padding:20px;"><div style="background:rgba(255,255,255,0.04); border-radius:20px; padding:24px; border:1px solid rgba(255,255,255,0.06);"><h1 style="color:#4ECDC4; font-size:28px; margin-bottom:6px;">🔒 Privacy <span style="color:#FF6B35;">Policy</span></h1><p style="font-size:13px; color:rgba(255,255,255,0.3); margin-bottom:16px;">Your privacy matters to us</p><h2 style="color:#FFD93D; font-size:16px; margin-top:14px; margin-bottom:6px;">1. Introduction</h2><p style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; margin-bottom:10px;">NnlGharPro ("we", "our", "us") respects your privacy. This Privacy Policy explains how we collect, use, and protect your personal information when you use our platform.</p><h2 style="color:#FFD93D; font-size:16px; margin-top:14px; margin-bottom:6px;">2. Information We Collect</h2><ul style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; padding-left:18px; margin-bottom:10px;"><li><strong style="color:#fff;">Personal Information:</strong> Name, email, phone number, address</li><li><strong style="color:#fff;">Service Details:</strong> Booking history, service preferences</li><li><strong style="color:#fff;">Payment Information:</strong> UPI ID, transaction details</li><li><strong style="color:#fff;">Device Information:</strong> IP address, browser type, device type</li></ul><h2 style="color:#FFD93D; font-size:16px; margin-top:14px; margin-bottom:6px;">3. How We Use Your Information</h2><ul style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; padding-left:18px; margin-bottom:10px;"><li>✅ To provide and improve our services</li><li>✅ To process bookings and payments</li><li>✅ To communicate with you about your bookings</li><li>✅ To send service updates and notifications</li><li>✅ To ensure platform security and prevent fraud</li></ul><h2 style="color:#FFD93D; font-size:16px; margin-top:14px; margin-bottom:6px;">4. Information Sharing</h2><p style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; margin-bottom:10px;">We do <strong style="color:#FF4757;">not</strong> sell or share your personal information with third parties except:</p><ul style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; padding-left:18px; margin-bottom:10px;"><li>With service providers to complete your booking</li><li>When required by law or legal process</li><li>With your explicit consent</li></ul><h2 style="color:#FFD93D; font-size:16px; margin-top:14px; margin-bottom:6px;">5. Data Security</h2><ul style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; padding-left:18px; margin-bottom:10px;"><li>🔐 SSL encryption (HTTPS)</li><li>🔐 Secure Firebase authentication</li><li>🔐 Regular security audits</li><li>🔐 Limited employee access to user data</li></ul><h2 style="color:#FFD93D; font-size:16px; margin-top:14px; margin-bottom:6px;">6. Your Rights</h2><ul style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; padding-left:18px; margin-bottom:10px;"><li>Access your personal data</li><li>Correct inaccurate data</li><li>Request data deletion</li><li>Opt-out of marketing communications</li></ul><h2 style="color:#FFD93D; font-size:16px; margin-top:14px; margin-bottom:6px;">7. Contact Us</h2><p style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; margin-bottom:10px;">For any privacy-related questions, contact us at:<br>📞 <a href="tel:+919588562553" style="color:#4ECDC4; text-decoration:none;">9588562553</a><br>📧 <a href="mailto:nnlgharpro@gmail.com" style="color:#4ECDC4; text-decoration:none;">nnlgharpro@gmail.com</a></p><div style="font-size:11px; color:rgba(255,255,255,0.2); margin-top:16px;">Last Updated: August 28, 2024</div><button onclick="closePage()" style="margin-top:16px; width:100%; background:linear-gradient(135deg,#1a237e,#283593); border:none; padding:12px 24px; border-radius:12px; color:#fff; font-weight:700; cursor:pointer;">🏠 Back to Home</button></div></div></div>
-    <div id="termsPage" style="display:none;"><div style="max-width:480px; margin:0 auto; padding:20px;"><div style="background:rgba(255,255,255,0.04); border-radius:20px; padding:24px; border:1px solid rgba(255,255,255,0.06);"><h1 style="color:#4ECDC4; font-size:28px; margin-bottom:6px;">📋 Terms & <span style="color:#FF6B35;">Conditions</span></h1><p style="font-size:13px; color:rgba(255,255,255,0.3); margin-bottom:16px;">Please read these terms carefully</p><h2 style="color:#FFD93D; font-size:16px; margin-top:14px; margin-bottom:6px;">1. Acceptance of Terms</h2><p style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; margin-bottom:10px;">By using NnlGharPro, you agree to these Terms & Conditions. If you do not agree, please do not use our platform.</p><h2 style="color:#FFD93D; font-size:16px; margin-top:14px; margin-bottom:6px;">2. Services</h2><p style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; margin-bottom:10px;">NnlGharPro connects customers with verified service providers. We facilitate bookings but are not responsible for the quality of services provided by third-party professionals.</p><h2 style="color:#FFD93D; font-size:16px; margin-top:14px; margin-bottom:6px;">3. User Responsibilities</h2><ul style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; padding-left:18px; margin-bottom:10px;"><li>Provide accurate and complete information</li><li>Maintain confidentiality of your account</li><li>Not use the platform for illegal purposes</li><li>Not harass or harm service providers</li><li>Pay for services as agreed</li></ul><h2 style="color:#FFD93D; font-size:16px; margin-top:14px; margin-bottom:6px;">4. Payments</h2><ul style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; padding-left:18px; margin-bottom:10px;"><li>Payments are processed through Razorpay</li><li>All prices are in Indian Rupees (INR)</li><li>Refunds are subject to provider policy</li><li>We are not responsible for payment failures</li></ul><h2 style="color:#FFD93D; font-size:16px; margin-top:14px; margin-bottom:6px;">5. Cancellation Policy</h2><ul style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; padding-left:18px; margin-bottom:10px;"><li>Customers can cancel up to 2 hours before service</li><li>Cancellation fees may apply</li><li>Providers can cancel due to emergencies</li></ul><h2 style="color:#FFD93D; font-size:16px; margin-top:14px; margin-bottom:6px;">6. Disclaimer</h2><p style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; margin-bottom:10px;">NnlGharPro provides services <span style="color:#FFD93D;">"as is"</span> and <span style="color:#FFD93D;">"as available"</span>. We do not guarantee that services will meet your expectations.</p><h2 style="color:#FFD93D; font-size:16px; margin-top:14px; margin-bottom:6px;">7. Limitation of Liability</h2><p style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; margin-bottom:10px;">NnlGharPro is not liable for any damages arising from:</p><ul style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; padding-left:18px; margin-bottom:10px;"><li>Service provider performance</li><li>Payment processing errors</li><li>Third-party actions</li><li>Technical issues</li></ul><h2 style="color:#FFD93D; font-size:16px; margin-top:14px; margin-bottom:6px;">8. Governing Law</h2><p style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; margin-bottom:10px;">These terms are governed by the laws of <span style="color:#4ECDC4; font-weight:600;">India</span>. Any disputes will be resolved in Indian courts.</p><h2 style="color:#FFD93D; font-size:16px; margin-top:14px; margin-bottom:6px;">9. Contact Us</h2><p style="color:rgba(255,255,255,0.5); line-height:1.7; font-size:13px; margin-bottom:10px;">For any questions about these terms:<br>📞 <a href="tel:+919588562553" style="color:#4ECDC4; text-decoration:none;">9588562553</a><br>📧 <a href="mailto:nnlgharpro@gmail.com" style="color:#4ECDC4; text-decoration:none;">nnlgharpro@gmail.com</a></p><div style="font-size:11px; color:rgba(255,255,255,0.2); margin-top:16px;">Last Updated: August 28, 2024</div><button onclick="closePage()" style="margin-top:16px; width:100%; background:linear-gradient(135deg,#1a237e,#283593); border:none; padding:12px 24px; border-radius:12px; color:#fff; font-weight:700; cursor:pointer;">🏠 Back to Home</button></div></div></div>
-
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
     <script>
         // ============================================================
-        // SECURITY
+        // 🔒 SECURITY
         // ============================================================
         document.addEventListener('contextmenu', function(e) { e.preventDefault(); showToast('🔒 Right-click disabled', true); });
         document.addEventListener('keydown', function(e) {
@@ -609,13 +593,13 @@
         const auth = firebase.auth();
 
         // ============================================================
-        // 🔥 RAZORPAY LIVE CONFIG - UPDATE YOUR SECRET KEY HERE
+        // 🔥 RAZORPAY LIVE CONFIG
         // ============================================================
-       const RAZORPAY_CONFIG = {
-    KEY_ID: "rzp_live_TZVMRcs8uXxici",  // 🔥 LIVE Key ID
-    KEY_SECRET: "Wloz0yWfmxPwT3Um8Maw93P4",  // 🔥 LIVE Key Secret
-    WEBHOOK_SECRET: "nnlgharpro@123456" // 🔥
-};
+        const RAZORPAY_CONFIG = {
+            KEY_ID: "rzp_live_TZVMRcs8uXxici",
+            KEY_SECRET: "Wloz0yWfmxPwT3Um8Maw93P4",
+            WEBHOOK_SECRET: "nnlgharpro@123456"
+        };
 
         // ============================================================
         // GLOBALS
@@ -634,9 +618,6 @@
         let currentPaymentStatus = '';
         let selectedPaymentOption = 'online';
 
-        // ============================================================
-        // TOAST & DEBUG
-        // ============================================================
         function showToast(msg, err = false) {
             const t = document.getElementById('toast');
             t.textContent = msg;
@@ -653,9 +634,6 @@
             console.log('DEBUG:', msg);
         }
 
-        // ============================================================
-        // PAYMENT OPTION SELECT
-        // ============================================================
         window.selectPaymentOption = function(option) {
             selectedPaymentOption = option;
             
@@ -676,9 +654,6 @@
             }
         };
 
-        // ============================================================
-        // LOGIN FUNCTIONS
-        // ============================================================
         window.toggleAuthMode = function() {
             isLoginMode = !isLoginMode;
             const btn = document.getElementById('loginBtn');
@@ -786,10 +761,6 @@
             setInterval(updateWeather, 300000);
             showToast('✅ Welcome, ' + (currentUser.displayName || currentUser.email || 'User') + '!');
             updateDebug('Logged in as: ' + currentUser.email);
-            document.getElementById('aboutPage').style.display = 'none';
-            document.getElementById('contactPage').style.display = 'none';
-            document.getElementById('privacyPage').style.display = 'none';
-            document.getElementById('termsPage').style.display = 'none';
         }
 
         window.logoutUser = function() {
@@ -798,10 +769,6 @@
             document.getElementById('mainApp').style.display = 'none';
             document.getElementById('loginOverlay').classList.remove('hidden');
             showToast('Logged out');
-            document.getElementById('aboutPage').style.display = 'none';
-            document.getElementById('contactPage').style.display = 'none';
-            document.getElementById('privacyPage').style.display = 'none';
-            document.getElementById('termsPage').style.display = 'none';
         };
 
         document.getElementById('loginEmail').addEventListener('keyup', function(e) {
@@ -811,9 +778,6 @@
             if (e.key === 'Enter') loginUser();
         });
 
-        // ============================================================
-        // DATE, TIME & WEATHER
-        // ============================================================
         function updateDateTime() {
             const now = new Date();
             const options = { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' };
@@ -832,9 +796,6 @@
             document.getElementById('weatherTemp').textContent = w.temp + '°C';
         }
 
-        // ============================================================
-        // BROADCAST
-        // ============================================================
         async function loadBroadcast() {
             try {
                 const doc = await db.collection('broadcast').doc('current').get();
@@ -850,9 +811,6 @@
 
         function closeBroadcast() { document.getElementById('broadcastBanner').classList.remove('show'); }
 
-        // ============================================================
-        // E-COMMERCE
-        // ============================================================
         window.openEcommerceModal = async function() {
             if (!currentUser) { showToast('Please login first!', true); return; }
             document.getElementById('ecommerceModal').classList.add('show');
@@ -891,9 +849,6 @@
             }
         }
 
-        // ============================================================
-        // SELECT SERVICE
-        // ============================================================
         window.selectService = function(service) {
             if (!currentUser) { showToast('Please login first!', true); return; }
             if (service === 'E-Commerce') { openEcommerceModal(); return; }
@@ -916,9 +871,6 @@
             }
         };
 
-        // ============================================================
-        // SEARCH SERVICES - FAST OPTIMIZED
-        // ============================================================
         window.searchServices = async function() {
             if (!selectedService) { showToast('Please select a service first!', true); return; }
 
@@ -962,7 +914,7 @@
                     updateDebug('⚠️ No providers in DB! Using DEMO providers for testing.', 'warning');
                     allProviders = [
                         { id: 'demo1', name: 'Ramesh Plumbing Services', phone: '9876543210', pincode: '123001', servicePincodes: ['123001'], services: 'Plumbing, Electrician, Insurance, AC Repair', rating: '4.8', status: 'active', upiId: 'ramesh@upi', website: 'https://rameshplumbing.com', onboardStatus: 'active' },
-                        { id: 'demo2', name: 'Singh Insurance Agency', phone: '9876543211', pincode: '123001', servicePincodes: ['123001', '110001'], services: 'Insurance, Taxi, Hotel, Car Wash', rating: '4.6', status: 'active', upiId: 'singh@upi', website: 'https://singhinsurance.in', onboardStatus: 'pending' },
+                        { id: 'demo2', name: 'Singh Insurance Agency', phone: '9876543211', pincode: '123001', servicePincodes: ['123001', '110001'], services: 'Insurance, Taxi, Hotel, Local Bazar', rating: '4.6', status: 'active', upiId: 'singh@upi', website: 'https://singhinsurance.in', onboardStatus: 'pending' },
                         { id: 'demo3', name: 'Kumar Electrician & AC', phone: '9876543212', pincode: '123001', servicePincodes: ['123001'], services: 'Electrician, AC Repair, TV Repair, CCTV', rating: '4.9', status: 'active', upiId: 'kumar@upi', website: 'https://kumarelectrician.com', onboardStatus: 'active' },
                         { id: 'demo4', name: 'Gupta General Services', phone: '9876543213', pincode: '123001', servicePincodes: ['123001'], services: 'all', rating: '4.5', status: 'active', upiId: 'gupta@upi', website: '', onboardStatus: 'inactive' },
                         { id: 'demo5', name: 'Verma Insurance Solutions', phone: '9876543214', pincode: '123001', servicePincodes: ['123001'], services: 'Insurance, Home Decor, Painting', rating: '4.7', status: 'active', upiId: 'verma@upi', website: 'https://vermainssurance.com', onboardStatus: 'active' },
@@ -1047,9 +999,6 @@
             }
         };
 
-        // ============================================================
-        // SELECT PROVIDER
-        // ============================================================
         window.selectProvider = async function(id) {
             selectedProviderId = id;
             selectedProviderData = allProviders.find(p => p.id === id);
@@ -1112,9 +1061,6 @@
             updateSelectedItemsSummary();
         };
 
-        // ============================================================
-        // LOAD PROVIDER ITEMS - FAST & OPTIMIZED
-        // ============================================================
         async function loadProviderItems(providerId) {
             try {
                 updateDebug('🔄 Fetching items for ' + (selectedProviderData ? selectedProviderData.name : providerId) + '...');
@@ -1123,7 +1069,6 @@
                 let rawItems = [];
                 let allSubItems = [];
                 
-                // 1. CHECK providerItems COLLECTION
                 console.log('📦 Checking providerItems collection...');
                 const snap1 = await db.collection('providerItems')
                     .where('providerId', '==', providerId)
@@ -1132,8 +1077,6 @@
                 console.log(`📦 providerItems collection: ${snap1.size} items found`);
                 snap1.forEach(doc => {
                     const data = doc.data();
-                    console.log(`  ├── ${data.name || 'Unnamed'} (isMain: ${data.isMain})`);
-                    console.log(`  │   subItems:`, data.subItems || 'None');
                     if (data && data.name && data.name !== 'undefined' && data.name.trim() !== '') {
                         rawItems.push({ id: doc.id, ...data });
                         if (data.subItems && Array.isArray(data.subItems)) {
@@ -1144,7 +1087,6 @@
                     }
                 });
                 
-                // 2. IF NOT FOUND, CHECK providers/{id}/items
                 if (rawItems.length === 0) {
                     console.log('📦 No items in providerItems, checking providers subcollection...');
                     const snap2 = await db.collection('providers')
@@ -1152,11 +1094,8 @@
                         .collection('items')
                         .get();
                     
-                    console.log(`📦 providers/{id}/items subcollection: ${snap2.size} items found`);
                     snap2.forEach(doc => {
                         const data = doc.data();
-                        console.log(`  ├── ${data.name || 'Unnamed'}`);
-                        console.log(`  │   subItems:`, data.subItems || 'None');
                         if (data && data.name && data.name !== 'undefined' && data.name.trim() !== '') {
                             rawItems.push({ id: doc.id, ...data });
                             if (data.subItems && Array.isArray(data.subItems)) {
@@ -1168,9 +1107,7 @@
                     });
                 }
                 
-                // 3. IF NO ITEMS FOUND
                 if (rawItems.length === 0 && allSubItems.length === 0) {
-                    console.log('❌ No items found anywhere!');
                     providerItems = [];
                     document.getElementById('popupItemsList').innerHTML = 
                         '<div style="text-align:center;padding:40px 20px;color:rgba(255,255,255,0.25);">' +
@@ -1182,22 +1119,16 @@
                         '<div style="color:rgba(255,255,255,0.2); font-size:12px; padding:6px 0;">' +
                         '<i class="fas fa-info-circle"></i> No items available</div>';
                     document.getElementById('paymentSection').style.display = 'none';
-                    
                     showToast('ℹ️ No items available for this provider');
                     return providerItems;
                 }
                 
-                console.log('📦 Total raw items found:', rawItems.length);
-                console.log('📦 Total sub-items found:', allSubItems.length);
-                
-                // 4. PROCESS - If we have sub-items but no main items with isMain=true
                 if (rawItems.length > 0 && allSubItems.length > 0) {
                     const hasMainWithSubItems = rawItems.some(item => 
                         item.isMain === true && item.subItems && item.subItems.length > 0
                     );
                     
                     if (!hasMainWithSubItems) {
-                        console.log('📦 Creating main items from sub-items...');
                         const mainName = selectedProviderData ? selectedProviderData.name : 'Services';
                         const syntheticMain = {
                             id: 'synthetic_main_' + Date.now(),
@@ -1214,25 +1145,13 @@
                             createdAt: new Date().toISOString()
                         };
                         rawItems = [syntheticMain];
-                        console.log('✅ Created synthetic main item with sub-items:', syntheticMain.subItems.length);
                     }
                 }
                 
-                // 5. PROCESS ITEMS
                 const mainItems = rawItems.filter(item => item.isMain === true);
-                console.log('📦 Main items:', mainItems.length);
                 
                 if (mainItems.length > 0) {
                     providerItems = rawItems;
-                    console.log('✅ Loaded ' + providerItems.length + ' items with Main structure');
-                    providerItems.forEach(item => {
-                        if (item.isMain && item.subItems) {
-                            console.log(`  📦 ${item.name} has ${item.subItems.length} sub-items`);
-                            item.subItems.forEach(sub => {
-                                console.log(`    🔹 ${sub.name} - ₹${sub.price}`);
-                            });
-                        }
-                    });
                 } else {
                     const grouped = {};
                     rawItems.forEach(item => {
@@ -1241,12 +1160,8 @@
                         grouped[mainKey].push(item);
                     });
                     providerItems = grouped;
-                    console.log('✅ Grouped into ' + Object.keys(grouped).length + ' categories');
                 }
                 
-                console.log('📦 Final providerItems:', providerItems);
-                
-                // 6. SETUP CART
                 cart = {};
                 popupCart = {};
                 
@@ -1257,7 +1172,6 @@
                                 if (sub && sub.id) {
                                     cart[sub.id] = 0;
                                     popupCart[sub.id] = 0;
-                                    console.log(`  🛒 Added to cart: ${sub.name} (${sub.id})`);
                                 }
                             });
                         } else if (item.id) {
@@ -1267,7 +1181,6 @@
                     });
                 }
                 
-                // 7. RENDER ITEMS
                 renderPopupItems();
                 updateSelectedItemsSummary();
                 updateTotalAndPayment();
@@ -1288,14 +1201,8 @@
             }
         }
 
-        // ============================================================
-        // RENDER POPUP ITEMS
-        // ============================================================
         function renderPopupItems() {
             const container = document.getElementById('popupItemsList');
-            
-            console.log('🔄 renderPopupItems() called');
-            console.log('📦 providerItems:', providerItems);
             
             let itemsArray = [];
             if (Array.isArray(providerItems)) {
@@ -1308,16 +1215,12 @@
                 }
             }
             
-            console.log('📦 itemsArray:', itemsArray);
-            
             const validItems = itemsArray.filter(item => 
                 item && 
                 item.name && 
                 item.name !== 'undefined' && 
                 item.name.trim() !== ''
             );
-            
-            console.log('📦 validItems:', validItems);
             
             if (validItems.length === 0) {
                 container.innerHTML = 
@@ -1331,9 +1234,6 @@
 
             const mainItems = validItems.filter(item => item.isMain === true);
             const flatItems = validItems.filter(item => !item.isMain);
-            
-            console.log('📦 mainItems:', mainItems);
-            console.log('📦 flatItems:', flatItems);
             
             if (mainItems.length === 0) {
                 let html = '';
@@ -1367,8 +1267,6 @@
             mainItems.forEach((item, index) => {
                 const subItems = item.subItems || [];
                 const subCount = subItems.length;
-                
-                console.log(`📦 ${item.name} has ${subCount} sub-items:`, subItems);
 
                 html += `
                     <div class="popup-main-item">
@@ -1387,7 +1285,6 @@
                         const qty = popupCart[sub.id] || 0;
                         const subPrice = sub.price || 0;
                         const subName = sub.name || 'Unnamed';
-                        console.log(`  🔹 Rendering sub-item: ${subName} (₹${subPrice})`);
                         html += `
                             <div class="sub-item-row">
                                 <span class="sub-name">${subName}</span>
@@ -1423,9 +1320,6 @@
             updatePopupTotal();
         }
 
-        // ============================================================
-        // TOGGLE SUB-ITEMS
-        // ============================================================
         window.toggleSubItems = function(header) {
             const subItems = header.nextElementSibling;
             const icon = header.querySelector('.main-toggle i');
@@ -1440,9 +1334,6 @@
             }
         };
 
-        // ============================================================
-        // POPUP QTY UPDATE
-        // ============================================================
         window.updatePopupQty = function(itemId, delta) {
             if (!popupCart.hasOwnProperty(itemId)) return;
             popupCart[itemId] = Math.max(0, (popupCart[itemId] || 0) + delta);
@@ -1478,9 +1369,6 @@
             confirmBtn.disabled = total <= 0;
         }
 
-        // ============================================================
-        // OPEN / CLOSE ITEMS POPUP
-        // ============================================================
         window.openItemsPopup = function() {
             for (const [id, qty] of Object.entries(cart)) {
                 popupCart[id] = qty || 0;
@@ -1495,9 +1383,6 @@
             document.body.style.overflow = 'auto';
         };
 
-        // ============================================================
-        // CONFIRM ITEMS SELECTION
-        // ============================================================
         window.confirmItemsSelection = function() {
             let total = 0;
             for (const [id, qty] of Object.entries(popupCart)) {
@@ -1530,9 +1415,6 @@
             showToast('✅ Items selected: ₹' + total);
         };
 
-        // ============================================================
-        // UPDATE SELECTED ITEMS SUMMARY
-        // ============================================================
         function updateSelectedItemsSummary() {
             const container = document.getElementById('selectedItemsSummary');
             let hasItems = false;
@@ -1587,9 +1469,6 @@
             updateTotalAndPayment();
         }
 
-        // ============================================================
-        // UPDATE TOTAL & PAYMENT
-        // ============================================================
         function updateTotalAndPayment() {
             let total = 0;
             let hasItems = false;
@@ -1634,9 +1513,6 @@
             }
         }
 
-        // ============================================================
-        // GET TOTAL & ITEMS SUMMARY
-        // ============================================================
         function getTotal() {
             let total = 0;
             for (const [id, qty] of Object.entries(cart)) {
@@ -1701,21 +1577,18 @@
             const name = document.getElementById('custName').value.trim();
             const mobile = document.getElementById('custMobile').value.trim();
             const address = document.getElementById('custAddress').value.trim();
+            const date = document.getElementById('bookingDate').value;
+            const time = document.getElementById('bookingTime').value;
             
             if (!name || !mobile || !address) {
                 showToast('⚠️ Please fill Name, Mobile & Address first!', true);
                 return;
             }
-            
             if (mobile.length < 10) {
                 showToast('⚠️ Enter a valid 10-digit mobile number!', true);
                 return;
             }
-            
-            const date = document.getElementById('bookingDate').value;
             if (!date) { showToast('⚠️ Please select a booking date!', true); return; }
-            
-            const time = document.getElementById('bookingTime').value;
             if (!time) { showToast('⚠️ Please select a booking time!', true); return; }
             
             const selectedDate = new Date(date + 'T' + (time || '10:00'));
@@ -1723,7 +1596,6 @@
                 showToast('⚠️ Please select a future date and time!', true);
                 return;
             }
-            
             if (selectedProviderData && selectedProviderData.onboardStatus !== 'active') {
                 showToast('⚠️ This provider does not accept online payments. Use "Not Paid" option.', true);
                 return;
@@ -1749,11 +1621,7 @@
             const itemsSummary = getItemsSummary();
             const provider = allProviders.find(p => p.id === selectedProviderId);
             
-            if (!provider) {
-                showToast('❌ Provider not found!', true);
-                return;
-            }
-            
+            if (!provider) { showToast('❌ Provider not found!', true); return; }
             if (isBookingSubmitting) return;
             isBookingSubmitting = true;
             showLoading(true);
@@ -1812,9 +1680,7 @@
                                 provider: provider.name,
                                 service: selectedService || ''
                             },
-                            theme: {
-                                color: "#FF6B35"
-                            },
+                            theme: { color: "#FF6B35" },
                             modal: {
                                 ondismiss: function() {
                                     showToast('⚠️ Payment cancelled', true);
@@ -1850,15 +1716,23 @@
         async function verifyRazorpayPayment(bookingId, response) {
             showLoading(true);
             try {
-                await db.collection('bookings').doc(bookingId).update({
+                const updateData = {
                     paymentStatus: 'paid',
                     paymentConfirmed: true,
-                    transactionId: response.razorpay_payment_id,
-                    razorpayOrderId: response.razorpay_order_id,
-                    razorpaySignature: response.razorpay_signature,
+                    transactionId: response.razorpay_payment_id || '',
                     status: 'assigned',
+                    paidAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString()
-                });
+                };
+
+                if (response.razorpay_order_id) {
+                    updateData.razorpayOrderId = response.razorpay_order_id;
+                }
+                if (response.razorpay_signature) {
+                    updateData.razorpaySignature = response.razorpay_signature;
+                }
+
+                await db.collection('bookings').doc(bookingId).update(updateData);
                 
                 showToast('✅ Payment successful! Booking confirmed.');
                 showReceipt(bookingId, 'paid');
@@ -1873,9 +1747,6 @@
             showLoading(false);
         }
 
-        // ============================================================
-        // 🔥 NOT PAID BOOKING (For non-onboarded providers)
-        // ============================================================
         window.processNotPaidBooking = function() {
             const total = getTotal();
             if (total <= 0) { showToast('⚠️ Please select at least one item!', true); return; }
@@ -1888,7 +1759,6 @@
                 showToast('⚠️ Please fill Name, Mobile & Address first!', true);
                 return;
             }
-            
             if (mobile.length < 10) {
                 showToast('⚠️ Enter a valid 10-digit mobile number!', true);
                 return;
@@ -1926,11 +1796,7 @@
             const itemsSummary = getItemsSummary();
             const provider = allProviders.find(p => p.id === selectedProviderId);
             
-            if (!provider) {
-                showToast('❌ Provider not found!', true);
-                return;
-            }
-            
+            if (!provider) { showToast('❌ Provider not found!', true); return; }
             if (isBookingSubmitting) return;
             isBookingSubmitting = true;
             showLoading(true);
@@ -1994,9 +1860,6 @@
             }
         }
 
-        // ============================================================
-        // CHECK EXISTING BOOKING
-        // ============================================================
         async function checkExistingBooking(mobile) {
             if (!mobile) return false;
             try {
@@ -2020,9 +1883,6 @@
             }
         }
 
-        // ============================================================
-        // RECEIPT FUNCTIONS
-        // ============================================================
         function showReceipt(bookingId, paymentStatus) {
             const receipt = document.getElementById('receiptContainer');
             const details = document.getElementById('receiptDetails');
@@ -2036,10 +1896,14 @@
                 let statusColor = '';
                 let statusBg = '';
                 
-                if (paymentStatus === 'paid') {
+                if (data.paymentStatus === 'paid' && data.paymentConfirmed === true) {
                     statusLabel = '✅ PAID';
                     statusColor = '#00C853';
                     statusBg = 'rgba(0,200,83,0.1)';
+                } else if (data.paymentStatus === 'failed') {
+                    statusLabel = '❌ FAILED';
+                    statusColor = '#FF4757';
+                    statusBg = 'rgba(255,71,87,0.1)';
                 } else {
                     statusLabel = '📝 Not Paid';
                     statusColor = '#FFD93D';
@@ -2055,9 +1919,10 @@
                     <div class="receipt-row"><span class="label">Service</span><span class="value">${data.service || 'N/A'}</span></div>
                     <div class="receipt-row"><span class="label">Provider</span><span class="value">${data.providerName || 'N/A'}</span></div>
                     <div class="receipt-row"><span class="label">Items</span><span class="value">${data.items || 'N/A'}</span></div>
+                    <div class="receipt-row"><span class="label">Notes</span><span class="value">${data.customerNotes || 'N/A'}</span></div>
                     <div class="receipt-row"><span class="label">Total Amount</span><span class="value">₹${data.totalAmount || 0}</span></div>
                     <div class="receipt-row"><span class="label">Payment Method</span><span class="value">${data.paymentMethod || 'Razorpay'}</span></div>
-                    <div class="receipt-row"><span class="label">Payment Status</span><span class="value">${paymentStatus === 'paid' ? '✅ Paid' : '📝 Not Paid'}</span></div>
+                    <div class="receipt-row"><span class="label">Payment Status</span><span class="value">${statusLabel}</span></div>
                 `;
                 
                 document.getElementById('receiptTotal').textContent = '₹' + (data.totalAmount || 0);
@@ -2084,9 +1949,6 @@
             currentBookingId = null;
         };
 
-        // ============================================================
-        // LOADING
-        // ============================================================
         function showLoading(show) {
             let el = document.getElementById('loading');
             if (!el) {
@@ -2102,9 +1964,6 @@
             document.getElementById('loading').style.display = show ? 'flex' : 'none';
         }
 
-        // ============================================================
-        // MODAL FUNCTIONS
-        // ============================================================
         window.closeBookingModal = function() {
             document.getElementById('bookingModal').classList.remove('show');
             document.getElementById('providerListContainer').style.display = 'block';
@@ -2120,57 +1979,11 @@
 
         document.getElementById('pincode').addEventListener('keyup', function(e) { if (e.key === 'Enter') searchServices(); });
 
-        // ============================================================
-        // PAGE NAVIGATION
-        // ============================================================
-        function showPage(pageId) {
-            document.getElementById('mainApp').style.display = 'none';
-            document.getElementById('aboutPage').style.display = 'none';
-            document.getElementById('contactPage').style.display = 'none';
-            document.getElementById('privacyPage').style.display = 'none';
-            document.getElementById('termsPage').style.display = 'none';
-            if (pageId) {
-                document.getElementById(pageId).style.display = 'block';
-            } else {
-                document.getElementById('mainApp').style.display = 'block';
-            }
-        }
-
-        function closePage() {
-            showPage(null);
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.footer-links a').forEach(function(link) {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const href = this.getAttribute('href');
-                    if (href === '/about.html') showPage('aboutPage');
-                    else if (href === '/contact.html') showPage('contactPage');
-                    else if (href === '/privacy.html') showPage('privacyPage');
-                    else if (href === '/terms.html') showPage('termsPage');
-                    else if (href.includes('wa.me')) {
-                        window.open(href, '_blank');
-                    }
-                });
-            });
-        });
-
-        // ============================================================
-        // INIT
-        // ============================================================
         checkSession();
         updateDateTime();
         updateWeather();
 
-        console.log('✅ NnlGharPro Customer Portal v26.0 - RAZORPAY INTEGRATED');
-        console.log('📦 Features:');
-        console.log('  1. 🔥 Razorpay Payment Gateway (Live)');
-        console.log('  2. 📝 Not Paid Option for non-onboarded providers');
-        console.log('  3. 💳 Provider Onboarding Status Check');
-        console.log('  4. ✅ Fast & Optimized Performance');
-        console.log('  5. 📋 Complete Booking Flow');
-        console.log('✅ Tech Support: Er.Gaganjeet Singh - 9588562553');
+        console.log('✅ NnlGharPro Customer Portal v28.0 - ALL FIXES');
     </script>
 </body>
 </html>
