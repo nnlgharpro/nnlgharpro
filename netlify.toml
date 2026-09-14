@@ -7,3 +7,8 @@
   from = "/api/smart-collect"
   to = "/.netlify/functions/smart-collect"
   status = 200
+
+[[redirects]]
+  from = "/api/razorpay-webhook"
+  to = "/.netlify/functions/razorpay-webhook"
+  status = 200
