@@ -1,91 +1,146 @@
-const crypto = require('crypto');
+// ═══════════════════════════════════════════════════════════
+// NnlGharPro — Razorpay Webhook Handler (Cloudflare Workers)
+// ═══════════════════════════════════════════════════════════
 
-const WEBHOOK_SECRET = 'nnlgharpro@123456';
-
-exports.handler = async (event) => {
-    const headers = {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type, X-Razorpay-Signature',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS'
-    };
-
-    if (event.httpMethod === 'OPTIONS') {
-        return { statusCode: 200, headers, body: 'OK' };
-    }
-
-    if (event.httpMethod !== 'POST') {
-        return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
-    }
+export async function onRequestPost(context) {
+    const { request, env } = context;
 
     try {
-        const webhookSignature = event.headers['x-razorpay-signature'] || event.headers['X-Razorpay-Signature'] || '';
-        const webhookBody = event.body;
+        const signature = request.headers.get('x-razorpay-signature');
+        const bodyText = await request.text();
 
-        const expectedSignature = crypto
-            .createHmac('sha256', WEBHOOK_SECRET)
-            .update(webhookBody)
-            .digest('hex');
-
-        if (webhookSignature !== expectedSignature) {
-            return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid signature' }) };
+        if (!signature) {
+            return new Response(JSON.stringify({ error: 'No signature' }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' }
+            });
         }
 
-        const eventData = JSON.parse(webhookBody);
-        const eventType = eventData.event || '';
+        const webhookSecret = env.RAZORPAY_WEBHOOK_SECRET || 'nnlgharpro@123456';
+        const isValid = await verifySignature(bodyText, signature, webhookSecret);
 
-        if (eventType === 'payment.captured' || eventType === 'payment.authorized') {
-            const paymentEntity = eventData.payload.payment.entity;
-            const paymentId = paymentEntity.id;
-            const notes = paymentEntity.notes || {};
+        if (!isValid) {
+            console.error('❌ Invalid signature');
+            return new Response(JSON.stringify({ error: 'Invalid signature' }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        const eventData = JSON.parse(bodyText);
+        const eventType = eventData.event || '';
+        console.log('✅ Webhook received:', eventType);
+
+        if (eventType === 'payment.captured') {
+            const payment = eventData.payload.payment.entity;
+            const notes = payment.notes || {};
             const bookingId = notes.bookingId || '';
+            console.log('💰 Payment captured:', payment.id, '| Booking:', bookingId);
 
             if (bookingId) {
-                const projectId = 'gharproindia';
-                const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/bookings/${bookingId}?updateMask.fieldPaths=paymentStatus&updateMask.fieldPaths=paymentConfirmed&updateMask.fieldPaths=transactionId&updateMask.fieldPaths=status&updateMask.fieldPaths=paidAt&updateMask.fieldPaths=updatedAt`;
-
-                await fetch(firestoreUrl, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        fields: {
-                            paymentStatus: { stringValue: 'paid' },
-                            paymentConfirmed: { booleanValue: true },
-                            transactionId: { stringValue: paymentId },
-                            status: { stringValue: 'assigned' },
-                            paidAt: { stringValue: new Date().toISOString() },
-                            updatedAt: { stringValue: new Date().toISOString() }
-                        }
-                    })
-                });
+                await updateFirestore(bookingId, {
+                    paymentStatus: 'paid',
+                    paymentConfirmed: true,
+                    transactionId: payment.id,
+                    status: 'assigned',
+                    paidAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    webhookVerified: true
+                }, env);
             }
         }
 
         if (eventType === 'payment.failed') {
-            const paymentEntity = eventData.payload.payment.entity;
-            const notes = paymentEntity.notes || {};
+            const payment = eventData.payload.payment.entity;
+            const notes = payment.notes || {};
             const bookingId = notes.bookingId || '';
+            console.log('❌ Payment failed:', payment.id, '| Booking:', bookingId);
 
             if (bookingId) {
-                const projectId = 'gharproindia';
-                const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/bookings/${bookingId}?updateMask.fieldPaths=paymentStatus&updateMask.fieldPaths=paymentConfirmed&updateMask.fieldPaths=updatedAt`;
-
-                await fetch(firestoreUrl, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        fields: {
-                            paymentStatus: { stringValue: 'failed' },
-                            paymentConfirmed: { booleanValue: false },
-                            updatedAt: { stringValue: new Date().toISOString() }
-                        }
-                    })
-                });
+                await updateFirestore(bookingId, {
+                    paymentStatus: 'failed',
+                    paymentConfirmed: false,
+                    updatedAt: new Date().toISOString()
+                }, env);
             }
         }
 
-        return { statusCode: 200, headers, body: JSON.stringify({ status: 'ok' }) };
+        return new Response(JSON.stringify({ status: 'ok' }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' }
+        });
 
     } catch (error) {
-        return { statusCode: 500, headers, body: JSON.stringify({ error: error.message }) };
+        console.error('❌ Webhook error:', error.message);
+        return new Response(JSON.stringify({ error: error.message }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+        });
     }
-};
+}
+
+// ═══════════════════════════════════════════════════════════
+// Verify signature using Web Crypto API
+// ═══════════════════════════════════════════════════════════
+async function verifySignature(body, signature, secret) {
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+        'raw',
+        encoder.encode(secret),
+        { name: 'HMAC', hash: 'SHA-256' },
+        false,
+        ['sign']
+    );
+    const sigBuffer = await crypto.subtle.sign('HMAC', key, encoder.encode(body));
+    const expectedSig = [...new Uint8Array(sigBuffer)]
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+    return signature === expectedSig;
+}
+
+// ═══════════════════════════════════════════════════════════
+// Update Firestore via REST API
+// ═══════════════════════════════════════════════════════════
+async function updateFirestore(bookingId, data, env) {
+    const projectId = env.FIREBASE_PROJECT_ID || 'gharproindia';
+    const fieldPaths = Object.keys(data).map(k => `updateMask.fieldPaths=${k}`).join('&');
+    const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/bookings/${bookingId}?${fieldPaths}`;
+
+    const fields = {};
+    for (const [key, value] of Object.entries(data)) {
+        if (typeof value === 'string') {
+            fields[key] = { stringValue: value };
+        } else if (typeof value === 'boolean') {
+            fields[key] = { booleanValue: value };
+        } else if (typeof value === 'number') {
+            fields[key] = { integerValue: value.toString() };
+        }
+    }
+
+    const response = await fetch(url, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fields })
+    });
+
+    if (!response.ok) {
+        const err = await response.text();
+        console.error('❌ Firestore update failed:', err);
+        throw new Error('Firestore update failed');
+    }
+    console.log('✅ Firestore updated:', bookingId);
+}
+
+// ═══════════════════════════════════════════════════════════
+// GET handler (for testing)
+// ═══════════════════════════════════════════════════════════
+export async function onRequestGet(context) {
+    return new Response(JSON.stringify({
+        status: 'ok',
+        message: 'Razorpay Webhook is running',
+        info: 'POST requests only for webhook events'
+    }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+    });
+}
