@@ -1,14 +1,1 @@
-[build]
-  publish = "."
-  functions = "functions"
-  environment = { SECRETS_SCAN_ENABLED = "false" }
 
-[[redirects]]
-  from = "/api/smart-collect"
-  to = "/.netlify/functions/smart-collect"
-  status = 200
-
-[[redirects]]
-  from = "/api/razorpay-webhook"
-  to = "/.netlify/functions/razorpay-webhook"
-  status = 200
