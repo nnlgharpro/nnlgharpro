@@ -66,6 +66,7 @@ input,textarea{user-select:text;-webkit-user-select:text}
 .detail-row i{width:18px;color:#4ECDC4}
 .status-badge{padding:3px 12px;border-radius:12px;font-size:10px;font-weight:600;display:inline-block}
 .status-pending{background:rgba(255,152,0,.15);color:#FF9800}
+.status-assigned{background:rgba(52,152,219,.15);color:#3498db}
 .status-accepted{background:rgba(78,205,196,.15);color:#4ECDC4}
 .status-rejected{background:rgba(255,71,87,.15);color:#FF4757}
 .status-completed{background:rgba(0,200,83,.15);color:#00C853}
@@ -97,6 +98,7 @@ input,textarea{user-select:text;-webkit-user-select:text}
 .call-reject{background:linear-gradient(135deg,#FF4757,#FF6B6B);color:#fff}
 .call-timer{font-size:14px;color:rgba(255,255,255,.3);margin-top:12px;font-weight:600}
 .call-ringing{font-size:12px;color:#4ECDC4;margin-top:8px}
+.queue-info{font-size:11px;color:rgba(255,217,61,.8);margin-top:8px;background:rgba(255,217,61,.08);padding:4px 12px;border-radius:12px;display:inline-block}
 .login-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#0a0a2a,#1a1a4e);display:flex;justify-content:center;align-items:center;z-index:1000;padding:20px;overflow-y:auto}
 .login-screen.hidden{display:none}
 .login-box{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:30px;padding:36px 28px;width:92%;max-width:380px;text-align:center}
@@ -125,13 +127,14 @@ input,textarea{user-select:text;-webkit-user-select:text}
 .form-group input,.form-group select{width:100%;padding:10px 14px;border:1px solid rgba(255,255,255,.06);border-radius:10px;background:rgba(255,255,255,.03);color:#fff;font-size:14px;outline:none}
 .form-group input:focus{border-color:#4ECDC4}
 .onboard-status-box{background:rgba(78,205,196,.08);border:1px solid rgba(78,205,196,.2);border-radius:12px;padding:14px;margin-bottom:14px;font-size:13px;color:rgba(255,255,255,.8);text-align:center}
-@media(max-width:420px){.stats{grid-template-columns:1fr 1fr}.tabs{flex-wrap:wrap}.tab-btn{font-size:10px;padding:8px 4px;min-width:50px}}
+@media(max-width:420px){.stats{grid-template-columns:1fr 1fr}.tabs{flex-wrap:wrap}.tab-btn{font-size:10px;padding:8px 4px;min-width:50px}.call-actions button{width:60px;height:60px;font-size:24px}}
 </style>
 </head>
 <body>
 
 <div id="toast" class="toast"></div>
 
+<!-- CALLING OVERLAY (Zomato Style) -->
 <div class="calling-overlay" id="callingOverlay">
     <div class="calling-box">
         <div class="call-counter" id="callCounter">1 of 1</div>
@@ -145,9 +148,11 @@ input,textarea{user-select:text;-webkit-user-select:text}
             <button class="call-reject" onclick="rejectLeadFromCall()">❌</button>
         </div>
         <div class="call-timer" id="callTimer">⏱️ 0s</div>
+        <div class="queue-info" id="queueInfo"></div>
     </div>
 </div>
 
+<!-- BLOCKED OVERLAY -->
 <div class="blocked-overlay" id="blockedOverlay">
     <div class="blocked-box">
         <span class="lock-icon">🔒</span>
@@ -203,7 +208,7 @@ input,textarea{user-select:text;-webkit-user-select:text}
     </div>
 
     <div class="stats">
-        <div class="stat-box"><div class="stat-number" id="totalEarnings">₹0</div><div class="stat-label">💰 Earnings</div></div>
+        <div class="stat-box"><div class="stat-number" id="totalEarnings">₹0</div><div class="stat-label">💰 Earnings (95%)</div></div>
         <div class="stat-box"><div class="stat-number" id="totalOrders">0</div><div class="stat-label">📦 Orders</div></div>
     </div>
 
@@ -323,6 +328,8 @@ let pendingLeadId = null;
 let callTimerInterval = null;
 let autoReleaseTimeout = null;
 let sessionCheckInterval = null;
+let audioContext = null;
+let bellInterval = null;
 
 // ═══════════════════════════════════════════════════════════
 // 🔐 SIMPLE HASH FUNCTION
@@ -366,6 +373,45 @@ function openModal(title, html) {
 function closeModal() { document.getElementById('modalOverlay').classList.remove('show'); }
 
 // ═══════════════════════════════════════════════════════════
+// 🔔 RINGING SOUND (Zomato Style)
+// ═══════════════════════════════════════════════════════════
+function playRingingSound() {
+    try {
+        if (!audioContext) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        const now = audioContext.currentTime;
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        osc.frequency.value = 1600;
+        osc.type = 'square';
+        gain.gain.value = 0.3;
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+        osc.start(now);
+        osc.stop(now + 0.3);
+    } catch(e) { console.log('Audio not supported'); }
+}
+
+function startBellLoop() {
+    if (bellInterval) clearInterval(bellInterval);
+    playRingingSound();
+    bellInterval = setInterval(() => {
+        if (document.getElementById('callingOverlay').classList.contains('show')) {
+            playRingingSound();
+        } else {
+            clearInterval(bellInterval);
+            bellInterval = null;
+        }
+    }, 1500);
+}
+
+function stopBellLoop() {
+    if (bellInterval) { clearInterval(bellInterval); bellInterval = null; }
+}
+
+// ═══════════════════════════════════════════════════════════
 // WHATSAPP HELPERS
 // ═══════════════════════════════════════════════════════════
 function cleanMobile(mobile) {
@@ -382,17 +428,38 @@ function sendWhatsApp(mobile, message) {
 }
 
 function buildAcceptMessage(lead) {
-    return `🔔 *Aapka Order ACCEPT ho gaya!*\n\n👤 *Provider:* ${currentUser.name || 'Provider'}\n🔧 *Service:* ${lead.service || '-'}\n💰 *Amount:* ₹${lead.amount || 0}\n📅 *Date:* ${new Date().toLocaleString('en-IN')}\n\nProvider aapko jaldi call karega.\n\n_NnlGharPro - 9588562553_`;
+    return `🔔 *Aapka Order ACCEPT ho gaya!*\n\n` +
+        `👤 *Provider:* ${currentUser.name || 'Provider'}\n` +
+        `🔧 *Service:* ${lead.service || '-'}\n` +
+        `💰 *Amount:* ₹${lead.totalAmount || lead.amount || 0}\n` +
+        `📅 *Date:* ${lead.bookingDate || 'N/A'}\n` +
+        `⏰ *Time:* ${lead.bookingTime || 'N/A'}\n\n` +
+        `Provider aapko jaldi call karega.\n\n` +
+        `_NnlGharPro - 9588562553_`;
 }
 function buildReceiptMessage(lead, orderId) {
-    return `✅ *Order COMPLETE!*\n\n📋 *Order ID:* #${String(orderId).slice(-6).toUpperCase()}\n🔧 *Service:* ${lead.service || '-'}\n👤 *Provider:* ${currentUser.name || 'Provider'}\n💰 *Total:* ₹${lead.amount || 0}\n📅 *Date:* ${new Date().toLocaleDateString('en-IN')}\n\nThank you for choosing *NnlGharPro*! 🙏\n\n_NnlGharPro - 9588562553_`;
+    const amount = lead.totalAmount || lead.amount || 0;
+    return `✅ *Order COMPLETE!*\n\n` +
+        `📋 *Order ID:* #${String(orderId).slice(-6).toUpperCase()}\n` +
+        `🔧 *Service:* ${lead.service || '-'}\n` +
+        `👤 *Provider:* ${currentUser.name || 'Provider'}\n` +
+        `💰 *Total:* ₹${amount}\n` +
+        `📅 *Date:* ${new Date().toLocaleDateString('en-IN')}\n` +
+        `⏰ *Time:* ${new Date().toLocaleTimeString('en-IN')}\n\n` +
+        `Thank you for choosing *NnlGharPro*! 🙏\n\n` +
+        `_NnlGharPro - 9588562553_`;
 }
 function buildRejectMessage(lead) {
-    return `⚠️ *Order Cancelled*\n\n🔧 *Service:* ${lead.service || '-'}\n💰 *Amount:* ₹${lead.amount || 0}\n\nSorry, provider is currently unavailable.\n\n🔄 *Please book again*\n\n_NnlGharPro - 9588562553_`;
+    return `⚠️ *Order Cancelled*\n\n` +
+        `🔧 *Service:* ${lead.service || '-'}\n` +
+        `💰 *Amount:* ₹${lead.totalAmount || lead.amount || 0}\n\n` +
+        `Sorry, provider is currently unavailable.\n\n` +
+        `🔄 *Please book again*\n\n` +
+        `_NnlGharPro - 9588562553_`;
 }
 
 // ═══════════════════════════════════════════════════════════
-// 🔐 LOGIN (PURANA — Firestore Based + Hashed)
+// LOGIN
 // ═══════════════════════════════════════════════════════════
 window.providerLogin = async function() {
     const email = document.getElementById('loginEmail').value.trim().toLowerCase();
@@ -444,7 +511,6 @@ window.providerLogin = async function() {
     showLoading(false);
 };
 
-// 🔑 FORGOT PASSWORD (WhatsApp — Naya Password)
 window.forgotPassword = async function() {
     const email = document.getElementById('loginEmail').value.trim().toLowerCase();
     const errorEl = document.getElementById('loginError');
@@ -546,6 +612,7 @@ window.logout = async function() {
     if (currentUser) try { await db.collection('providers').doc(currentUser.id).update({ currentSession: '' }); } catch(e) {}
     localStorage.removeItem('gharpro_session');
     if (sessionCheckInterval) clearInterval(sessionCheckInterval);
+    stopBellLoop();
     hideCallingOverlay();
     location.reload();
 };
@@ -574,7 +641,9 @@ function switchTab(tab, e) {
     });
 }
 
+// ═══════════════════════════════════════════════════════════
 // SUBSCRIPTION
+// ═══════════════════════════════════════════════════════════
 function loadSubscription() {
     db.collection('providers').doc(currentUser.id).onSnapshot(doc => {
         const statusEl = document.getElementById('subStatus');
@@ -638,7 +707,7 @@ function cancelSubscription() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// ITEMS — WITH AUTO ID GENERATION
+// ITEMS
 // ═══════════════════════════════════════════════════════════
 function loadItems() {
     db.collection('items').where('providerId', '==', currentUser.id).onSnapshot(snap => {
@@ -731,21 +800,12 @@ function saveSubItem(id) {
     const item = providerItems.find(i => i.id === id);
     const subItems = item.subItems || [];
     
-    // ✅ UNIQUE ID GENERATE
     const subId = 'sub_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
     
-    subItems.push({ 
-        id: subId,
-        name: name, 
-        price: price, 
-        hidden: false 
-    });
+    subItems.push({ id: subId, name, price, hidden: false });
     
     db.collection('items').doc(id).update({ subItems })
-        .then(() => { 
-            closeModal(); 
-            showToast('✅ Sub item added'); 
-        });
+        .then(() => { closeModal(); showToast('✅ Sub item added'); });
 }
 
 function editSubItem(id, index) {
@@ -764,12 +824,7 @@ function updateSubItem(id, index) {
     const item = providerItems.find(i => i.id === id);
     const existingSub = item.subItems[index];
     
-    // Preserve existing ID
-    item.subItems[index] = { 
-        ...existingSub,
-        name, 
-        price 
-    };
+    item.subItems[index] = { ...existingSub, name, price };
     
     db.collection('items').doc(id).update({ subItems: item.subItems })
         .then(() => { closeModal(); showToast('✅ Updated'); });
@@ -782,78 +837,173 @@ function deleteSubItem(id, index) {
     db.collection('items').doc(id).update({ subItems: item.subItems }).then(() => showToast('🗑️ Deleted'));
 }
 
-// LEADS
+// ═══════════════════════════════════════════════════════════
+// 🔥 FIX 1: LEADS — Listen to 'pending' AND 'assigned'
+// ═══════════════════════════════════════════════════════════
 function loadLeads() {
-    db.collection('bookings').where('providerId', '==', currentUser.id).onSnapshot(snap => {
+    db.collection('bookings')
+      .where('providerId', '==', currentUser.id)
+      .onSnapshot(snap => {
         allBookings = [];
         snap.forEach(d => allBookings.push({ id: d.id, ...d.data() }));
+        
         allBookings.sort((a, b) => {
-            const at = a.createdAt?.toMillis ? a.createdAt.toMillis() : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
-            const bt = b.createdAt?.toMillis ? b.createdAt.toMillis() : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
+            const at = a.createdAt?.toMillis ? a.createdAt.toMillis() : 
+                       (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+            const bt = b.createdAt?.toMillis ? b.createdAt.toMillis() : 
+                       (b.createdAt ? new Date(b.createdAt).getTime() : 0);
             return bt - at;
         });
+        
         renderLeads();
         updateLeadBadge();
+        loadEarnings();  // ✅ Refresh earnings bhi
     });
 }
 
 function updateLeadBadge() {
-    const pending = allBookings.filter(b => b.status === 'pending').length;
+    const pending = allBookings.filter(b => 
+        b.status === 'pending' || b.status === 'assigned'
+    ).length;
     document.getElementById('leadCounterBadge').textContent = pending + ' Pending';
 }
 
+// ✅ FIXED: Full WhatsApp buttons
 function renderLeads() {
     const list = document.getElementById('leadsList');
-    if (!allBookings.length) { list.innerHTML = '<div class="empty-msg"><span class="icon">📋</span>No leads yet</div>'; return; }
-    list.innerHTML = allBookings.map(b => `
-        <div class="lead-card">
-            <div class="lead-service">${b.service || 'Service'}</div>
-            <div class="detail-row"><i class="fas fa-user"></i> ${b.customerName || '-'}</div>
-            <div class="detail-row"><i class="fas fa-phone"></i> ${b.customerMobile || '-'}</div>
-            <div class="detail-row"><i class="fas fa-map-marker-alt"></i> ${b.address || b.customerAddress || '-'}</div>
-            <div class="detail-row"><i class="fas fa-rupee-sign"></i> ₹${b.totalAmount || b.amount || 0}</div>
-            <div style="margin-top:8px"><span class="status-badge status-${b.status || 'pending'}">${(b.status || 'pending').toUpperCase()}</span></div>
-            <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
-                ${b.status === 'pending' ? `
-                    <button class="btn-accept" onclick="acceptLead('${b.id}')">✅ Accept</button>
-                    <button class="btn-reject" onclick="rejectLead('${b.id}')">❌ Reject</button>
-                ` : ''}
-                ${b.status === 'accepted' ? `<button class="btn-complete" onclick="completeLead('${b.id}')">✅ Complete</button>` : ''}
-                <a href="https://wa.me/91${b.customerMobile}?text=${encodeURIComponent('Hello ' + (b.customerName || '') + ', regarding your ' + (b.service || 'order') + ' on NnlGharPro...')}" target="_blank" class="btn-whatsapp">💬 WhatsApp</a>
+    if (!allBookings.length) { 
+        list.innerHTML = '<div class="empty-msg"><span class="icon">📋</span>No leads yet</div>'; 
+        return; 
+    }
+    
+    list.innerHTML = allBookings.map(b => {
+        const status = b.status || 'pending';
+        const amount = b.totalAmount || b.amount || b.providerAmount || 0;
+        const customerName = b.customerName || 'Customer';
+        const customerMobile = b.customerMobile || '';
+        const service = b.service || 'Service';
+        const address = b.customerAddress || b.address || '-';
+        
+        let actionButtons = '';
+        
+        if (status === 'pending' || status === 'assigned') {
+            actionButtons = `
+                <button class="btn-accept" onclick="acceptLead('${b.id}')">✅ Accept</button>
+                <button class="btn-reject" onclick="rejectLead('${b.id}')">❌ Reject</button>
+                <button class="btn-whatsapp" onclick="chatCustomer('${b.id}')">💬 Chat</button>
+            `;
+        } else if (status === 'accepted') {
+            actionButtons = `
+                <button class="btn-complete" onclick="completeLead('${b.id}')">✅ Complete</button>
+                <button class="btn-whatsapp" onclick="resendReceiptById('${b.id}')">🧾 Receipt</button>
+                <button class="btn-whatsapp" onclick="chatCustomer('${b.id}')">💬 Chat</button>
+            `;
+        } else if (status === 'completed') {
+            actionButtons = `
+                <button class="btn-whatsapp" onclick="resendReceiptById('${b.id}')">🧾 Send Receipt</button>
+                <button class="btn-whatsapp" onclick="chatCustomer('${b.id}')">💬 Chat</button>
+            `;
+        } else if (status === 'rejected') {
+            actionButtons = `
+                <button class="btn-whatsapp" onclick="chatCustomer('${b.id}')">💬 Chat</button>
+            `;
+        }
+        
+        return `
+            <div class="lead-card">
+                <div class="lead-service">${service}</div>
+                <div class="detail-row"><i class="fas fa-user"></i> ${customerName}</div>
+                <div class="detail-row"><i class="fas fa-phone"></i> ${customerMobile}</div>
+                <div class="detail-row"><i class="fas fa-map-marker-alt"></i> ${address}</div>
+                <div class="detail-row"><i class="fas fa-rupee-sign"></i> ₹${amount}</div>
+                <div style="margin-top:8px">
+                    <span class="status-badge status-${status}">${status.toUpperCase()}</span>
+                </div>
+                <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
+                    ${actionButtons}
+                </div>
             </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
+
+// ✅ NEW: Chat with customer
+window.chatCustomer = function(id) {
+    const lead = allBookings.find(b => b.id === id);
+    if (!lead) { showToast('❌ Lead not found', true); return; }
+    
+    const mobile = lead.customerMobile;
+    if (!mobile) { showToast('❌ Customer mobile not available', true); return; }
+    
+    const service = lead.service || 'Service';
+    const name = lead.customerName || 'Customer';
+    const amount = lead.totalAmount || lead.amount || 0;
+    
+    const msg = 
+        `Hello ${name} 👋\n\n` +
+        `Aapki *${service}* booking ke regarding baat karni hai.\n\n` +
+        `💰 Amount: ₹${amount}\n` +
+        `📅 Date: ${lead.bookingDate || 'N/A'}\n` +
+        `⏰ Time: ${lead.bookingTime || 'N/A'}\n\n` +
+        `Kripya apni address aur convenient time confirm karein.\n\n` +
+        `_NnlGharPro - 9588562553_`;
+    
+    window.open(`https://wa.me/91${cleanMobile(mobile)}?text=${encodeURIComponent(msg)}`, '_blank');
+};
 
 function acceptLead(id) {
     const lead = allBookings.find(b => b.id === id);
     if (!lead) return;
-    db.collection('bookings').doc(id).update({ status: 'accepted', acceptedAt: firebase.firestore.FieldValue.serverTimestamp() })
-      .then(() => { showToast('✅ Lead Accepted'); sendWhatsApp(lead.customerMobile, buildAcceptMessage(lead)); });
+    db.collection('bookings').doc(id).update({ 
+        status: 'accepted', 
+        acceptedAt: firebase.firestore.FieldValue.serverTimestamp() 
+    }).then(() => { 
+        showToast('✅ Lead Accepted'); 
+        sendWhatsApp(lead.customerMobile, buildAcceptMessage(lead)); 
+    });
 }
 
 function completeLead(id) {
     const lead = allBookings.find(b => b.id === id);
     if (!lead) return;
-    db.collection('bookings').doc(id).update({ status: 'completed', completedAt: firebase.firestore.FieldValue.serverTimestamp() })
-      .then(() => { showToast('✅ Order Completed'); sendWhatsApp(lead.customerMobile, buildReceiptMessage(lead, id)); });
+    db.collection('bookings').doc(id).update({ 
+        status: 'completed', 
+        completedAt: firebase.firestore.FieldValue.serverTimestamp() 
+    }).then(() => { 
+        showToast('✅ Order Completed'); 
+        sendWhatsApp(lead.customerMobile, buildReceiptMessage(lead, id)); 
+    });
 }
 
 function rejectLead(id) {
     const lead = allBookings.find(b => b.id === id);
     if (!lead) return;
     if (!confirm('Lead reject karna chahte hain?')) return;
-    db.collection('bookings').doc(id).update({ status: 'rejected', rejectedAt: firebase.firestore.FieldValue.serverTimestamp() })
-      .then(() => { showToast('❌ Lead Rejected'); sendWhatsApp(lead.customerMobile, buildRejectMessage(lead)); });
+    db.collection('bookings').doc(id).update({ 
+        status: 'rejected', 
+        rejectedAt: firebase.firestore.FieldValue.serverTimestamp() 
+    }).then(() => { 
+        showToast('❌ Lead Rejected'); 
+        sendWhatsApp(lead.customerMobile, buildRejectMessage(lead)); 
+    });
 }
 
-// CALLING OVERLAY
+// ═══════════════════════════════════════════════════════════
+// 🔥 FIX 2: LEAD QUEUE SYSTEM (100+ leads handle)
+// ═══════════════════════════════════════════════════════════
 function startLeadListener() {
-    db.collection('bookings').where('providerId', '==', currentUser.id).where('status', '==', 'pending').onSnapshot(snap => {
+    // ✅ 'pending' aur 'assigned' dono suno
+    db.collection('bookings')
+      .where('providerId', '==', currentUser.id)
+      .where('status', 'in', ['pending', 'assigned'])
+      .onSnapshot(snap => {
         snap.docChanges().forEach(change => {
             if (change.type === 'added') {
                 const lead = { id: change.doc.id, ...change.doc.data() };
-                if (!leadQueue.find(l => l.id === lead.id)) leadQueue.push(lead);
+                // Duplicate check
+                if (!leadQueue.find(l => l.id === lead.id) && pendingLeadId !== lead.id) {
+                    leadQueue.push(lead);
+                }
             }
         });
         processQueue();
@@ -872,69 +1022,161 @@ function showCallingOverlay(lead) {
     document.getElementById('callCustomerName').textContent = lead.customerName || 'Customer';
     document.getElementById('callService').textContent = lead.service || 'Service';
     document.getElementById('callMobile').textContent = '📱 ' + (lead.customerMobile || '---');
-    document.getElementById('callCounter').textContent = '1 of ' + (leadQueue.length + 1);
+    
+    // ✅ Queue counter
+    const queueRemaining = leadQueue.length;
+    document.getElementById('callCounter').textContent = '1 of ' + (queueRemaining + 1);
+    
+    // ✅ Queue info
+    const queueInfo = document.getElementById('queueInfo');
+    if (queueRemaining > 0) {
+        queueInfo.textContent = '📋 ' + queueRemaining + ' more lead(s) waiting';
+    } else {
+        queueInfo.textContent = '';
+    }
+    
     document.getElementById('callingOverlay').classList.add('show');
+    
+    // ✅ Ringing sound loop
+    startBellLoop();
+    
     let sec = 0;
     document.getElementById('callTimer').textContent = '⏱️ 0s';
-    callTimerInterval = setInterval(() => { sec++; document.getElementById('callTimer').textContent = '⏱️ ' + sec + 's'; }, 1000);
+    callTimerInterval = setInterval(() => { 
+        sec++; 
+        document.getElementById('callTimer').textContent = '⏱️ ' + sec + 's'; 
+    }, 1000);
+    
+    // ✅ Auto-release after 60 seconds
     autoReleaseTimeout = setTimeout(() => {
-        if (pendingLeadId) { hideCallingOverlay(); showToast('⏰ Lead auto-released', true); }
+        if (pendingLeadId) { 
+            hideCallingOverlay(); 
+            showToast('⏰ Lead auto-released (60s timeout)', true); 
+        }
     }, 60000);
 }
 
 function acceptLeadFromCall() {
     if (!pendingLeadId) return;
     const lead = allBookings.find(b => b.id === pendingLeadId) || leadQueue.find(l => l.id === pendingLeadId);
-    clearInterval(callTimerInterval); clearTimeout(autoReleaseTimeout);
-    db.collection('bookings').doc(pendingLeadId).update({ status: 'accepted', acceptedAt: firebase.firestore.FieldValue.serverTimestamp() })
-      .then(() => { showToast('✅ Lead Accepted'); if (lead) sendWhatsApp(lead.customerMobile, buildAcceptMessage(lead)); hideCallingOverlay(); });
+    clearInterval(callTimerInterval); 
+    clearTimeout(autoReleaseTimeout);
+    stopBellLoop();
+    
+    db.collection('bookings').doc(pendingLeadId).update({ 
+        status: 'accepted', 
+        acceptedAt: firebase.firestore.FieldValue.serverTimestamp() 
+    }).then(() => { 
+        showToast('✅ Lead Accepted'); 
+        if (lead) sendWhatsApp(lead.customerMobile, buildAcceptMessage(lead)); 
+        hideCallingOverlay(); 
+    });
 }
 
 function rejectLeadFromCall() {
     if (!pendingLeadId) return;
     const lead = allBookings.find(b => b.id === pendingLeadId) || leadQueue.find(l => l.id === pendingLeadId);
-    clearInterval(callTimerInterval); clearTimeout(autoReleaseTimeout);
-    db.collection('bookings').doc(pendingLeadId).update({ status: 'rejected', rejectedAt: firebase.firestore.FieldValue.serverTimestamp() })
-      .then(() => { showToast('❌ Lead Rejected'); if (lead) sendWhatsApp(lead.customerMobile, buildRejectMessage(lead)); hideCallingOverlay(); });
+    clearInterval(callTimerInterval); 
+    clearTimeout(autoReleaseTimeout);
+    stopBellLoop();
+    
+    db.collection('bookings').doc(pendingLeadId).update({ 
+        status: 'rejected', 
+        rejectedAt: firebase.firestore.FieldValue.serverTimestamp() 
+    }).then(() => { 
+        showToast('❌ Lead Rejected'); 
+        if (lead) sendWhatsApp(lead.customerMobile, buildRejectMessage(lead)); 
+        hideCallingOverlay(); 
+    });
 }
 
 function hideCallingOverlay() {
     pendingLeadId = null;
     document.getElementById('callingOverlay').classList.remove('show');
-    clearInterval(callTimerInterval); clearTimeout(autoReleaseTimeout);
+    clearInterval(callTimerInterval); 
+    clearTimeout(autoReleaseTimeout);
+    stopBellLoop();
     isProcessing = false;
+    // ✅ Process next lead in queue
     processQueue();
 }
 
-// EARNINGS
+// ═══════════════════════════════════════════════════════════
+// 🔥 FIX 3: EARNINGS — providerAmount (95%) + WhatsApp
+// ═══════════════════════════════════════════════════════════
 function loadEarnings() {
-    db.collection('bookings').where('providerId', '==', currentUser.id).where('status', '==', 'completed').onSnapshot(snap => {
+    db.collection('bookings')
+      .where('providerId', '==', currentUser.id)
+      .where('status', '==', 'completed')
+      .onSnapshot(snap => {
         let total = 0, count = 0, html = '';
         snap.forEach(d => {
             const b = d.data();
             const amount = b.providerAmount || b.totalAmount || b.amount || 0;
-            total += amount; count++;
+            total += amount; 
+            count++;
+            
             html += `
                 <div class="item-card">
                     <div class="main-name">${b.service || 'Service'}</div>
-                    <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px">${b.customerName || '-'} • ₹${amount}</div>
-                    <div style="margin-top:6px"><button class="btn-whatsapp" onclick="resendReceiptById('${d.id}')">🧾 Resend Receipt</button></div>
+                    <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px">
+                        👤 ${b.customerName || '-'}<br>
+                        💰 ₹${amount} (Aapka 95%)
+                    </div>
+                    <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
+                        <button class="btn-whatsapp" onclick="resendReceiptById('${d.id}')">🧾 Receipt</button>
+                        <button class="btn-whatsapp" onclick="chatCustomer('${d.id}')">💬 Chat</button>
+                    </div>
                 </div>
             `;
         });
         document.getElementById('totalEarnings').textContent = '₹' + total;
         document.getElementById('totalOrders').textContent = count;
-        document.getElementById('earningsList').innerHTML = html || '<div class="empty-msg"><span class="icon">💰</span>No earnings yet</div>';
+        document.getElementById('earningsList').innerHTML = html || 
+            '<div class="empty-msg"><span class="icon">💰</span>No earnings yet<br><span style="font-size:11px;opacity:.5">Complete orders to see earnings</span></div>';
     });
 }
 
+// ✅ FIXED: Detailed receipt
 function resendReceiptById(id) {
     const lead = allBookings.find(b => b.id === id);
-    if (!lead) { showToast('❌ Lead not found', true); return; }
-    sendWhatsApp(lead.customerMobile, buildReceiptMessage(lead, id));
+    if (!lead) { showToast('❌ Booking not found', true); return; }
+    
+    const mobile = lead.customerMobile;
+    if (!mobile) { showToast('❌ Customer mobile not available', true); return; }
+    
+    const amount = lead.totalAmount || lead.amount || 0;
+    
+    const receipt = 
+        `✅ *Booking Receipt - NnlGharPro*\n\n` +
+        `📋 *Booking ID:* #${id.slice(-6).toUpperCase()}\n` +
+        `📅 *Date:* ${lead.bookingDate || 'N/A'}\n` +
+        `⏰ *Time:* ${lead.bookingTime || 'N/A'}\n\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━\n` +
+        `👤 *Customer:* ${lead.customerName || 'N/A'}\n` +
+        `📞 *Mobile:* ${lead.customerMobile || 'N/A'}\n` +
+        `📍 *Address:* ${lead.customerAddress || 'N/A'}\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━\n` +
+        `🔧 *Service:* ${lead.service || 'N/A'}\n` +
+        `🛒 *Items:* ${lead.items || 'N/A'}\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━\n` +
+        `💰 *Total:* ₹${amount}\n` +
+        `✅ *Status:* ${(lead.status || 'pending').toUpperCase()}\n` +
+        `💳 *Payment:* ${lead.paymentStatus === 'paid' ? '✅ PAID' : '⏳ Pending'}\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━\n\n` +
+        `🏠 *NnlGharPro*\n` +
+        `Managed by Randhawa Enterprises\n` +
+        `📞 Support: 9588562553\n\n` +
+        `🙏 Thank you for choosing us!`;
+    
+    const cleanMob = cleanMobile(mobile);
+    window.open(`https://wa.me/${cleanMob}?text=${encodeURIComponent(receipt)}`, '_blank');
+    showToast('✅ Receipt WhatsApp par bhej diya');
 }
 
+// ═══════════════════════════════════════════════════════════
 // ONBOARDING
+// ═══════════════════════════════════════════════════════════
 function loadOnboarding() {
     db.collection('providers').doc(currentUser.id).onSnapshot(doc => {
         const box = document.getElementById('onboardStatusBox');
@@ -967,7 +1209,9 @@ function submitOnboarding() {
     }, { merge: true }).then(() => showToast('✅ Bank details submitted'));
 }
 
+// ═══════════════════════════════════════════════════════════
 // DELIVERY
+// ═══════════════════════════════════════════════════════════
 function loadDeliveryPartners() {
     db.collection('deliveryPartners').where('providerId', '==', currentUser.id).onSnapshot(snap => {
         deliveryPartners = [];
@@ -1007,7 +1251,9 @@ function deleteDeliveryPartner(id) {
     db.collection('deliveryPartners').doc(id).delete().then(() => showToast('🗑️ Deleted'));
 }
 
+// ═══════════════════════════════════════════════════════════
 // PINCODES
+// ═══════════════════════════════════════════════════════════
 function loadPincodes() {
     db.collection('providers').doc(currentUser.id).onSnapshot(doc => {
         const tags = document.getElementById('pincodeTags');
@@ -1041,6 +1287,14 @@ function removePincode(pin) {
 }
 
 document.addEventListener('DOMContentLoaded', checkSession);
+
+console.log('✅ NnlGharPro Provider Portal v6.0');
+console.log('📋 Features:');
+console.log('  ✅ Zomato-style Lead Queue (100+ leads)');
+console.log('  ✅ Ringing Sound + Auto-release');
+console.log('  ✅ WhatsApp Integration (Accept/Reject/Complete/Chat/Receipt)');
+console.log('  ✅ Earnings (95% provider amount)');
+console.log('  ✅ Bank Details + Delivery Partners + Pincodes');
 </script>
 </body>
 </html>
