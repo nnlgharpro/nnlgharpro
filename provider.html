@@ -469,7 +469,6 @@ window.forgotPassword = async function() {
         const providerDoc = snap.docs[0];
         const providerData = providerDoc.data();
 
-        // Naya 6-digit password generate
         const newPlainPassword = Math.floor(100000 + Math.random() * 900000).toString();
         const newHashedPassword = simpleHash(newPlainPassword);
 
@@ -638,7 +637,9 @@ function cancelSubscription() {
       .then(() => showToast('❌ Subscription Cancelled'));
 }
 
-// ITEMS
+// ═══════════════════════════════════════════════════════════
+// ITEMS — WITH AUTO ID GENERATION
+// ═══════════════════════════════════════════════════════════
 function loadItems() {
     db.collection('items').where('providerId', '==', currentUser.id).onSnapshot(snap => {
         providerItems = [];
@@ -646,6 +647,7 @@ function loadItems() {
         renderItems();
     });
 }
+
 function renderItems() {
     const list = document.getElementById('itemsList');
     if (!providerItems.length) { list.innerHTML = '<div class="empty-msg"><span class="icon">📦</span>No items yet</div>'; return; }
@@ -673,12 +675,14 @@ function renderItems() {
         </div>
     `).join('');
 }
+
 function showAddMainForm() {
     openModal('➕ Add Main Item', `
         <div class="form-group"><label>Item Name</label><input id="mName" placeholder="e.g. AC Repair"></div>
         <button class="btn btn-primary" onclick="saveMainItem()" style="width:100%">Save</button>
     `);
 }
+
 function saveMainItem() {
     const name = document.getElementById('mName').value.trim();
     if (!name) { showToast('❌ Name required', true); return; }
@@ -687,6 +691,7 @@ function saveMainItem() {
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
     }).then(() => { closeModal(); showToast('✅ Item added'); });
 }
+
 function editItem(id) {
     const item = providerItems.find(i => i.id === id);
     openModal('✏️ Edit Item', `
@@ -694,33 +699,55 @@ function editItem(id) {
         <button class="btn btn-primary" onclick="updateItem('${id}')" style="width:100%">Update</button>
     `);
 }
+
 function updateItem(id) {
     const name = document.getElementById('mName').value.trim();
     db.collection('items').doc(id).update({ name }).then(() => { closeModal(); showToast('✅ Updated'); });
 }
+
 function toggleHideItem(id, hidden) {
     db.collection('items').doc(id).update({ hidden }).then(() => showToast('✅ Updated'));
 }
+
 function deleteItem(id) {
     if (!confirm('Delete this item?')) return;
     db.collection('items').doc(id).delete().then(() => showToast('🗑️ Deleted'));
 }
+
 function addSubItem(id) {
     openModal('➕ Add Sub Item', `
-        <div class="form-group"><label>Sub Item Name</label><input id="sName"></div>
-        <div class="form-group"><label>Price (₹)</label><input id="sPrice" type="number"></div>
+        <div class="form-group"><label>Sub Item Name</label><input id="sName" placeholder="e.g. Split AC Service"></div>
+        <div class="form-group"><label>Price (₹)</label><input id="sPrice" type="number" placeholder="500"></div>
         <button class="btn btn-primary" onclick="saveSubItem('${id}')" style="width:100%">Save</button>
     `);
 }
+
+// ✅ FIXED: Sub-item with unique ID
 function saveSubItem(id) {
     const name = document.getElementById('sName').value.trim();
     const price = parseFloat(document.getElementById('sPrice').value);
     if (!name || !price) { showToast('❌ Fill all fields', true); return; }
+    
     const item = providerItems.find(i => i.id === id);
     const subItems = item.subItems || [];
-    subItems.push({ name, price, hidden: false });
-    db.collection('items').doc(id).update({ subItems }).then(() => { closeModal(); showToast('✅ Sub item added'); });
+    
+    // ✅ UNIQUE ID GENERATE
+    const subId = 'sub_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
+    
+    subItems.push({ 
+        id: subId,
+        name: name, 
+        price: price, 
+        hidden: false 
+    });
+    
+    db.collection('items').doc(id).update({ subItems })
+        .then(() => { 
+            closeModal(); 
+            showToast('✅ Sub item added'); 
+        });
 }
+
 function editSubItem(id, index) {
     const item = providerItems.find(i => i.id === id);
     const sub = item.subItems[index];
@@ -730,13 +757,24 @@ function editSubItem(id, index) {
         <button class="btn btn-primary" onclick="updateSubItem('${id}', ${index})" style="width:100%">Update</button>
     `);
 }
+
 function updateSubItem(id, index) {
     const name = document.getElementById('sName').value.trim();
     const price = parseFloat(document.getElementById('sPrice').value);
     const item = providerItems.find(i => i.id === id);
-    item.subItems[index] = { ...item.subItems[index], name, price };
-    db.collection('items').doc(id).update({ subItems: item.subItems }).then(() => { closeModal(); showToast('✅ Updated'); });
+    const existingSub = item.subItems[index];
+    
+    // Preserve existing ID
+    item.subItems[index] = { 
+        ...existingSub,
+        name, 
+        price 
+    };
+    
+    db.collection('items').doc(id).update({ subItems: item.subItems })
+        .then(() => { closeModal(); showToast('✅ Updated'); });
 }
+
 function deleteSubItem(id, index) {
     if (!confirm('Delete this sub item?')) return;
     const item = providerItems.find(i => i.id === id);
@@ -758,10 +796,12 @@ function loadLeads() {
         updateLeadBadge();
     });
 }
+
 function updateLeadBadge() {
     const pending = allBookings.filter(b => b.status === 'pending').length;
     document.getElementById('leadCounterBadge').textContent = pending + ' Pending';
 }
+
 function renderLeads() {
     const list = document.getElementById('leadsList');
     if (!allBookings.length) { list.innerHTML = '<div class="empty-msg"><span class="icon">📋</span>No leads yet</div>'; return; }
@@ -770,8 +810,8 @@ function renderLeads() {
             <div class="lead-service">${b.service || 'Service'}</div>
             <div class="detail-row"><i class="fas fa-user"></i> ${b.customerName || '-'}</div>
             <div class="detail-row"><i class="fas fa-phone"></i> ${b.customerMobile || '-'}</div>
-            <div class="detail-row"><i class="fas fa-map-marker-alt"></i> ${b.address || '-'}</div>
-            <div class="detail-row"><i class="fas fa-rupee-sign"></i> ₹${b.amount || 0}</div>
+            <div class="detail-row"><i class="fas fa-map-marker-alt"></i> ${b.address || b.customerAddress || '-'}</div>
+            <div class="detail-row"><i class="fas fa-rupee-sign"></i> ₹${b.totalAmount || b.amount || 0}</div>
             <div style="margin-top:8px"><span class="status-badge status-${b.status || 'pending'}">${(b.status || 'pending').toUpperCase()}</span></div>
             <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
                 ${b.status === 'pending' ? `
@@ -784,18 +824,21 @@ function renderLeads() {
         </div>
     `).join('');
 }
+
 function acceptLead(id) {
     const lead = allBookings.find(b => b.id === id);
     if (!lead) return;
     db.collection('bookings').doc(id).update({ status: 'accepted', acceptedAt: firebase.firestore.FieldValue.serverTimestamp() })
       .then(() => { showToast('✅ Lead Accepted'); sendWhatsApp(lead.customerMobile, buildAcceptMessage(lead)); });
 }
+
 function completeLead(id) {
     const lead = allBookings.find(b => b.id === id);
     if (!lead) return;
     db.collection('bookings').doc(id).update({ status: 'completed', completedAt: firebase.firestore.FieldValue.serverTimestamp() })
       .then(() => { showToast('✅ Order Completed'); sendWhatsApp(lead.customerMobile, buildReceiptMessage(lead, id)); });
 }
+
 function rejectLead(id) {
     const lead = allBookings.find(b => b.id === id);
     if (!lead) return;
@@ -816,12 +859,14 @@ function startLeadListener() {
         processQueue();
     });
 }
+
 function processQueue() {
     if (isProcessing || leadQueue.length === 0) return;
     isProcessing = true;
     const next = leadQueue.shift();
     showCallingOverlay(next);
 }
+
 function showCallingOverlay(lead) {
     pendingLeadId = lead.id;
     document.getElementById('callCustomerName').textContent = lead.customerName || 'Customer';
@@ -836,6 +881,7 @@ function showCallingOverlay(lead) {
         if (pendingLeadId) { hideCallingOverlay(); showToast('⏰ Lead auto-released', true); }
     }, 60000);
 }
+
 function acceptLeadFromCall() {
     if (!pendingLeadId) return;
     const lead = allBookings.find(b => b.id === pendingLeadId) || leadQueue.find(l => l.id === pendingLeadId);
@@ -843,6 +889,7 @@ function acceptLeadFromCall() {
     db.collection('bookings').doc(pendingLeadId).update({ status: 'accepted', acceptedAt: firebase.firestore.FieldValue.serverTimestamp() })
       .then(() => { showToast('✅ Lead Accepted'); if (lead) sendWhatsApp(lead.customerMobile, buildAcceptMessage(lead)); hideCallingOverlay(); });
 }
+
 function rejectLeadFromCall() {
     if (!pendingLeadId) return;
     const lead = allBookings.find(b => b.id === pendingLeadId) || leadQueue.find(l => l.id === pendingLeadId);
@@ -850,6 +897,7 @@ function rejectLeadFromCall() {
     db.collection('bookings').doc(pendingLeadId).update({ status: 'rejected', rejectedAt: firebase.firestore.FieldValue.serverTimestamp() })
       .then(() => { showToast('❌ Lead Rejected'); if (lead) sendWhatsApp(lead.customerMobile, buildRejectMessage(lead)); hideCallingOverlay(); });
 }
+
 function hideCallingOverlay() {
     pendingLeadId = null;
     document.getElementById('callingOverlay').classList.remove('show');
@@ -864,11 +912,12 @@ function loadEarnings() {
         let total = 0, count = 0, html = '';
         snap.forEach(d => {
             const b = d.data();
-            total += (b.amount || 0); count++;
+            const amount = b.providerAmount || b.totalAmount || b.amount || 0;
+            total += amount; count++;
             html += `
                 <div class="item-card">
                     <div class="main-name">${b.service || 'Service'}</div>
-                    <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px">${b.customerName || '-'} • ₹${b.amount || 0}</div>
+                    <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px">${b.customerName || '-'} • ₹${amount}</div>
                     <div style="margin-top:6px"><button class="btn-whatsapp" onclick="resendReceiptById('${d.id}')">🧾 Resend Receipt</button></div>
                 </div>
             `;
@@ -878,6 +927,7 @@ function loadEarnings() {
         document.getElementById('earningsList').innerHTML = html || '<div class="empty-msg"><span class="icon">💰</span>No earnings yet</div>';
     });
 }
+
 function resendReceiptById(id) {
     const lead = allBookings.find(b => b.id === id);
     if (!lead) { showToast('❌ Lead not found', true); return; }
@@ -899,6 +949,7 @@ function loadOnboarding() {
         }
     });
 }
+
 function submitOnboarding() {
     const holder = document.getElementById('obHolder').value.trim();
     const account = document.getElementById('obAccount').value.trim();
@@ -924,6 +975,7 @@ function loadDeliveryPartners() {
         renderDeliveryPartners();
     });
 }
+
 function renderDeliveryPartners() {
     const list = document.getElementById('delPartnersList');
     if (!deliveryPartners.length) { list.innerHTML = '<div style="font-size:12px;color:rgba(255,255,255,.3);text-align:center">No partners added</div>'; return; }
@@ -935,6 +987,7 @@ function renderDeliveryPartners() {
         </div>
     `).join('');
 }
+
 function addDeliveryPartner() {
     const name = document.getElementById('delName').value.trim();
     const mobile = document.getElementById('delMobile').value.trim();
@@ -948,6 +1001,7 @@ function addDeliveryPartner() {
         showToast('✅ Partner added');
     });
 }
+
 function deleteDeliveryPartner(id) {
     if (!confirm('Delete partner?')) return;
     db.collection('deliveryPartners').doc(id).delete().then(() => showToast('🗑️ Deleted'));
@@ -965,6 +1019,7 @@ function loadPincodes() {
         `).join('');
     });
 }
+
 function addPincode() {
     const pin = document.getElementById('pincodeInput').value.trim();
     if (!pin || pin.length !== 6 || isNaN(pin)) { showToast('❌ Enter valid 6-digit pincode', true); return; }
@@ -976,6 +1031,7 @@ function addPincode() {
           .then(() => { document.getElementById('pincodeInput').value = ''; showToast('✅ Pincode added'); });
     });
 }
+
 function removePincode(pin) {
     db.collection('providers').doc(currentUser.id).get().then(doc => {
         let pins = (doc.exists && doc.data().pincodes) || [];
