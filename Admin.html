@@ -9,6 +9,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -35,7 +36,7 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
 .dashboard-top .box .weather-icon{font-size:32px}
 .dashboard-top .box .weather-temp{font-size:24px;font-weight:700;color:#4ECDC4}
 .dashboard-top .box .weather-condition{font-size:12px;color:rgba(255,255,255,.35);margin-top:2px}
-.admin-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px}
+.admin-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
 .admin-stat{background:rgba(255,255,255,.03);border-radius:16px;padding:16px 12px;text-align:center;border:1px solid rgba(255,255,255,.05)}
 .admin-stat .number{font-size:28px;font-weight:900;color:#fff}
 .admin-stat .label{font-size:10px;color:rgba(255,255,255,.35);margin-top:4px;font-weight:600}
@@ -43,7 +44,6 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
 .stat-total .number{color:#4ECDC4}
 .stat-pending .number{color:#FFD93D}
 .stat-providers .number{color:#4ECDC4}
-.stat-customers .number{color:#f15bb5}
 .stat-allcustomers .number{color:#2ecc71}
 .admin-tabs{display:flex;gap:4px;margin:16px 0;background:rgba(255,255,255,.03);border-radius:16px;padding:6px;overflow-x:auto;border:1px solid rgba(255,255,255,.04)}
 .admin-tabs::-webkit-scrollbar{height:0}
@@ -53,15 +53,14 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
 .admin-tab[data-tab="dashboard"].active{background:linear-gradient(135deg,#1a237e,#283593)}
 .admin-tab[data-tab="bookings"].active{background:linear-gradient(135deg,#4ECDC4,#44B3A8)}
 .admin-tab[data-tab="providers"].active{background:linear-gradient(135deg,#2a9d8f,#52b788)}
-.admin-tab[data-tab="services"].active{background:linear-gradient(135deg,#ef476f,#ff6b6b)}
-.admin-tab[data-tab="broadcast"].active{background:linear-gradient(135deg,#FFD93D,#F4A261)}
-.admin-tab[data-tab="customers"].active{background:linear-gradient(135deg,#2ecc71,#27ae60)}
-.admin-tab[data-tab="payments"].active{background:linear-gradient(135deg,#4ECDC4,#1a237e)}
 .admin-tab[data-tab="subscriptions"].active{background:linear-gradient(135deg,#FFD93D,#F4A261)}
 .admin-tab[data-tab="onboarding"].active{background:linear-gradient(135deg,#00C853,#00E676)}
+.admin-tab[data-tab="delivery"].active{background:linear-gradient(135deg,#FF6B35,#F7931E)}
+.admin-tab[data-tab="broadcast"].active{background:linear-gradient(135deg,#FFD93D,#F4A261)}
+.admin-tab[data-tab="payments"].active{background:linear-gradient(135deg,#4ECDC4,#1a237e)}
+.admin-tab[data-tab="bulkwa"].active{background:linear-gradient(135deg,#25D366,#128C7E)}
 .admin-tab[data-tab="ecommerce"].active{background:linear-gradient(135deg,#FF6B35,#FF8C42)}
 .admin-tab[data-tab="activity"].active{background:linear-gradient(135deg,#3498db,#2980b9)}
-.admin-tab[data-tab="bulkwa"].active{background:linear-gradient(135deg,#25D366,#128C7E)}
 .admin-tab-content{display:none}
 .admin-tab-content.active{display:block}
 .card{background:rgba(255,255,255,.04);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.05);border-radius:20px;padding:22px;margin-bottom:16px}
@@ -79,6 +78,7 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
 .btn-excel{background:linear-gradient(135deg,#1D6F42,#217346);color:#fff;padding:8px 16px;border-radius:10px;border:none;font-weight:700;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
 .btn-whatsapp{background:#25D366;color:#fff;padding:8px 16px;border-radius:10px;border:none;font-weight:700;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
 .btn-success{padding:12px 24px;background:linear-gradient(135deg,#4ECDC4,#44B3A8);color:#fff;border:none;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;width:100%}
+.btn-danger{padding:12px 24px;background:linear-gradient(135deg,#FF4757,#FF6B6B);color:#fff;border:none;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;width:100%}
 .btn-reset-password{background:linear-gradient(135deg,#FFD93D,#F4A261);color:#1a1a2e;border:none;padding:6px 14px;border-radius:8px;font-weight:700;font-size:11px;cursor:pointer}
 .list-item{display:flex;justify-content:space-between;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.03);align-items:center;flex-wrap:wrap;gap:8px;border-left:3px solid #4ECDC4;background:rgba(255,255,255,.02);border-radius:10px;margin-bottom:4px;transition:.3s}
 .list-item:hover{background:rgba(255,255,255,.04)}
@@ -142,34 +142,11 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
 .wa-item .wa-info{flex:1;min-width:150px}
 .wa-item .wa-num{font-weight:700;color:#fff;font-size:14px;font-family:monospace}
 .wa-item .wa-type{font-size:10px;color:rgba(255,255,255,.4);margin-top:2px}
-.services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}
-.service-card{padding:16px 8px;border-radius:14px;text-align:center;cursor:pointer;transition:.3s;border:2px solid transparent;color:#fff}
-.service-card:hover{transform:translateY(-3px) scale(1.03)}
-.service-card.selected{border-color:#fff;box-shadow:0 0 20px rgba(255,255,255,.3);transform:scale(1.05)}
-.service-card .service-icon{font-size:28px;display:block;margin-bottom:6px;line-height:1}
-.service-card .service-name{font-size:11px;font-weight:700;line-height:1.2}
-.svc-plumbing{background:linear-gradient(135deg,#2196F3,#1976D2)}
-.svc-electrician{background:linear-gradient(135deg,#FF9800,#F57C00)}
-.svc-mobile{background:linear-gradient(135deg,#009688,#00796B)}
-.svc-homedecor{background:linear-gradient(135deg,#E91E63,#C2185B)}
-.svc-painting{background:linear-gradient(135deg,#F44336,#D32F2F)}
-.svc-acrepair{background:linear-gradient(135deg,#00BCD4,#0097A7)}
-.svc-cctv{background:linear-gradient(135deg,#00897B,#00695C)}
-.svc-food{background:linear-gradient(135deg,#FF5722,#E64A19)}
-.svc-taxi{background:linear-gradient(135deg,#2E7D32,#1B5E20)}
-.svc-ro{background:linear-gradient(135deg,#03A9F4,#0288D1)}
-.svc-cinema{background:linear-gradient(135deg,#795548,#5D4037)}
-.svc-hospital{background:linear-gradient(135deg,#D32F2F,#B71C1C)}
-.svc-lab{background:linear-gradient(135deg,#673AB7,#512DA8)}
-.svc-school{background:linear-gradient(135deg,#607D8B,#455A64)}
-.svc-hotel{background:linear-gradient(135deg,#FF6F00,#E65100)}
-.svc-insurance{background:linear-gradient(135deg,#1A237E,#0D1B4E)}
-.svc-ecommerce{background:linear-gradient(135deg,#FF8C42,#F57C00)}
-.svc-tvrepair{background:linear-gradient(135deg,#9C27B0,#7B1FA2)}
-.svc-localbazar{background:linear-gradient(135deg,#0288D1,#01579B)}
-.svc-gym{background:linear-gradient(135deg,#E65100,#BF360C)}
-.svc-other{background:linear-gradient(135deg,#455A64,#37474F)}
-@media(max-width:600px){.dashboard-top{grid-template-columns:1fr}.admin-stats{grid-template-columns:repeat(2,1fr)}.list-item{flex-direction:column;align-items:stretch}.admin-tab{min-width:60px;font-size:9px;padding:8px 4px}.wa-stats{grid-template-columns:repeat(2,1fr)}.services-grid{grid-template-columns:repeat(2,1fr)}}
+/* LOGO UPLOAD */
+.logo-upload-box{background:rgba(255,255,255,.03);border:2px dashed rgba(78,205,196,.3);border-radius:12px;padding:16px;text-align:center;margin-bottom:10px;cursor:pointer;transition:.3s}
+.logo-upload-box:hover{border-color:#4ECDC4;background:rgba(78,205,196,.05)}
+.logo-preview{width:80px;height:80px;object-fit:cover;border-radius:10px;border:2px solid #4ECDC4;margin:8px auto;display:block}
+@media(max-width:600px){.dashboard-top{grid-template-columns:1fr}.admin-stats{grid-template-columns:repeat(2,1fr)}.list-item{flex-direction:column;align-items:stretch}.admin-tab{min-width:60px;font-size:9px;padding:8px 4px}.wa-stats{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
@@ -219,7 +196,6 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
         <div class="admin-stat stat-total"><span class="icon">📄</span><div class="number" id="statTotal">0</div><div class="label">Total Bookings</div></div>
         <div class="admin-stat stat-pending"><span class="icon">⏳</span><div class="number" id="statPending">0</div><div class="label">Pending</div></div>
         <div class="admin-stat stat-providers"><span class="icon">👤</span><div class="number" id="statProviders">0</div><div class="label">Providers</div></div>
-        <div class="admin-stat stat-customers"><span class="icon">🛒</span><div class="number" id="statCustomers">0</div><div class="label">Customers</div></div>
         <div class="admin-stat stat-allcustomers"><span class="icon">👥</span><div class="number" id="statAllCustomers">0</div><div class="label">All Users</div></div>
     </div>
 
@@ -229,9 +205,8 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
         <button class="admin-tab" data-tab="providers" onclick="switchTab('providers')"><i class="fas fa-users"></i> Providers</button>
         <button class="admin-tab" data-tab="subscriptions" onclick="switchTab('subscriptions')"><i class="fas fa-crown"></i> Subs</button>
         <button class="admin-tab" data-tab="onboarding" onclick="switchTab('onboarding')"><i class="fas fa-store"></i> Onboard</button>
-        <button class="admin-tab" data-tab="services" onclick="switchTab('services')"><i class="fas fa-tools"></i> Services</button>
+        <button class="admin-tab" data-tab="delivery" onclick="switchTab('delivery')"><i class="fas fa-truck"></i> Delivery</button>
         <button class="admin-tab" data-tab="broadcast" onclick="switchTab('broadcast')"><i class="fas fa-bullhorn"></i> Broadcast</button>
-        <button class="admin-tab" data-tab="customers" onclick="switchTab('customers')"><i class="fas fa-user-friends"></i> Customers</button>
         <button class="admin-tab" data-tab="payments" onclick="switchTab('payments')"><i class="fas fa-credit-card"></i> Payments</button>
         <button class="admin-tab" data-tab="bulkwa" onclick="switchTab('bulkwa')"><i class="fab fa-whatsapp"></i> Bulk WhatsApp</button>
         <button class="admin-tab" data-tab="ecommerce" onclick="switchTab('ecommerce')"><i class="fas fa-shopping-bag"></i> Stores</button>
@@ -270,7 +245,9 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
 
     <div id="tab-subscriptions" class="admin-tab-content">
         <div class="card">
-            <div class="card-title"><span><i class="fas fa-crown"></i> Provider Subscriptions</span><span class="badge">👑 Live</span></div>
+            <div class="card-title"><span><i class="fas fa-crown"></i> Provider Subscriptions</span>
+                <button class="btn-excel" onclick="downloadSubscriptionExcel()"><i class="fas fa-file-excel"></i> Download Excel</button>
+            </div>
             <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px">
                 <div style="background:rgba(255,255,255,.03);border-radius:12px;padding:16px;text-align:center"><div style="font-size:28px;font-weight:900;color:#FFD93D" id="subFreeTrial">0</div><div style="font-size:10px;color:rgba(255,255,255,.4)">🆓 Free Trial</div></div>
                 <div style="background:rgba(255,255,255,.03);border-radius:12px;padding:16px;text-align:center"><div style="font-size:28px;font-weight:900;color:#00C853" id="subActive">0</div><div style="font-size:10px;color:rgba(255,255,255,.4)">✅ Active</div></div>
@@ -283,15 +260,19 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
 
     <div id="tab-onboarding" class="admin-tab-content">
         <div class="card">
-            <div class="card-title"><span><i class="fas fa-store"></i> Smart Collect Onboarding</span><span class="badge">🏦 Live</span></div>
+            <div class="card-title"><span><i class="fas fa-store"></i> Provider Onboarding Requests</span>
+                <button class="btn-excel" onclick="downloadOnboardingExcel()"><i class="fas fa-file-excel"></i> Download Excel</button>
+            </div>
             <div id="adminOnboardingList"><div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading requests...</div></div>
         </div>
     </div>
 
-    <div id="tab-services" class="admin-tab-content">
+    <div id="tab-delivery" class="admin-tab-content">
         <div class="card">
-            <div class="card-title"><span><i class="fas fa-tools"></i> Manage Services</span><button class="btn-primary" style="width:auto;padding:8px 20px;font-size:13px" onclick="showAddService()"><i class="fas fa-plus"></i> Add</button></div>
-            <div id="adminServiceList"><div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading services...</div></div>
+            <div class="card-title"><span><i class="fas fa-truck"></i> All Delivery Partners</span>
+                <button class="btn-excel" onclick="downloadDeliveryExcel()"><i class="fas fa-file-excel"></i> Download Excel</button>
+            </div>
+            <div id="adminDeliveryList"><div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading delivery partners...</div></div>
         </div>
     </div>
 
@@ -311,19 +292,6 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
                 <div id="broadcastPreviewContent" style="color:rgba(255,255,255,.7);font-size:14px;padding:12px;background:rgba(255,255,255,.03);border-radius:8px;border-left:3px solid #FFD93D"><span style="color:rgba(255,255,255,.2)">No active broadcast.</span></div>
                 <div style="font-size:9px;color:rgba(255,255,255,.15);margin-top:6px"><span id="broadcastTime"><i class="fas fa-clock"></i> Not published</span></div>
             </div>
-        </div>
-    </div>
-
-    <div id="tab-customers" class="admin-tab-content">
-        <div class="card">
-            <div class="card-title">
-                <span><i class="fas fa-user-friends"></i> All Customers (Bookings)</span>
-                <div style="display:flex;gap:8px;flex-wrap:wrap">
-                    <button class="btn-excel" onclick="downloadCustomerExcel()"><i class="fas fa-file-excel"></i> Excel</button>
-                    <span id="customerCount" class="badge">0</span>
-                </div>
-            </div>
-            <div id="adminCustomerList"><div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading customers...</div></div>
         </div>
     </div>
 
@@ -454,6 +422,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
+const storage = firebase.storage();
 
 let allBookings = [];
 let allProviders = [];
@@ -462,6 +431,8 @@ let selectedBookings = [];
 let whatsappNumbers = [];
 let currentTab = 'dashboard';
 let selectedServices = [];
+let currentLogoFile = null;
+let currentLogoUrl = '';
 
 function showToast(msg, err = false) {
     const t = document.getElementById('toast');
@@ -504,6 +475,7 @@ function updateWeather() {
 }
 updateWeather(); setInterval(updateWeather, 300000);
 
+// LOGIN
 window.adminLogin = async function() {
     let email = document.getElementById('adminEmail').value.trim();
     const password = document.getElementById('adminPassword').value.trim();
@@ -564,12 +536,11 @@ window.switchTab = function(tab) {
     if (tab === 'dashboard') loadDashboard();
     else if (tab === 'bookings') loadBookings();
     else if (tab === 'providers') loadProviders();
-    else if (tab === 'services') loadServices();
     else if (tab === 'broadcast') loadBroadcastData();
-    else if (tab === 'customers') loadCustomers();
     else if (tab === 'payments') loadPayments();
     else if (tab === 'subscriptions') loadSubscriptions();
     else if (tab === 'onboarding') loadOnboarding();
+    else if (tab === 'delivery') loadAllDeliveryPartners();
     else if (tab === 'ecommerce') loadStores();
     else if (tab === 'activity') loadActivityLogs();
     else if (tab === 'bulkwa') { if (whatsappNumbers.length === 0) collectNumbers(); }
@@ -580,15 +551,45 @@ async function loadAllData() {
     await loadDashboard();
     await loadBookings();
     await loadProviders();
-    await loadServices();
     await loadBroadcastData();
-    await loadCustomers();
     await loadPayments();
     await loadSubscriptions();
     await loadOnboarding();
     await loadStores();
     await loadActivityLogs();
     await updateStats();
+}
+
+// DASHBOARD
+async function loadDashboard() {
+    const container = document.getElementById('dashboardContent');
+    try {
+        const bookings = await db.collection('bookings').limit(10).get();
+        const providers = await db.collection('providers').get();
+        let recentHtml = '';
+        if (bookings.empty) { recentHtml = '<div style="color:rgba(255,255,255,.2);padding:10px;text-align:center">No recent bookings</div>'; }
+        else {
+            bookings.forEach(doc => {
+                const d = doc.data();
+                recentHtml += `<div style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,.03)"><div style="color:#fff;font-size:13px">${d.customerName || 'N/A'} - ${d.service || 'N/A'}</div><div style="color:rgba(255,255,255,.2);font-size:10px">${d.bookingDate || ''} • ${d.status || 'pending'}</div></div>`;
+            });
+        }
+        container.innerHTML = `
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                <div style="background:rgba(255,255,255,.03);border-radius:12px;padding:16px">
+                    <div style="font-size:11px;color:rgba(255,255,255,.3);font-weight:600;margin-bottom:8px">📋 Recent Bookings</div>
+                    <div style="max-height:200px;overflow-y:auto">${recentHtml}</div>
+                </div>
+                <div style="background:rgba(255,255,255,.03);border-radius:12px;padding:16px">
+                    <div style="font-size:11px;color:rgba(255,255,255,.3);font-weight:600;margin-bottom:8px">📊 Quick Stats</div>
+                    <div style="padding:4px 0;color:rgba(255,255,255,.6);font-size:13px">
+                        <div>📄 Recent Bookings: <strong style="color:#4ECDC4">${bookings.size}</strong></div>
+                        <div>👤 Providers: <strong style="color:#4ECDC4">${providers.size}</strong></div>
+                    </div>
+                </div>
+            </div>
+        `;
+    } catch (e) { container.innerHTML = `<div class="empty-msg">Error loading dashboard</div>`; }
 }
 
 async function loadProviderBankDetails() {
@@ -613,55 +614,21 @@ async function updateStats() {
     try {
         const bookings = await db.collection('bookings').get();
         const providers = await db.collection('providers').get();
-        const customers = await db.collection('customers').get();
         let total = 0, pending = 0;
         bookings.forEach(doc => { total++; const d = doc.data(); if (d.status === 'pending' || d.status === 'assigned') pending++; });
         document.getElementById('statTotal').textContent = total;
         document.getElementById('statPending').textContent = pending;
         document.getElementById('statProviders').textContent = providers.size;
-        document.getElementById('statCustomers').textContent = customers.size || 0;
-        document.getElementById('statAllCustomers').textContent = customers.size + providers.size;
+        document.getElementById('statAllCustomers').textContent = providers.size;
     } catch (e) { console.error(e); }
 }
 
-async function loadDashboard() {
-    const container = document.getElementById('dashboardContent');
-    try {
-        const bookings = await db.collection('bookings').orderBy('createdAt', 'desc').limit(10).get();
-        const providers = await db.collection('providers').get();
-        const customers = await db.collection('customers').get();
-        let recentHtml = '';
-        if (bookings.empty) { recentHtml = '<div style="color:rgba(255,255,255,.2);padding:10px;text-align:center">No recent bookings</div>'; }
-        else {
-            bookings.forEach(doc => {
-                const d = doc.data();
-                recentHtml += `<div style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,.03)"><div style="color:#fff;font-size:13px">${d.customerName || 'N/A'} - ${d.service || 'N/A'}</div><div style="color:rgba(255,255,255,.2);font-size:10px">${d.bookingDate || ''} • ${d.status || 'pending'}</div></div>`;
-            });
-        }
-        container.innerHTML = `
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-                <div style="background:rgba(255,255,255,.03);border-radius:12px;padding:16px">
-                    <div style="font-size:11px;color:rgba(255,255,255,.3);font-weight:600;margin-bottom:8px">📋 Recent Bookings</div>
-                    <div style="max-height:200px;overflow-y:auto">${recentHtml}</div>
-                </div>
-                <div style="background:rgba(255,255,255,.03);border-radius:12px;padding:16px">
-                    <div style="font-size:11px;color:rgba(255,255,255,.3);font-weight:600;margin-bottom:8px">📊 Quick Stats</div>
-                    <div style="padding:4px 0;color:rgba(255,255,255,.6);font-size:13px">
-                        <div>📄 Total Bookings: <strong style="color:#4ECDC4">${bookings.size}</strong></div>
-                        <div>👤 Providers: <strong style="color:#4ECDC4">${providers.size}</strong></div>
-                        <div>🛒 Customers: <strong style="color:#f15bb5">${customers.size}</strong></div>
-                    </div>
-                </div>
-            </div>
-        `;
-    } catch (e) { container.innerHTML = `<div class="empty-msg">Error loading dashboard</div>`; }
-}
-
+// BOOKINGS
 async function loadBookings() {
     const container = document.getElementById('adminBookingList');
     container.innerHTML = '<div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
     try {
-        const snapshot = await db.collection('bookings').orderBy('createdAt', 'desc').get();
+        const snapshot = await db.collection('bookings').get();
         document.getElementById('bookingCount').textContent = snapshot.size;
         allBookings = []; selectedBookings = [];
         document.getElementById('deleteSelectedBtn').style.display = 'none';
@@ -723,24 +690,35 @@ window.deleteAllBookings = async function() {
     showLoading(false);
 };
 
+// CUSTOMER EXCEL
 window.downloadCustomerExcel = async function() {
     showLoading(true);
     try {
-        const snapshot = await db.collection('bookings').orderBy('createdAt', 'desc').get();
+        const snapshot = await db.collection('bookings').get();
         if (snapshot.empty) { showToast('⚠️ No bookings!', true); showLoading(false); return; }
         const data = [];
         snapshot.forEach(doc => {
             const d = doc.data();
+            const itemsAmount = d.itemsTotal || 0;
+            const deliveryCharge = d.deliveryCharge || 0;
             const amount = d.totalAmount || 0;
-            const gatewayFee = Math.round(amount * 0.02);
-            const commission = Math.round(amount * 0.03);
-            const providerAmount = amount - gatewayFee - commission;
+            const gatewayFee = d.gatewayFee || Math.round(amount * 0.02);
+            const commission = d.adminCommission || Math.round(amount * 0.03);
+            const providerAmount = d.providerAmount || Math.round(itemsAmount * 0.95);
             data.push({
                 'Date': d.bookingDate || '', 'Order ID': doc.id.slice(0, 8),
-                'Customer': d.customerName || '', 'Customer Mobile': d.customerMobile || '',
+                'Customer': d.customerName || '', 'Mobile': d.customerMobile || '',
                 'Provider': d.providerName || '', 'Service': d.service || '', 'Items': d.items || '',
-                'Total': amount, 'Razorpay (2%)': gatewayFee, 'Commission (3%)': commission,
-                'Provider (95%)': providerAmount, 'Payment': d.paymentStatus || '', 'Status': d.status || ''
+                'Items Total': itemsAmount,
+                'Distance (km)': d.deliveryDistance || 0,
+                'Delivery Charge': deliveryCharge,
+                'Grand Total': amount,
+                'Razorpay (2%)': gatewayFee,
+                'Admin Commission (3%)': commission,
+                'Provider Amount (95%)': providerAmount,
+                'Delivery Partner Amt': deliveryCharge,
+                'Payment': d.paymentStatus || '',
+                'Status': d.status || ''
             });
         });
         const ws = XLSX.utils.json_to_sheet(data);
@@ -752,6 +730,7 @@ window.downloadCustomerExcel = async function() {
     showLoading(false);
 };
 
+// PROVIDER SETTLEMENT EXCEL
 window.downloadProviderExcel = async function() {
     showLoading(true);
     try {
@@ -761,16 +740,12 @@ window.downloadProviderExcel = async function() {
         const providerMap = {};
         snapshot.forEach(doc => {
             const d = doc.data();
-            const amount = d.totalAmount || 0;
-            const gatewayFee = Math.round(amount * 0.02);
-            const commission = Math.round(amount * 0.03);
-            const providerAmount = amount - gatewayFee - commission;
+            const itemsAmount = d.itemsTotal || 0;
+            const providerAmount = d.providerAmount || Math.round(itemsAmount * 0.95);
             const pName = d.providerName || 'Unknown';
-            if (!providerMap[pName]) providerMap[pName] = { name: pName, orders: 0, sales: 0, gatewayFee: 0, commission: 0, payable: 0 };
+            if (!providerMap[pName]) providerMap[pName] = { name: pName, orders: 0, totalItems: 0, payable: 0 };
             providerMap[pName].orders++;
-            providerMap[pName].sales += amount;
-            providerMap[pName].gatewayFee += gatewayFee;
-            providerMap[pName].commission += commission;
+            providerMap[pName].totalItems += itemsAmount;
             providerMap[pName].payable += providerAmount;
         });
         const data = Object.values(providerMap).map(p => {
@@ -779,8 +754,7 @@ window.downloadProviderExcel = async function() {
                 'Provider Name': p.name, 'Mobile': bank.mobile || '', 'Email': bank.email || '',
                 'Bank Account': bank.bankAccount || '⚠️ Not Submitted', 'IFSC': bank.ifscCode || '⚠️ Not Submitted',
                 'Account Holder': bank.accountHolder || '', 'Bank Name': bank.bankName || '',
-                'Orders': p.orders, 'Sales': p.sales, 'Razorpay (2%)': p.gatewayFee,
-                'Commission (3%)': p.commission, 'Net Payable': p.payable, 'Status': 'Pending'
+                'Orders': p.orders, 'Items Total': p.totalItems, 'Net Payable': p.payable, 'Status': 'Pending'
             };
         });
         const ws = XLSX.utils.json_to_sheet(data);
@@ -792,26 +766,33 @@ window.downloadProviderExcel = async function() {
     showLoading(false);
 };
 
+// INCOME EXCEL
 window.downloadIncomeExcel = async function() {
     showLoading(true);
     try {
         const snapshot = await db.collection('bookings').where('paymentStatus', '==', 'paid').get();
         if (snapshot.empty) { showToast('⚠️ No paid bookings!', true); showLoading(false); return; }
-        let totalOrders = 0, totalSales = 0, totalGatewayFee = 0, totalCommission = 0, totalProviderPay = 0;
+        let totalOrders = 0, totalItems = 0, totalDelivery = 0, totalAmount = 0, totalGatewayFee = 0, totalCommission = 0, totalProviderPay = 0;
         snapshot.forEach(doc => {
             const d = doc.data();
-            const amount = d.totalAmount || 0;
-            totalOrders++; totalSales += amount;
-            totalGatewayFee += Math.round(amount * 0.02);
-            totalCommission += Math.round(amount * 0.03);
-            totalProviderPay += amount - Math.round(amount * 0.02) - Math.round(amount * 0.03);
+            totalOrders++;
+            totalItems += (d.itemsTotal || 0);
+            totalDelivery += (d.deliveryCharge || 0);
+            totalAmount += (d.totalAmount || 0);
+            totalGatewayFee += (d.gatewayFee || 0);
+            totalCommission += (d.adminCommission || 0);
+            totalProviderPay += (d.providerAmount || 0);
         });
         const summaryData = [
             { 'Item': '📦 Total Orders', 'Amount': totalOrders },
-            { 'Item': '💰 Total Sales', 'Amount': '₹' + totalSales.toLocaleString() },
+            { 'Item': '🛒 Total Items Amount', 'Amount': '₹' + totalItems.toLocaleString() },
+            { 'Item': '🚚 Total Delivery Charge', 'Amount': '₹' + totalDelivery.toLocaleString() },
+            { 'Item': '💰 Grand Total (Revenue)', 'Amount': '₹' + totalAmount.toLocaleString() },
             { 'Item': '💳 Razorpay Fee (2%)', 'Amount': '-₹' + totalGatewayFee.toLocaleString() },
             { 'Item': '💵 Admin Commission (3%)', 'Amount': '₹' + totalCommission.toLocaleString() },
-            { 'Item': '✅ Provider Ko Dena (95%)', 'Amount': '₹' + totalProviderPay.toLocaleString() }
+            { 'Item': '👤 Provider Payout', 'Amount': '-₹' + totalProviderPay.toLocaleString() },
+            { 'Item': '🚚 Delivery Partner Payout', 'Amount': '-₹' + totalDelivery.toLocaleString() },
+            { 'Item': '💎 Net Income (Aapki)', 'Amount': '₹' + (totalCommission).toLocaleString() }
         ];
         const ws = XLSX.utils.json_to_sheet(summaryData);
         const wb = XLSX.utils.book_new();
@@ -822,11 +803,103 @@ window.downloadIncomeExcel = async function() {
     showLoading(false);
 };
 
+// SUBSCRIPTION EXCEL
+window.downloadSubscriptionExcel = async function() {
+    showLoading(true);
+    try {
+        const providersSnap = await db.collection('providers').get();
+        if (providersSnap.empty) { showToast('⚠️ No providers!', true); showLoading(false); return; }
+        const data = [];
+        const now = new Date();
+        for (const doc of providersSnap.docs) {
+            const p = doc.data();
+            const subDoc = await db.collection('subscriptions').doc(doc.id).get();
+            const sub = subDoc.exists ? subDoc.data() : null;
+            const trialEnd = p.freeTrialEndsAt ? new Date(p.freeTrialEndsAt) : null;
+            const subEnd = sub && sub.expiryDate ? new Date(sub.expiryDate) : null;
+            let status = 'Not Subscribed';
+            if (sub && sub.active && subEnd && subEnd > now) {
+                status = 'Active';
+            } else if (trialEnd && trialEnd > now) {
+                status = 'Free Trial';
+            } else if (subEnd && subEnd <= now) {
+                status = 'Expired';
+            }
+            data.push({
+                'Provider Name': p.name || '', 'Email': p.email || '', 'Mobile': p.mobile || '',
+                'Subscription Status': status, 'Expiry Date': subEnd ? subEnd.toLocaleDateString('en-IN') : '-',
+                'Payment ID': sub ? (sub.razorpaySubscriptionId || sub.paymentId || '-') : '-',
+                'Last Updated': sub ? (sub.updatedAt || '-') : '-'
+            });
+        }
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Subscriptions');
+        XLSX.writeFile(wb, `NnlGharPro_Subscriptions_${new Date().toISOString().slice(0,10)}.xlsx`);
+        showToast('✅ Subscription Excel downloaded');
+    } catch (e) { showToast('❌ ' + e.message, true); }
+    showLoading(false);
+};
+
+// ONBOARDING EXCEL
+window.downloadOnboardingExcel = async function() {
+    showLoading(true);
+    try {
+        const snapshot = await db.collection('onboardRequests').get();
+        if (snapshot.empty) { showToast('⚠️ No onboarding requests!', true); showLoading(false); return; }
+        const data = [];
+        snapshot.forEach(doc => {
+            const d = doc.data();
+            data.push({
+                'Provider Name': d.providerName || '',
+                'Mobile': d.providerMobile || '',
+                'Bank Account': d.bankAccount || '',
+                'IFSC Code': d.ifscCode || '',
+                'Account Holder': d.accountHolder || '',
+                'Status': d.status || 'pending',
+                'Created': d.createdAt || ''
+            });
+        });
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Onboarding');
+        XLSX.writeFile(wb, `NnlGharPro_Onboarding_${new Date().toISOString().slice(0,10)}.xlsx`);
+        showToast('✅ Onboarding Excel downloaded');
+    } catch (e) { showToast('❌ ' + e.message, true); }
+    showLoading(false);
+};
+
+// DELIVERY EXCEL
+window.downloadDeliveryExcel = async function() {
+    showLoading(true);
+    try {
+        const snapshot = await db.collection('deliveryPartners').get();
+        if (snapshot.empty) { showToast('⚠️ No delivery partners!', true); showLoading(false); return; }
+        const data = [];
+        snapshot.forEach(doc => {
+            const d = doc.data();
+            data.push({
+                'Partner Name': d.name || '',
+                'Mobile': d.mobile || '',
+                'Provider': d.providerId || '',
+                'Created': d.createdAt || ''
+            });
+        });
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Delivery Partners');
+        XLSX.writeFile(wb, `NnlGharPro_Delivery_${new Date().toISOString().slice(0,10)}.xlsx`);
+        showToast('✅ Delivery Excel downloaded');
+    } catch (e) { showToast('❌ ' + e.message, true); }
+    showLoading(false);
+};
+
+// PAYMENTS
 async function loadPayments() {
     const container = document.getElementById('paymentList');
     container.innerHTML = '<div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
     try {
-        const snapshot = await db.collection('bookings').orderBy('createdAt', 'desc').get();
+        const snapshot = await db.collection('bookings').get();
         let total = 0, paid = 0, unpaid = 0, revenue = 0, commission = 0;
         let html = '';
         if (snapshot.empty) { container.innerHTML = '<div class="empty-msg">No records</div>'; return; }
@@ -835,7 +908,7 @@ async function loadPayments() {
             total++;
             const status = d.paymentStatus || 'not_paid';
             const amount = d.totalAmount || 0;
-            if (status === 'paid') { paid++; revenue += amount; commission += Math.round(amount * 0.03); } else unpaid++;
+            if (status === 'paid') { paid++; revenue += amount; commission += (d.adminCommission || Math.round(amount * 0.03)); } else unpaid++;
             const statusClass = status === 'paid' ? 'paid' : 'unpaid';
             html += `
                 <div class="list-item" style="border-left-color:${status === 'paid' ? '#00C853' : '#FF4757'}">
@@ -867,7 +940,7 @@ window.markPaymentPaid = async function(id) {
 };
 
 // ═══════════════════════════════════════════════════════════
-// 🎯 ADD PROVIDER (with Email + Website)
+// PROVIDERS
 // ═══════════════════════════════════════════════════════════
 window.toggleServiceSelection = function(serviceId) {
     const card = document.getElementById('svc_' + serviceId.replace(/[^a-zA-Z0-9]/g, '_'));
@@ -883,7 +956,10 @@ window.showAddProvider = async function() {
     selectedServices = [];
     const servicesGridHtml = SERVICES_LIST.map(svc => {
         const safeId = svc.id.replace(/[^a-zA-Z0-9]/g, '_');
-        return `<div class="service-card ${svc.class}" id="svc_${safeId}" onclick="toggleServiceSelection('${svc.id}')"><span class="service-icon">${svc.icon}</span><span class="service-name">${svc.name}</span></div>`;
+        return `<div class="service-card ${svc.class}" id="svc_${safeId}" onclick="toggleServiceSelection('${svc.id}')" style="background:linear-gradient(135deg,#1a237e,#283593);padding:16px 8px;border-radius:14px;text-align:center;cursor:pointer;border:2px solid transparent;transition:.3s;color:#fff">
+            <span style="font-size:24px;display:block;margin-bottom:6px">${svc.icon}</span>
+            <span style="font-size:11px;font-weight:700">${svc.name}</span>
+        </div>`;
     }).join('');
 
     openModal('Add Provider', `
@@ -892,7 +968,6 @@ window.showAddProvider = async function() {
             🟡 <strong>Lead DB</strong> — Sirf database<br>
             🟢 <strong>Active</strong> — Portal use karega
         </div>
-
         <div class="form-group">
             <label><i class="fas fa-tag"></i> Provider Type *</label>
             <select id="fProviderType" onchange="toggleProviderType()" style="font-weight:700">
@@ -900,21 +975,21 @@ window.showAddProvider = async function() {
                 <option value="active">🟢 Active Provider (With Login)</option>
             </select>
         </div>
-
         <div class="form-group"><label><i class="fas fa-user"></i> Provider Name *</label><input id="fProviderName" placeholder="e.g. XYZ Plumbing Services"></div>
         <div class="form-group"><label><i class="fab fa-whatsapp"></i> Mobile Number *</label><input id="fProviderMobile" placeholder="10-digit mobile" maxlength="10" inputmode="numeric"></div>
         <div class="form-group"><label><i class="fas fa-envelope"></i> Email Address *</label><input id="fProviderEmail" placeholder="provider@example.com" type="email"></div>
-        <div class="form-group"><label><i class="fas fa-map-pin"></i> Pincodes (comma separated) *</label><input id="fProviderPincodes" placeholder="e.g. 110001, 110002, 201301"></div>
+        <div class="form-group"><label><i class="fas fa-map-pin"></i> Pincodes (comma separated) *</label><input id="fProviderPincodes" placeholder="e.g. 110001, 110002"></div>
         <div class="form-group"><label><i class="fas fa-map-marked-alt"></i> Address (Optional)</label><textarea id="fProviderAddress" rows="2" placeholder="Shop/Office address"></textarea></div>
         <div class="form-group"><label><i class="fas fa-globe"></i> Website (Optional)</label><input id="fProviderWebsite" placeholder="https://yourstore.com" type="url"></div>
         <div class="form-group"><label><i class="fas fa-credit-card"></i> UPI ID (Optional)</label><input id="fProviderUPI" placeholder="provider@upi"></div>
-        <div class="form-group"><label><i class="fas fa-tools"></i> Select Services * (Click to select)</label><div class="services-grid">${servicesGridHtml}</div><div id="selectedCount" style="font-size:11px;color:rgba(255,255,255,.4);text-align:center;margin-top:6px">0 services selected</div></div>
-
+        <div class="form-group"><label><i class="fas fa-tools"></i> Select Services *</label>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0">${servicesGridHtml}</div>
+            <div id="selectedCount" style="font-size:11px;color:rgba(255,255,255,.4);text-align:center;margin-top:6px">0 services selected</div>
+        </div>
         <div id="activeFields" style="display:none;background:rgba(0,200,83,.05);border-radius:10px;padding:12px;margin:12px 0;border:1px solid rgba(0,200,83,.15)">
             <div style="font-size:12px;font-weight:700;color:#00C853;margin-bottom:10px">🟢 Active Provider Login Password</div>
-            <div class="form-group"><label><i class="fas fa-lock"></i> Password * (min 6 chars)</label><input id="fProviderPassword" placeholder="Strong password" type="password"><div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:4px">Ye credentials WhatsApp par automatically bheje jayenge</div></div>
+            <div class="form-group"><label><i class="fas fa-lock"></i> Password * (min 6 chars)</label><input id="fProviderPassword" placeholder="Strong password" type="password"></div>
         </div>
-
         <button class="btn-primary" onclick="addProvider()"><i class="fas fa-plus"></i> Save Provider</button>
     `);
 };
@@ -936,38 +1011,28 @@ window.addProvider = async function() {
 
     if (!name || !mobile || !email || !pincodesRaw) { showToast('❌ Name, Mobile, Email, Pincodes zaroori!', true); return; }
     if (mobile.length !== 10) { showToast('❌ Valid 10-digit mobile!', true); return; }
-    if (!email.includes('@')) { showToast('❌ Valid email daalein!', true); return; }
-    if (selectedServices.length === 0) { showToast('❌ Kam se kam ek service select karein!', true); return; }
+    if (!email.includes('@')) { showToast('❌ Valid email!', true); return; }
+    if (selectedServices.length === 0) { showToast('❌ Kam se kam ek service!', true); return; }
 
     const pincodes = pincodesRaw.split(',').map(p => p.trim()).filter(p => p.length === 6);
-    if (pincodes.length === 0) { showToast('❌ Valid 6-digit pincodes daalein!', true); return; }
 
-    // 🟡 LEAD DB
     if (type === 'lead_db') {
         showLoading(true);
         try {
             await db.collection('providers').add({
                 name, mobile, email, pincodes, pincode: pincodes[0] || '',
-                address: address || '',
-                website: website || '',
-                upiId: upiId || '',
+                address: address || '', website: website || '', upiId: upiId || '',
                 services: selectedServices,
-                type: 'lead_db', status: 'active', hasLogin: false,
-                rating: 5.0,
-                createdAt: new Date().toISOString(),
-                createdBy: 'admin',
-                updatedAt: new Date().toISOString()
+                type: 'lead_db', status: 'active', hasLogin: false, rating: 5.0,
+                createdAt: new Date().toISOString(), createdBy: 'admin', updatedAt: new Date().toISOString()
             });
             showToast(`✅ Lead DB Provider added!`);
-            closeModal();
-            loadProviders();
-            updateStats();
+            closeModal(); loadProviders(); updateStats();
         } catch(e) { showToast('❌ ' + e.message, true); }
         showLoading(false);
         return;
     }
 
-    // 🟢 ACTIVE
     const password = document.getElementById('fProviderPassword').value.trim();
     if (!password || password.length < 6) { showToast('❌ Password min 6 chars!', true); return; }
 
@@ -982,7 +1047,7 @@ window.addProvider = async function() {
             userCredential = await secondaryAuth.createUserWithEmailAndPassword(email, password);
         } catch(authError) {
             if (authError.code === 'auth/email-already-in-use') {
-                showToast('⚠️ Ye email pehle se Firebase Auth mein hai!', true);
+                showToast('⚠️ Ye email already registered!', true);
                 showLoading(false); return;
             }
             throw authError;
@@ -994,17 +1059,12 @@ window.addProvider = async function() {
         await db.collection('providers').doc(uid).set({
             name, mobile, email, pincodes, pincode: pincodes[0] || '',
             password: hashedPassword,
-            address: address || '', 
-            website: website || '',
-            upiId: upiId || '',
+            address: address || '', website: website || '', upiId: upiId || '',
             services: selectedServices,
-            type: 'active', status: 'active', hasLogin: true,
-            rating: 5.0,
+            type: 'active', status: 'active', hasLogin: true, rating: 5.0,
             freeTrialEndsAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
             subscriptionStatus: 'free_trial',
-            createdAt: new Date().toISOString(),
-            createdBy: 'admin',
-            updatedAt: new Date().toISOString()
+            createdAt: new Date().toISOString(), createdBy: 'admin', updatedAt: new Date().toISOString()
         });
 
         const credentialsMsg = 
@@ -1020,10 +1080,8 @@ window.addProvider = async function() {
         window.open(`https://wa.me/91${mobile}?text=${encodeURIComponent(credentialsMsg)}`, '_blank');
         await secondaryAuth.signOut();
 
-        showToast(`✅ Active Provider added!`);
-        closeModal();
-        loadProviders();
-        updateStats();
+        showToast(`✅ Active Provider added! Credentials WhatsApp par.`);
+        closeModal(); loadProviders(); updateStats();
     } catch(e) {
         console.error(e);
         showToast('❌ ' + (e.message || e.code), true);
@@ -1031,15 +1089,16 @@ window.addProvider = async function() {
     showLoading(false);
 };
 
-// ═══════════════════════════════════════════════════════════
-// EDIT PROVIDER
-// ═══════════════════════════════════════════════════════════
 window.editProvider = function(id, data) {
     selectedServices = Array.isArray(data.services) ? [...data.services] : ['all'];
     const servicesGridHtml = SERVICES_LIST.map(svc => {
         const safeId = svc.id.replace(/[^a-zA-Z0-9]/g, '_');
         const isSelected = selectedServices.includes(svc.id) ? 'selected' : '';
-        return `<div class="service-card ${svc.class} ${isSelected}" id="svc_${safeId}" onclick="toggleServiceSelection('${svc.id}')"><span class="service-icon">${svc.icon}</span><span class="service-name">${svc.name}</span></div>`;
+        const bg = isSelected ? 'linear-gradient(135deg,#00C853,#00E676)' : 'linear-gradient(135deg,#1a237e,#283593)';
+        return `<div class="service-card" id="svc_${safeId}" onclick="toggleServiceSelection('${svc.id}')" style="background:${bg};padding:16px 8px;border-radius:14px;text-align:center;cursor:pointer;border:2px solid ${isSelected ? '#fff' : 'transparent'};color:#fff">
+            <span style="font-size:24px;display:block;margin-bottom:6px">${svc.icon}</span>
+            <span style="font-size:11px;font-weight:700">${svc.name}</span>
+        </div>`;
     }).join('');
     
     const pincodesStr = (data.pincodes || []).join(', ');
@@ -1053,14 +1112,40 @@ window.editProvider = function(id, data) {
         <div class="form-group"><label><i class="fas fa-user"></i> Name</label><input id="eProviderName" value="${data.name || ''}"></div>
         <div class="form-group"><label><i class="fab fa-whatsapp"></i> Mobile</label><input id="eProviderMobile" value="${data.mobile || ''}" maxlength="10"></div>
         <div class="form-group"><label><i class="fas fa-envelope"></i> Email</label><input id="eProviderEmail" value="${data.email || ''}" type="email"></div>
-        <div class="form-group"><label><i class="fas fa-map-pin"></i> Pincodes</label><input id="eProviderPincodes" value="${pincodesStr}" placeholder="110001, 110002"></div>
+        <div class="form-group"><label><i class="fas fa-map-pin"></i> Pincodes</label><input id="eProviderPincodes" value="${pincodesStr}"></div>
         <div class="form-group"><label><i class="fas fa-map-marked-alt"></i> Address</label><textarea id="eProviderAddress" rows="2">${data.address || ''}</textarea></div>
-        <div class="form-group"><label><i class="fas fa-globe"></i> Website</label><input id="eProviderWebsite" value="${data.website || ''}" placeholder="https://yourstore.com"></div>
+        <div class="form-group"><label><i class="fas fa-globe"></i> Website</label><input id="eProviderWebsite" value="${data.website || ''}"></div>
         <div class="form-group"><label><i class="fas fa-credit-card"></i> UPI ID</label><input id="eProviderUPI" value="${data.upiId || ''}"></div>
-        <div class="form-group"><label><i class="fas fa-tools"></i> Services</label><div class="services-grid">${servicesGridHtml}</div></div>
-        <div class="form-group"><label><i class="fas fa-toggle-on"></i> Status</label><select id="eProviderStatus"><option value="active" ${isActive ? 'selected' : ''}>✅ Active</option><option value="blocked" ${!isActive ? 'selected' : ''}>⛔ Blocked</option></select></div>
-        <div class="form-group"><label><i class="fas fa-star"></i> Rating</label><select id="eProviderRating"><option value="5.0" ${data.rating == 5 ? 'selected' : ''}>★★★★★ 5.0</option><option value="4.0" ${data.rating == 4 ? 'selected' : ''}>★★★★☆ 4.0</option><option value="3.0" ${data.rating == 3 ? 'selected' : ''}>★★★☆☆ 3.0</option><option value="2.0" ${data.rating == 2 ? 'selected' : ''}>★★☆☆☆ 2.0</option><option value="1.0" ${data.rating == 1 ? 'selected' : ''}>★☆☆☆☆ 1.0</option></select></div>
-        <button class="btn-success" onclick="saveProvider('${id}')" style="margin-top:10px"><i class="fas fa-save"></i> Save Profile</button>
+        <div class="form-group"><label><i class="fas fa-tools"></i> Services</label>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0">${servicesGridHtml}</div>
+        </div>
+        <div class="form-group"><label><i class="fas fa-toggle-on"></i> Status</label>
+            <select id="eProviderStatus">
+                <option value="active" ${isActive ? 'selected' : ''}>✅ Active</option>
+                <option value="blocked" ${!isActive ? 'selected' : ''}>⛔ Blocked</option>
+            </select>
+        </div>
+        <div class="form-group"><label><i class="fas fa-star"></i> Rating</label>
+            <select id="eProviderRating">
+                <option value="5.0" ${data.rating == 5 ? 'selected' : ''}>★★★★★ 5.0</option>
+                <option value="4.0" ${data.rating == 4 ? 'selected' : ''}>★★★★☆ 4.0</option>
+                <option value="3.0" ${data.rating == 3 ? 'selected' : ''}>★★★☆☆ 3.0</option>
+                <option value="2.0" ${data.rating == 2 ? 'selected' : ''}>★★☆☆☆ 2.0</option>
+                <option value="1.0" ${data.rating == 1 ? 'selected' : ''}>★☆☆☆☆ 1.0</option>
+            </select>
+        </div>
+        <div style="background:rgba(255,71,87,.05);border:1px solid rgba(255,71,87,.2);border-radius:10px;padding:12px;margin:12px 0">
+            <div style="font-size:12px;font-weight:700;color:#FF4757;margin-bottom:8px">⚠️ Danger Zone</div>
+            <button class="btn-danger" onclick="deleteProvider('${id}')" style="padding:10px;font-size:13px">
+                <i class="fas fa-trash"></i> Delete Provider Account
+            </button>
+            ${hasLogin && data.email ? `
+                <button class="btn-reset-password" onclick="resetProviderPassword('${id}','${data.email}')" style="margin-top:8px;width:100%;padding:10px">
+                    <i class="fas fa-envelope"></i> Send Password Reset
+                </button>
+            ` : ''}
+        </div>
+        <button class="btn-success" onclick="saveProvider('${id}')"><i class="fas fa-save"></i> Save Profile</button>
     `);
 };
 
@@ -1084,38 +1169,59 @@ window.saveProvider = async function(id) {
     try {
         await db.collection('providers').doc(id).update({
             name, mobile, email, pincodes, pincode: pincodes[0] || '',
-            address: address || '', 
-            website: website || '',
-            upiId: upiId || '',
+            address: address || '', website: website || '', upiId: upiId || '',
             status, rating, services: selectedServices,
             updatedAt: new Date().toISOString()
         });
         showToast('✅ Provider updated!');
-        closeModal();
-        loadProviders();
-        updateStats();
+        closeModal(); loadProviders(); updateStats();
     } catch (e) { showToast('❌ ' + e.message, true); }
     showLoading(false);
 };
 
+window.resetProviderPassword = function(id, email) {
+    if (!email || !email.includes('@')) { showToast('❌ Valid email required!', true); return; }
+    if (!confirm('Send password reset link to ' + email + '?')) return;
+    showLoading(true);
+    auth.sendPasswordResetEmail(email)
+        .then(() => showToast('✅ Reset link sent'))
+        .catch(e => showToast('❌ ' + e.message, true))
+        .finally(() => showLoading(false));
+};
+
 window.deleteProvider = async function(id) {
-    if (!confirm('⚠️ Delete this provider permanently?')) return;
+    if (!confirm('⚠️ DELETE Provider?\n\nYe provider ka account + data delete ho jayega!')) return;
+    if (!confirm('⚠️ Confirm: Ye action undo nahi hoga. Continue?')) return;
     showLoading(true);
     try {
         const doc = await db.collection('providers').doc(id).get();
         const d = doc.data();
         const bookings = await db.collection('bookings').where('assignedTo', '==', id).get();
         for (let bDoc of bookings.docs) {
-            await db.collection('bookings').doc(bDoc.id).update({ assignedTo: '', assignedToName: '', status: 'pending' });
+            await db.collection('bookings').doc(bDoc.id).update({ assignedTo: '', status: 'pending' });
         }
+        // Delete items
+        const items = await db.collection('items').where('providerId', '==', id).get();
+        for (let iDoc of items.docs) {
+            await db.collection('items').doc(iDoc.id).delete();
+        }
+        // Delete delivery partners
+        const delPartners = await db.collection('deliveryPartners').where('providerId', '==', id).get();
+        for (let dDoc of delPartners.docs) {
+            await db.collection('deliveryPartners').doc(dDoc.id).delete();
+        }
+        // Delete subscription
+        await db.collection('subscriptions').doc(id).delete().catch(() => {});
+        
         await db.collection('providers').doc(id).delete();
+        
         if (d && d.hasLogin && d.email) {
-            showToast('🗑️ Deleted! Firebase Auth user manually delete karein.', true);
+            showToast('🗑️ Deleted! Firebase Auth user bhi manually delete karein.', true);
         } else {
             showToast('🗑️ Provider deleted!');
         }
-        loadProviders();
-        updateStats();
+        closeModal();
+        loadProviders(); updateStats();
     } catch (e) { showToast('❌ ' + e.message, true); }
     showLoading(false);
 };
@@ -1135,7 +1241,7 @@ async function loadProviders() {
     const container = document.getElementById('adminProviderList');
     container.innerHTML = '<div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
     try {
-        const snapshot = await db.collection('providers').orderBy('createdAt', 'desc').get();
+        const snapshot = await db.collection('providers').get();
         if (snapshot.empty) { container.innerHTML = '<div class="empty-msg">No providers</div>'; return; }
         let html = '';
         snapshot.forEach(doc => {
@@ -1172,6 +1278,7 @@ async function loadProviders() {
     } catch (e) { container.innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`; }
 }
 
+// SUBSCRIPTIONS
 async function loadSubscriptions() {
     const container = document.getElementById('adminSubscriptionList');
     container.innerHTML = '<div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
@@ -1211,11 +1318,12 @@ async function loadSubscriptions() {
     } catch (e) { container.innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`; }
 }
 
+// ONBOARDING
 async function loadOnboarding() {
     const container = document.getElementById('adminOnboardingList');
     container.innerHTML = '<div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
     try {
-        const snapshot = await db.collection('onboardRequests').orderBy('createdAt', 'desc').get();
+        const snapshot = await db.collection('onboardRequests').get();
         if (snapshot.empty) { container.innerHTML = '<div class="empty-msg">No requests</div>'; return; }
         let html = '';
         snapshot.forEach(doc => {
@@ -1230,10 +1338,12 @@ async function loadOnboarding() {
                         <div class="detail">Status: <span class="status-badge ${statusClass}">${d.status || 'pending'}</span></div>
                     </div>
                     <div class="actions">
+                        <button class="btn-sm btn-edit" onclick='editOnboarding("${doc.id}", ${JSON.stringify(d).replace(/'/g, "\\'")})'><i class="fas fa-edit"></i></button>
                         ${d.status === 'pending' ? `
                             <button class="btn-sm btn-unblock" onclick="approveOnboarding('${doc.id}','${d.providerId}')"><i class="fas fa-check"></i> Approve</button>
                             <button class="btn-sm btn-block" onclick="rejectOnboarding('${doc.id}')"><i class="fas fa-times"></i> Reject</button>
                         ` : ''}
+                        <button class="btn-sm btn-delete" onclick="deleteOnboarding('${doc.id}')"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
             `;
@@ -1241,6 +1351,44 @@ async function loadOnboarding() {
         container.innerHTML = html;
     } catch (e) { container.innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`; }
 }
+
+window.editOnboarding = function(id, data) {
+    openModal('Edit Onboarding', `
+        <div class="form-group"><label>Provider Name</label><input id="obEProviderName" value="${data.providerName || ''}"></div>
+        <div class="form-group"><label>Mobile</label><input id="obEProviderMobile" value="${data.providerMobile || ''}" maxlength="10"></div>
+        <div class="form-group"><label>Bank Account</label><input id="obEBankAccount" value="${data.bankAccount || ''}"></div>
+        <div class="form-group"><label>IFSC Code</label><input id="obEIfscCode" value="${data.ifscCode || ''}"></div>
+        <div class="form-group"><label>Account Holder</label><input id="obEAccountHolder" value="${data.accountHolder || ''}"></div>
+        <div class="form-group"><label>Status</label>
+            <select id="obEStatus">
+                <option value="pending" ${data.status === 'pending' ? 'selected' : ''}>⏳ Pending</option>
+                <option value="approved" ${data.status === 'approved' ? 'selected' : ''}>✅ Approved</option>
+                <option value="rejected" ${data.status === 'rejected' ? 'selected' : ''}>❌ Rejected</option>
+            </select>
+        </div>
+        <button class="btn-success" onclick="saveOnboarding('${id}')"><i class="fas fa-save"></i> Save</button>
+    `);
+};
+
+window.saveOnboarding = async function(id) {
+    const providerName = document.getElementById('obEProviderName').value.trim();
+    const providerMobile = document.getElementById('obEProviderMobile').value.trim();
+    const bankAccount = document.getElementById('obEBankAccount').value.trim();
+    const ifscCode = document.getElementById('obEIfscCode').value.trim().toUpperCase();
+    const accountHolder = document.getElementById('obEAccountHolder').value.trim();
+    const status = document.getElementById('obEStatus').value;
+    
+    showLoading(true);
+    try {
+        await db.collection('onboardRequests').doc(id).update({
+            providerName, providerMobile, bankAccount, ifscCode, accountHolder, status,
+            updatedAt: new Date().toISOString()
+        });
+        showToast('✅ Onboarding updated!');
+        closeModal(); loadOnboarding();
+    } catch (e) { showToast('❌ ' + e.message, true); }
+    showLoading(false);
+};
 
 window.approveOnboarding = async function(id, providerId) {
     showLoading(true);
@@ -1259,25 +1407,32 @@ window.rejectOnboarding = async function(id) {
     showLoading(false);
 };
 
-async function loadCustomers() {
-    const container = document.getElementById('adminCustomerList');
-    const countEl = document.getElementById('customerCount');
+window.deleteOnboarding = async function(id) {
+    if (!confirm('Delete this onboarding request?')) return;
+    showLoading(true);
+    try { await db.collection('onboardRequests').doc(id).delete(); showToast('🗑️ Deleted'); loadOnboarding(); } catch (e) { showToast('❌ ' + e.message, true); }
+    showLoading(false);
+};
+
+// DELIVERY PARTNERS
+async function loadAllDeliveryPartners() {
+    const container = document.getElementById('adminDeliveryList');
     container.innerHTML = '<div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
     try {
-        const snapshot = await db.collection('bookings').orderBy('createdAt', 'desc').get();
-        if (snapshot.empty) { countEl.textContent = '0'; container.innerHTML = '<div class="empty-msg">No customers</div>'; return; }
-        countEl.textContent = snapshot.size;
+        const snapshot = await db.collection('deliveryPartners').get();
+        if (snapshot.empty) { container.innerHTML = '<div class="empty-msg">No delivery partners</div>'; return; }
         let html = '';
         snapshot.forEach(doc => {
             const d = doc.data();
-            const statusClass = d.status === 'completed' ? 'completed' : d.status === 'accepted' ? 'active' : 'pending';
             html += `
-                <div class="list-item" style="border-left-color:#2ecc71">
+                <div class="list-item" style="border-left-color:#FF6B35">
                     <div class="info">
-                        <div class="name">👤 ${d.customerName || 'N/A'}</div>
-                        <div class="detail">📞 ${d.customerMobile || 'N/A'} • 📍 ${d.customerAddress || 'N/A'}</div>
-                        <div class="detail">🛒 ${d.service || 'N/A'} • Items: ${d.items || 'N/A'}</div>
-                        <div class="detail">💰 ₹${d.totalAmount || 0} • 📅 ${d.bookingDate || 'N/A'} • <span class="status-badge ${statusClass}">${d.status || 'pending'}</span></div>
+                        <div class="name">🚚 ${d.name || 'N/A'}</div>
+                        <div class="detail">📞 ${d.mobile || 'N/A'}</div>
+                        <div class="detail">Provider ID: ${d.providerId || 'N/A'}</div>
+                    </div>
+                    <div class="actions">
+                        <a href="https://wa.me/91${d.mobile}" target="_blank" class="btn-sm btn-whatsapp">💬 Chat</a>
                     </div>
                 </div>
             `;
@@ -1286,43 +1441,7 @@ async function loadCustomers() {
     } catch (e) { container.innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`; }
 }
 
-window.showAddService = function() {
-    openModal('Add Service', `
-        <div class="form-group"><label><i class="fas fa-tag"></i> Service Name *</label><input id="fServiceName" placeholder="e.g. Plumbing"></div>
-        <button class="btn-primary" onclick="addService()"><i class="fas fa-plus"></i> Add Service</button>
-    `);
-};
-
-window.addService = async function() {
-    const name = document.getElementById('fServiceName').value.trim();
-    if (!name) { showToast('❌ Enter service name!', true); return; }
-    showLoading(true);
-    try { await db.collection('services').add({ name, status: 'active', createdAt: new Date().toISOString() }); showToast('✅ Added!'); closeModal(); loadServices(); } catch (e) { showToast('❌ ' + e.message, true); }
-    showLoading(false);
-};
-
-window.deleteService = async function(id) {
-    if (!confirm('Delete?')) return;
-    showLoading(true);
-    try { await db.collection('services').doc(id).delete(); showToast('🗑️ Deleted'); loadServices(); } catch (e) { showToast('❌ ' + e.message, true); }
-    showLoading(false);
-};
-
-async function loadServices() {
-    const container = document.getElementById('adminServiceList');
-    container.innerHTML = '<div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
-    try {
-        const snapshot = await db.collection('services').get();
-        if (snapshot.empty) { container.innerHTML = '<div class="empty-msg">No services</div>'; return; }
-        let html = '';
-        snapshot.forEach(doc => {
-            const d = doc.data();
-            html += `<div class="list-item"><div class="info"><div class="name">${d.name}</div></div><div class="actions"><button class="btn-sm btn-delete" onclick="deleteService('${doc.id}')"><i class="fas fa-trash"></i></button></div></div>`;
-        });
-        container.innerHTML = html;
-    } catch (e) { container.innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`; }
-}
-
+// BROADCAST
 window.publishBroadcast = async function() {
     const message = document.getElementById('broadcastMessageInput').value.trim();
     if (!message) { showToast('⚠️ Enter a message!', true); return; }
@@ -1365,24 +1484,110 @@ window.loadBroadcastData = async function() {
     } catch (e) { console.error(e); }
 };
 
+// STORES (WITH LOGO UPLOAD)
 window.showAddStore = function() {
+    currentLogoFile = null;
+    currentLogoUrl = '';
     openModal('Add Partner Store', `
         <div class="form-group"><label><i class="fas fa-store"></i> Store Name *</label><input id="fStoreName"></div>
         <div class="form-group"><label><i class="fas fa-tag"></i> Category *</label><input id="fStoreCategory"></div>
-        <div class="form-group"><label><i class="fas fa-link"></i> Store Link *</label><input id="fStoreLink"></div>
-        <div class="form-group"><label><i class="fas fa-image"></i> Icon</label><input id="fStoreIcon" value="🏪" maxlength="2"></div>
-        <button class="btn-primary" onclick="addStore()"><i class="fas fa-plus"></i> Save</button>
+        <div class="form-group"><label><i class="fas fa-link"></i> Store Link *</label><input id="fStoreLink" placeholder="https://..."></div>
+        
+        <div class="form-group">
+            <label><i class="fas fa-image"></i> Store Logo</label>
+            <div class="logo-upload-box" onclick="document.getElementById('logoInput').click()">
+                <input type="file" id="logoInput" accept="image/png,image/jpeg,image/jpg" style="display:none" onchange="handleLogoUpload(this)">
+                <div id="logoPreviewContainer">
+                    <i class="fas fa-cloud-upload-alt" style="font-size:32px;color:#4ECDC4;margin-bottom:8px;display:block"></i>
+                    <div style="font-size:12px;color:rgba(255,255,255,.6)">Click to upload PNG/JPEG</div>
+                    <div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:4px">Max 2MB • 200x200px recommended</div>
+                </div>
+            </div>
+            <div style="margin-top:8px">
+                <label style="font-size:11px;color:rgba(255,255,255,.5)">Or choose emoji:</label>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+                    ${['🏪','🛒','🍔','🏥','🎬','🏨','🏫','💊','🎁','🛍️','☕','🍕','🚕','⛽','💈','🧺'].map(e => `
+                        <button onclick="selectEmoji('${e}')" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:6px 10px;font-size:20px;cursor:pointer">${e}</button>
+                    `).join('')}
+                </div>
+            </div>
+            <input type="hidden" id="fStoreIcon" value="🏪">
+        </div>
+        
+        <button class="btn-primary" onclick="addStore()"><i class="fas fa-plus"></i> Save Store</button>
     `);
+};
+
+window.selectEmoji = function(emoji) {
+    document.getElementById('fStoreIcon').value = emoji;
+    currentLogoFile = null;
+    currentLogoUrl = '';
+    document.getElementById('logoPreviewContainer').innerHTML = `
+        <div style="font-size:48px;margin-bottom:8px">${emoji}</div>
+        <div style="font-size:12px;color:#4ECDC4">Emoji selected</div>
+    `;
+};
+
+window.handleLogoUpload = function(input) {
+    const file = input.files[0];
+    if (!file) return;
+    
+    if (file.size > 2 * 1024 * 1024) {
+        showToast('❌ File too large! Max 2MB', true);
+        return;
+    }
+    
+    if (!file.type.match('image.*')) {
+        showToast('❌ Only images allowed!', true);
+        return;
+    }
+    
+    currentLogoFile = file;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        document.getElementById('logoPreviewContainer').innerHTML = `
+            <img src="${e.target.result}" class="logo-preview">
+            <div style="font-size:11px;color:#4ECDC4;margin-top:4px">✅ ${file.name}</div>
+        `;
+    };
+    reader.readAsDataURL(file);
 };
 
 window.addStore = async function() {
     const name = document.getElementById('fStoreName').value.trim();
     const category = document.getElementById('fStoreCategory').value.trim();
     const link = document.getElementById('fStoreLink').value.trim();
-    const icon = document.getElementById('fStoreIcon').value.trim() || '🏪';
+    let icon = document.getElementById('fStoreIcon').value || '🏪';
+    
     if (!name || !category || !link) { showToast('❌ All fields required!', true); return; }
+    
     showLoading(true);
-    try { await db.collection('stores').add({ name, category, link, icon, status: 'active', createdAt: new Date().toISOString() }); showToast('✅ Added!'); closeModal(); loadStores(); } catch (e) { showToast('❌ ' + e.message, true); }
+    try {
+        let logoUrl = '';
+        
+        // Upload logo if file selected
+        if (currentLogoFile) {
+            const timestamp = Date.now();
+            const fileName = `stores/${timestamp}_${currentLogoFile.name}`;
+            const storageRef = storage.ref(fileName);
+            const snapshot = await storageRef.put(currentLogoFile);
+            logoUrl = await snapshot.ref.getDownloadURL();
+            icon = '📷'; // Indicator ki logo uploaded
+        }
+        
+        await db.collection('stores').add({ 
+            name, category, link, icon,
+            logoUrl: logoUrl,
+            status: 'active', 
+            createdAt: new Date().toISOString() 
+        });
+        
+        showToast('✅ Store added!');
+        closeModal(); 
+        loadStores();
+    } catch (e) { 
+        showToast('❌ ' + e.message, true); 
+    }
     showLoading(false);
 };
 
@@ -1397,32 +1602,52 @@ async function loadStores() {
     const container = document.getElementById('adminStoreList');
     container.innerHTML = '<div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
     try {
-        const snapshot = await db.collection('stores').orderBy('createdAt', 'desc').get();
+        const snapshot = await db.collection('stores').get();
         if (snapshot.empty) { container.innerHTML = '<div class="empty-msg">No stores</div>'; return; }
         let html = '';
         snapshot.forEach(doc => {
             const d = doc.data();
-            html += `<div class="list-item"><div class="info"><div class="name">${d.icon || '🏪'} ${d.name}</div><div class="detail">📂 ${d.category} • <a href="${d.link}" target="_blank" style="color:#4ECDC4">Visit</a></div></div><div class="actions"><button class="btn-sm btn-delete" onclick="deleteStore('${doc.id}')"><i class="fas fa-trash"></i></button></div></div>`;
+            const logoDisplay = d.logoUrl 
+                ? `<img src="${d.logoUrl}" style="width:40px;height:40px;object-fit:cover;border-radius:8px">`
+                : `<div style="font-size:32px">${d.icon || '🏪'}</div>`;
+            html += `
+                <div class="list-item">
+                    <div class="info">
+                        <div style="display:flex;align-items:center;gap:10px">
+                            ${logoDisplay}
+                            <div>
+                                <div class="name">${d.name}</div>
+                                <div class="detail">📂 ${d.category} • <a href="${d.link}" target="_blank" style="color:#4ECDC4">Visit</a></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <button class="btn-sm btn-delete" onclick="deleteStore('${doc.id}')"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `;
         });
         container.innerHTML = html;
     } catch (e) { container.innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`; }
 }
 
+// ACTIVITY LOGS
 async function loadActivityLogs() {
     const container = document.getElementById('adminActivityList');
     container.innerHTML = '<div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
     try {
-        const snapshot = await db.collection('activityLogs').orderBy('timestamp', 'desc').limit(50).get();
+        const snapshot = await db.collection('activityLogs').get();
         if (snapshot.empty) { container.innerHTML = '<div class="empty-msg">No logs</div>'; return; }
         let html = '';
         snapshot.forEach(doc => {
             const d = doc.data();
-            html += `<div class="list-item" style="padding:8px 12px"><div class="info"><div class="name" style="font-size:13px">🔔 ${d.action}</div><div class="detail">${d.description}</div><div class="detail" style="font-size:9px">📅 ${new Date(d.timestamp).toLocaleString('en-IN')}</div></div></div>`;
+            html += `<div class="list-item" style="padding:8px 12px"><div class="info"><div class="name" style="font-size:13px">🔔 ${d.action || ''}</div><div class="detail">${d.description || ''}</div><div class="detail" style="font-size:9px">📅 ${d.timestamp || ''}</div></div></div>`;
         });
         container.innerHTML = html;
     } catch (e) { container.innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`; }
 }
 
+// BULK WHATSAPP
 window.collectNumbers = async function() {
     showToast('⏳ Collecting...');
     whatsappNumbers = [];
@@ -1489,7 +1714,19 @@ window.clearNumbers = function() {
 };
 
 checkAdminSession();
-console.log('✅ NnlGharPro Admin Panel v7.0 — Email + Website + 21 Services');
+console.log('✅ NnlGharPro Admin Panel v10.0 — Final');
+console.log('📋 Features:');
+console.log('  ✅ Dashboard live');
+console.log('  ✅ Bookings + Excel');
+console.log('  ✅ Providers + Delete Account');
+console.log('  ✅ Subscriptions + Excel');
+console.log('  ✅ Onboarding (Edit/Delete) + Excel');
+console.log('  ✅ Delivery Partners + Excel');
+console.log('  ✅ Broadcast');
+console.log('  ✅ Payments (3 Excel: Customer, Provider, Income)');
+console.log('  ✅ Bulk WhatsApp');
+console.log('  ✅ Stores with Logo Upload (PNG/JPEG)');
+console.log('  ✅ Activity Logs');
 </script>
 </body>
 </html>
