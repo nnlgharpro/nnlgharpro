@@ -1004,78 +1004,98 @@ window.selectProvider = async function(id) {
     updateSelectedItemsSummary();
 };
 
+// ════════════════════════════════════════════════════════════
+// 🔥 LOAD PROVIDER ITEMS — FIXED (uses 'items' collection)
+// ════════════════════════════════════════════════════════════
 async function loadProviderItems(providerId) {
     try {
         let rawItems = [];
-        let allSubItems = [];
 
-        const snap1 = await db.collection('providerItems').where('providerId', '==', providerId).get();
-        snap1.forEach(doc => {
+        console.log('🔍 Loading items for provider:', providerId);
+
+        // ✅ CORRECT: 'items' collection
+        const snap = await db.collection('items').where('providerId', '==', providerId).get();
+
+        console.log('📦 Items found:', snap.size);
+
+        snap.forEach(doc => {
             const data = doc.data();
             if (data && data.name && data.name !== 'undefined' && data.name.trim() !== '') {
-                rawItems.push({ id: doc.id, ...data });
-                if (data.subItems && Array.isArray(data.subItems)) {
-                    data.subItems.forEach(sub => allSubItems.push({ ...sub, mainName: data.name }));
+                // Skip hidden items
+                if (data.hidden === true) {
+                    console.log('⏭️ Skipping hidden item:', data.name);
+                    return;
                 }
+                rawItems.push({ id: doc.id, ...data });
             }
         });
 
-        if (rawItems.length === 0) {
-            const snap2 = await db.collection('providers').doc(providerId).collection('items').get();
-            snap2.forEach(doc => {
-                const data = doc.data();
-                if (data && data.name && data.name !== 'undefined' && data.name.trim() !== '') {
-                    rawItems.push({ id: doc.id, ...data });
-                    if (data.subItems && Array.isArray(data.subItems)) {
-                        data.subItems.forEach(sub => allSubItems.push({ ...sub, mainName: data.name }));
-                    }
-                }
-            });
-        }
+        console.log('📦 Valid main items:', rawItems.length);
 
-        if (rawItems.length === 0 && allSubItems.length === 0) {
+        if (rawItems.length === 0) {
             providerItems = [];
-            document.getElementById('popupItemsList').innerHTML = '<div style="text-align:center;padding:40px 20px;color:rgba(255,255,255,0.25);"><i class="fas fa-box-open" style="font-size:48px;display:block;margin-bottom:12px;opacity:0.3;"></i><div style="font-size:16px;font-weight:600;color:rgba(255,255,255,0.4);">No Items Available</div></div>';
+            document.getElementById('popupItemsList').innerHTML = `
+                <div style="text-align:center;padding:40px 20px;color:rgba(255,255,255,0.25);">
+                    <i class="fas fa-box-open" style="font-size:48px;display:block;margin-bottom:12px;opacity:0.3;"></i>
+                    <div style="font-size:16px;font-weight:600;color:rgba(255,255,255,0.4);">No Items Available</div>
+                    <div style="font-size:12px;color:rgba(255,255,255,0.25);margin-top:6px;">Provider ne abhi tak koi item add nahi kiya</div>
+                </div>`;
             document.getElementById('selectedItemsSummary').innerHTML = '<div style="color:rgba(255,255,255,0.2); font-size:12px; padding:6px 0;"><i class="fas fa-info-circle"></i> No items available</div>';
             document.getElementById('paymentSection').style.display = 'none';
             return;
         }
 
-        const mainItems = rawItems.filter(item => item.isMain === true);
-        if (mainItems.length > 0) {
-            providerItems = rawItems;
-        } else {
-            const grouped = {};
-            rawItems.forEach(item => {
-                const mainKey = item.mainItem || item.category || 'Items';
-                if (!grouped[mainKey]) grouped[mainKey] = [];
-                grouped[mainKey].push(item);
-            });
-            providerItems = grouped;
-        }
+        // Structure banao — sab items ko main maano
+        providerItems = rawItems.map(item => ({
+            ...item,
+            isMain: true,
+            subItems: item.subItems || []
+        }));
 
+        // Cart initialize karo
         cart = {};
         popupCart = {};
 
-        if (Array.isArray(providerItems)) {
-            providerItems.forEach(item => {
-                if (item.isMain && item.subItems && Array.isArray(item.subItems)) {
-                    item.subItems.forEach(sub => {
-                        if (sub && sub.id) { cart[sub.id] = 0; popupCart[sub.id] = 0; }
-                    });
-                } else if (item.id) {
+        providerItems.forEach(item => {
+            const subItems = item.subItems || [];
+            
+            if (subItems.length > 0) {
+                // Sub items ka cart banao
+                subItems.forEach(sub => {
+                    // ✅ BACKWARD COMPATIBILITY: Agar sub.id nahi hai to auto-generate
+                    if (!sub.id) {
+                        sub.id = 'sub_auto_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+                        console.log('⚠️ Auto-generated ID for sub-item:', sub.name, '→', sub.id);
+                    }
+                    if (sub.hidden !== true) {
+                        cart[sub.id] = 0;
+                        popupCart[sub.id] = 0;
+                    }
+                });
+            } else {
+                // Koi sub item nahi to main item ka cart banao
+                if (item.id) {
                     cart[item.id] = 0;
                     popupCart[item.id] = 0;
                 }
-            });
-        }
+            }
+        });
+
+        console.log('🛒 Cart:', cart);
 
         renderPopupItems();
         updateSelectedItemsSummary();
         updateTotalAndPayment();
+
     } catch (error) {
-        console.error("Error loading items:", error);
+        console.error("❌ Error loading items:", error);
         providerItems = [];
+        document.getElementById('popupItemsList').innerHTML = `
+            <div style="text-align:center;padding:40px 20px;color:#FF4757;">
+                <i class="fas fa-exclamation-triangle" style="font-size:48px;display:block;margin-bottom:12px;"></i>
+                <div style="font-size:14px;">Error loading items</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.3);margin-top:6px;">${error.message}</div>
+            </div>`;
     }
 }
 
@@ -1084,61 +1104,50 @@ async function loadProviderItems(providerId) {
 // ════════════════════════════════════════════════════════════
 function renderPopupItems() {
     const container = document.getElementById('popupItemsList');
-    let itemsArray = [];
-    if (Array.isArray(providerItems)) {
-        itemsArray = providerItems;
-    } else if (typeof providerItems === 'object' && providerItems !== null) {
-        for (const key in providerItems) {
-            if (Array.isArray(providerItems[key])) itemsArray = itemsArray.concat(providerItems[key]);
-        }
-    }
-
-    const validItems = itemsArray.filter(item => item && item.name && item.name !== 'undefined' && item.name.trim() !== '');
-
-    if (validItems.length === 0) {
+    
+    if (!providerItems || providerItems.length === 0) {
         container.innerHTML = '<div style="text-align:center;padding:40px 20px;color:rgba(255,255,255,0.25);"><i class="fas fa-box-open" style="font-size:48px;display:block;margin-bottom:12px;opacity:0.3;"></i><div style="font-size:16px;font-weight:600;color:rgba(255,255,255,0.4);">No Items Available</div></div>';
         return;
     }
 
-    const mainItems = validItems.filter(item => item.isMain === true);
-    const flatItems = validItems.filter(item => !item.isMain);
-
-    if (mainItems.length === 0) {
-        let html = '';
-        flatItems.forEach(item => {
-            const qty = popupCart[item.id] || 0;
-            html += `
-                <div class="popup-main-item">
-                    <div class="main-item-header" style="cursor:default;"><span class="main-name">📦 ${item.name}</span></div>
-                    <div class="sub-items">
-                        <div class="sub-item-row">
-                            <span class="sub-name">${item.name}</span>
-                            <span class="sub-price">₹${item.price || 0}</span>
-                            <div class="qty-control">
-                                <button class="btn-minus" onclick="updatePopupQty('${item.id}', -1)">−</button>
-                                <span class="qty-num" id="popup-qty-${item.id}">${qty}</span>
-                                <button class="btn-plus" onclick="updatePopupQty('${item.id}', 1)">+</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        });
-        container.innerHTML = html;
-        updatePopupTotal();
-        return;
-    }
-
     let html = '';
-    mainItems.forEach((item) => {
-        const subItems = item.subItems || [];
-        html += `<div class="popup-main-item"><div class="main-item-header"><span class="main-name">📦 ${item.name} <span class="main-count">(${subItems.length} items)</span></span></div><div class="sub-items">`;
+    providerItems.forEach((item) => {
+        const subItems = (item.subItems || []).filter(s => s && s.name && s.hidden !== true);
+        
+        html += `<div class="popup-main-item">
+            <div class="main-item-header" style="cursor:default;">
+                <span class="main-name">📦 ${item.name} <span class="main-count">(${subItems.length} items)</span></span>
+            </div>
+            <div class="sub-items">`;
+
         if (subItems.length > 0) {
             subItems.forEach(sub => {
                 const qty = popupCart[sub.id] || 0;
-                html += `<div class="sub-item-row"><span class="sub-name">${sub.name || 'Item'}</span>${sub.category ? `<span class="sub-category">${sub.category}</span>` : ''}<span class="sub-price">₹${sub.price || 0}</span><div class="qty-control"><button class="btn-minus" onclick="updatePopupQty('${sub.id}', -1)">−</button><span class="qty-num" id="popup-qty-${sub.id}">${qty}</span><button class="btn-plus" onclick="updatePopupQty('${sub.id}', 1)">+</button></div></div>`;
+                html += `<div class="sub-item-row">
+                    <span class="sub-name">${sub.name}</span>
+                    ${sub.category ? `<span class="sub-category">${sub.category}</span>` : ''}
+                    <span class="sub-price">₹${sub.price || 0}</span>
+                    <div class="qty-control">
+                        <button class="btn-minus" onclick="updatePopupQty('${sub.id}', -1)">−</button>
+                        <span class="qty-num" id="popup-qty-${sub.id}">${qty}</span>
+                        <button class="btn-plus" onclick="updatePopupQty('${sub.id}', 1)">+</button>
+                    </div>
+                </div>`;
             });
+        } else {
+            // No sub-items — main item ko hi dikhao
+            const qty = popupCart[item.id] || 0;
+            html += `<div class="sub-item-row">
+                <span class="sub-name">${item.name}</span>
+                <span class="sub-price">₹${item.price || 0}</span>
+                <div class="qty-control">
+                    <button class="btn-minus" onclick="updatePopupQty('${item.id}', -1)">−</button>
+                    <span class="qty-num" id="popup-qty-${item.id}">${qty}</span>
+                    <button class="btn-plus" onclick="updatePopupQty('${item.id}', 1)">+</button>
+                </div>
+            </div>`;
         }
+
         html += `</div></div>`;
     });
 
@@ -1167,12 +1176,16 @@ function updatePopupTotal() {
 }
 
 function findItemById(id) {
-    if (Array.isArray(providerItems)) {
-        for (const main of providerItems) {
-            if (main.isMain && main.subItems) {
-                const found = main.subItems.find(s => s.id === id);
-                if (found) return found;
-            } else if (main.id === id) return main;
+    if (!Array.isArray(providerItems)) return null;
+    
+    for (const main of providerItems) {
+        // Check main item
+        if (main.id === id) return main;
+        
+        // Check sub-items
+        if (main.subItems && Array.isArray(main.subItems)) {
+            const found = main.subItems.find(s => s.id === id);
+            if (found) return found;
         }
     }
     return null;
@@ -1265,7 +1278,7 @@ function getItemsSummary() {
 }
 
 // ════════════════════════════════════════════════════════════
-// 🔥 RAZORPAY PAYMENT WITH NOTES
+// 🔥 RAZORPAY PAYMENT
 // ════════════════════════════════════════════════════════════
 window.processRazorpayPayment = function() {
     const total = getTotal();
@@ -1495,15 +1508,12 @@ checkSession();
 updateDateTime();
 updateWeather();
 
-console.log('✅ NnlGharPro Customer Portal v4.0 — FINAL');
-console.log('📋 All features:');
-console.log('  ✅ showLoading() + updateDebug()');
-console.log('  ✅ Live Razorpay Key');
-console.log('  ✅ Razorpay Notes');
-console.log('  ✅ 2% + 3% + 95% breakdown');
-console.log('  ✅ 5 Info Modals');
-console.log('  ✅ Trust Section');
-console.log('  ✅ Multi-pincode support');
+console.log('✅ NnlGharPro Customer Portal v5.0 — FIXED');
+console.log('📋 Fixes:');
+console.log('  ✅ loadProviderItems() uses "items" collection');
+console.log('  ✅ Sub-item IDs auto-handled');
+console.log('  ✅ Backward compatible with old data');
+console.log('  ✅ Future providers will work automatically');
 </script>
 </body>
 </html>
