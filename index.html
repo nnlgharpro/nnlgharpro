@@ -11,7 +11,7 @@
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); min-height: 100vh; padding: 12px; color: #fff; -webkit-user-select: none; user-select: none; }
-input, textarea { -webkit-user-select: text; user-select: text; }
+input, textarea, select { -webkit-user-select: text; user-select: text; }
 .container { max-width: 480px; margin: 0 auto; }
 
 /* LOGIN */
@@ -109,7 +109,7 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .modal-box .modal-header .close-btn { background: none; border: none; color: rgba(255,255,255,0.4); font-size: 22px; cursor: pointer; }
 .modal-box .modal-sub { font-size: 13px; color: rgba(255,255,255,0.4); margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 5px; }
 
-/* INFO MODAL CONTENT */
+/* INFO MODAL */
 .info-content { font-size: 13px; line-height: 1.7; color: rgba(255,255,255,0.8); }
 .info-content h4 { color: #4ECDC4; font-size: 14px; margin: 14px 0 6px; display: flex; align-items: center; gap: 6px; }
 .info-content h4:first-child { margin-top: 0; }
@@ -117,29 +117,35 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .info-content ul { margin: 6px 0 12px 18px; }
 .info-content ul li { margin-bottom: 4px; }
 .info-content a { color: #4ECDC4; text-decoration: none; }
-.info-content a:hover { text-decoration: underline; }
 .info-content .highlight { background: rgba(255,107,53,0.1); padding: 10px 12px; border-radius: 10px; border-left: 3px solid #FF6B35; margin: 10px 0; }
 
 /* PROVIDER LIST */
 .provider-list-box { max-height: 250px; overflow-y: auto; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 4px; background: rgba(255,255,255,0.02); }
-.provider-list-box::-webkit-scrollbar { width: 4px; }
-.provider-list-box::-webkit-scrollbar-thumb { background: #FF6B35; border-radius: 10px; }
 .provider-item { padding: 12px 14px; cursor: pointer; transition: 0.2s; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid transparent; margin-bottom: 4px; }
 .provider-item:hover { background: rgba(255,255,255,0.05); }
 .provider-item.selected { border-color: #4ECDC4; background: rgba(78,205,196,0.1); }
 .provider-item .p-name { font-weight: 600; font-size: 14px; color: #fff; }
 .provider-item .p-detail { font-size: 12px; color: rgba(255,255,255,0.5); }
 .provider-item .p-select-icon { color: rgba(255,255,255,0.1); }
-.provider-item .p-website { font-size: 11px; color: #4ECDC4; text-decoration: none; }
-.provider-item .p-website:hover { text-decoration: underline; }
 
 /* BOOKING FORM */
 .booking-form { display: none; margin-top: 5px; }
 .booking-form .form-group { margin-bottom: 12px; }
 .booking-form .form-group label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.4); display: block; margin-bottom: 4px; }
-.booking-form input, .booking-form textarea { width: 100%; padding: 12px 14px; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; background: rgba(255,255,255,0.03); color: #fff; font-size: 14px; font-family: 'Inter', sans-serif; }
-.booking-form input:focus, .booking-form textarea:focus { outline: none; border-color: #FF6B35; }
+.booking-form input, .booking-form textarea, .booking-form select { width: 100%; padding: 12px 14px; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; background: rgba(255,255,255,0.03); color: #fff; font-size: 14px; font-family: 'Inter', sans-serif; }
+.booking-form input:focus, .booking-form textarea:focus, .booking-form select:focus { outline: none; border-color: #FF6B35; }
+.booking-form select option { background: #1a1a2e; color: #fff; }
 .booking-form .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* DELIVERY DISTANCE SECTION */
+.delivery-distance-section { background: linear-gradient(135deg, rgba(255,107,53,0.08), rgba(255,217,61,0.05)); border: 1px solid rgba(255,107,53,0.2); border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; }
+.delivery-distance-section .dd-title { font-size: 13px; font-weight: 700; color: #FFD93D; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.delivery-distance-section .dd-title i { color: #FF6B35; }
+.delivery-distance-section .dd-select { width: 100%; padding: 12px 14px; border: 1px solid rgba(255,107,53,0.3); border-radius: 10px; background: rgba(255,107,53,0.05); color: #fff; font-size: 14px; font-weight: 700; outline: none; cursor: pointer; }
+.delivery-distance-section .dd-select:focus { border-color: #FF6B35; }
+.delivery-distance-section .dd-select option { background: #1a1a2e; color: #fff; }
+.delivery-distance-section .dd-info { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 8px; line-height: 1.5; }
+.delivery-distance-section .dd-info strong { color: #FFD93D; }
 
 /* ITEMS SECTION */
 .items-section { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; }
@@ -154,9 +160,16 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 
 /* PAYMENT */
 .payment-section { background: rgba(78,205,196,0.04); border: 1px solid rgba(78,205,196,0.08); border-radius: 14px; padding: 16px; margin-bottom: 12px; display: none; }
-.payment-section .payment-title { font-size: 14px; font-weight: 700; color: #4ECDC4; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-.payment-section .total-row { display: flex; justify-content: space-between; align-items: center; font-size: 18px; font-weight: 800; color: #FFD93D; }
-.payment-section .total-row .total-amount { font-size: 22px; color: #fff; }
+.payment-section .payment-title { font-size: 14px; font-weight: 700; color: #4ECDC4; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.payment-breakdown { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.breakdown-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding: 6px 0; }
+.breakdown-row.items { color: rgba(255,255,255,0.7); }
+.breakdown-row.delivery { color: #FFD93D; }
+.breakdown-row.total { font-size: 18px; font-weight: 800; color: #FFD93D; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px; margin-top: 8px; }
+.breakdown-row .label { display: flex; align-items: center; gap: 8px; }
+.breakdown-row .label i { color: #4ECDC4; }
+.breakdown-row .amount { font-weight: 700; }
+.breakdown-row.total .amount { font-size: 22px; color: #fff; }
 
 .razorpay-pay-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #5F259F, #8B5CF6); border: none; border-radius: 12px; color: #fff; font-size: 18px; font-weight: 700; cursor: pointer; transition: all 0.3s; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
 .razorpay-pay-btn:hover { transform: scale(1.02); box-shadow: 0 8px 30px rgba(91, 37, 159, 0.4); }
@@ -230,17 +243,12 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .popup-footer .btn-primary { padding: 10px 20px; background: linear-gradient(135deg, #4ECDC4, #44B3A8); border: none; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; }
 .popup-footer .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* DEBUG */
-.debug-box { background: rgba(0,0,0,0.5); border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; font-family: monospace; font-size: 11px; color: #4ECDC4; border: 1px solid rgba(78,205,196,0.15); max-height: 120px; overflow-y: auto; display: none; line-height: 1.6; }
-
 @media (max-width:600px) {
     .service-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
     .service-btn { min-height: 70px; padding: 12px 2px; font-size: 9px; }
     .service-btn i { font-size: 20px; }
     .alert-bar { flex-direction: column; align-items: flex-start; gap: 4px; }
-    .footer p { font-size: 13px; }
     .receipt-wrapper { max-width: 340px; padding: 14px; }
-    .sub-item-row { flex-wrap: wrap; gap: 4px; }
 }
 </style>
 </head>
@@ -248,7 +256,7 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 
 <div class="toast" id="toast"></div>
 
-<!-- LOGIN SCREEN -->
+<!-- LOGIN -->
 <div class="login-overlay" id="loginOverlay">
     <div class="login-box">
         <h2>🏠 NnlGharPro</h2>
@@ -300,7 +308,6 @@ input, textarea { -webkit-user-select: text; user-select: text; }
         <div class="b-close" onclick="closeBroadcast()">✕</div>
     </div>
 
-    <!-- TRUST SECTION -->
     <div class="trust-section">
         <div class="stars">⭐⭐⭐⭐⭐</div>
         <div class="trust-title">Thousands of Customers Trust Us</div>
@@ -311,8 +318,6 @@ input, textarea { -webkit-user-select: text; user-select: text; }
             <div class="trust-stat"><div class="stat-num">4.8/5</div><div class="stat-label">Average Rating</div></div>
         </div>
     </div>
-
-    <div class="debug-box" id="debugBox">🔍 Ready...</div>
 
     <div class="section-title"><i class="fas fa-map-pin" style="color:#FF6B35;"></i> Where do you need service?</div>
     <div class="pincode-wrap">
@@ -345,7 +350,6 @@ input, textarea { -webkit-user-select: text; user-select: text; }
         <div class="service-btn s-other" onclick="selectService('Other')"><i class="fas fa-ellipsis-h"></i> Other</div>
     </div>
 
-    <!-- FOOTER -->
     <div class="footer">
         <p><i class="fas fa-crown"></i> Managed by <span class="brand-highlight">Randhawa Enterprises</span> <i class="fas fa-crown"></i></p>
         <div class="footer-links">
@@ -402,6 +406,41 @@ input, textarea { -webkit-user-select: text; user-select: text; }
         <div class="booking-form" id="bookingForm">
             <div style="font-size:12px; color:#4ECDC4; margin-bottom:8px; font-weight:600;">✅ Selected: <span id="selectedProviderName">None</span></div>
 
+            <!-- 🚚 DELIVERY DISTANCE SELECTOR -->
+            <div class="delivery-distance-section">
+                <div class="dd-title"><i class="fas fa-truck"></i> Delivery Distance (Important!)</div>
+                <select id="deliveryDistance" class="dd-select" onchange="updateDeliveryCharge()">
+                    <option value="">-- Select distance --</option>
+                    <option value="1">0-4 km (Base charge: ₹50)</option>
+                    <option value="5">5 km (₹65)</option>
+                    <option value="6">6 km (₹80)</option>
+                    <option value="7">7 km (₹95)</option>
+                    <option value="8">8 km (₹110)</option>
+                    <option value="9">9 km (₹125)</option>
+                    <option value="10">10 km (₹140)</option>
+                    <option value="11">11 km (₹155)</option>
+                    <option value="12">12 km (₹170)</option>
+                    <option value="13">13 km (₹185)</option>
+                    <option value="14">14 km (₹200)</option>
+                    <option value="15">15 km (₹215)</option>
+                    <option value="16">16 km (₹230)</option>
+                    <option value="17">17 km (₹245)</option>
+                    <option value="18">18 km (₹260)</option>
+                    <option value="19">19 km (₹275)</option>
+                    <option value="20">20 km (₹290)</option>
+                    <option value="21">21 km (₹305)</option>
+                    <option value="22">22 km (₹320)</option>
+                    <option value="23">23 km (₹335)</option>
+                    <option value="24">24 km (₹350)</option>
+                    <option value="25">25 km (₹365)</option>
+                </select>
+                <div class="dd-info">
+                    📌 <strong>Base charge: ₹50</strong> (0-4 km)<br>
+                    📌 <strong>Extra: ₹15 per km</strong> after 4 km<br>
+                    📌 Example: 6 km = ₹50 + ₹30 = <strong>₹80</strong>
+                </div>
+            </div>
+
             <div class="items-section" id="itemsSection">
                 <div class="items-title">
                     <i class="fas fa-list"></i> Select Items / Services
@@ -412,12 +451,25 @@ input, textarea { -webkit-user-select: text; user-select: text; }
                 </div>
             </div>
 
+            <!-- PAYMENT BREAKDOWN -->
             <div class="payment-section" id="paymentSection">
-                <div class="payment-title"><i class="fas fa-credit-card"></i> 💳 Secure Payment via Razorpay</div>
-                <div class="total-row">
-                    <span>💰 Total Amount</span>
-                    <span class="total-amount" id="totalAmount">₹0</span>
+                <div class="payment-title"><i class="fas fa-credit-card"></i> 💳 Payment Breakdown</div>
+                
+                <div class="payment-breakdown">
+                    <div class="breakdown-row items">
+                        <div class="label"><i class="fas fa-shopping-cart"></i> Items Total</div>
+                        <div class="amount" id="itemsTotalDisplay">₹0</div>
+                    </div>
+                    <div class="breakdown-row delivery">
+                        <div class="label"><i class="fas fa-truck"></i> Delivery Charge <span id="distanceBadge"></span></div>
+                        <div class="amount" id="deliveryChargeDisplay">₹0</div>
+                    </div>
+                    <div class="breakdown-row total">
+                        <div class="label"><i class="fas fa-rupee-sign"></i> Grand Total</div>
+                        <div class="amount" id="grandTotalDisplay">₹0</div>
+                    </div>
                 </div>
+                
                 <button class="razorpay-pay-btn" id="payBtn" onclick="processRazorpayPayment()" disabled>
                     <i class="fas fa-credit-card"></i> Pay ₹<span id="payAmount">0</span> via Razorpay
                 </button>
@@ -425,8 +477,8 @@ input, textarea { -webkit-user-select: text; user-select: text; }
             </div>
 
             <div class="form-group">
-                <label><i class="fas fa-pen"></i> Special Instructions / Notes</label>
-                <textarea id="custNotes" rows="2" placeholder="Any special instructions..."></textarea>
+                <label><i class="fas fa-pen"></i> Special Instructions / Notes <span style="color:#FF6B35;">(Provider ko dikhega)</span></label>
+                <textarea id="custNotes" rows="3" placeholder="Example: Ghar par 2 baje ke baad aayein, gate number 3, opposite temple..."></textarea>
             </div>
 
             <div class="row-2">
@@ -440,7 +492,7 @@ input, textarea { -webkit-user-select: text; user-select: text; }
     </div>
 </div>
 
-<!-- ITEMS POPUP MODAL -->
+<!-- ITEMS POPUP -->
 <div class="popup-overlay" id="itemsPopupOverlay">
     <div class="popup-box">
         <div class="modal-header">
@@ -457,7 +509,7 @@ input, textarea { -webkit-user-select: text; user-select: text; }
     </div>
 </div>
 
-<!-- RECEIPT MODAL -->
+<!-- RECEIPT -->
 <div class="receipt-container" id="receiptContainer">
     <div class="receipt-wrapper">
         <button class="receipt-close-btn" onclick="closeReceipt()">✕</button>
@@ -485,7 +537,6 @@ input, textarea { -webkit-user-select: text; user-select: text; }
     </div>
 </div>
 
-<!-- LOADING SPINNER -->
 <div id="loading" style="position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);display:none;justify-content:center;align-items:center;z-index:99998;">
     <div style="width:44px;height:44px;border:3px solid rgba(255,255,255,0.05);border-top-color:#4ECDC4;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
 </div>
@@ -509,7 +560,7 @@ document.addEventListener('dragstart', function(e) { e.preventDefault(); });
 document.addEventListener('copy', function(e) { e.preventDefault(); showToast('🔒 Copy disabled', true); });
 
 // ════════════════════════════════════════════════════════════
-// FIREBASE CONFIG
+// FIREBASE
 // ════════════════════════════════════════════════════════════
 const firebaseConfig = {
     apiKey: "AIzaSyCBa8UmWUB-djAksNNvp14qoCY2y0HISoE",
@@ -524,11 +575,25 @@ const db = firebase.firestore();
 const auth = firebase.auth();
 
 // ════════════════════════════════════════════════════════════
-// 🔥 RAZORPAY CONFIG — LIVE KEY
+// RAZORPAY
 // ════════════════════════════════════════════════════════════
 const RAZORPAY_CONFIG = {
     KEY_ID: "rzp_live_TZVMRcs8uXxici"
 };
+
+// ════════════════════════════════════════════════════════════
+// 🚚 DELIVERY CHARGE CALCULATION
+// ════════════════════════════════════════════════════════════
+const BASE_DELIVERY_CHARGE = 50;       // 0-4 km
+const EXTRA_PER_KM = 15;               // After 4 km
+const BASE_KM = 4;
+
+function calculateDeliveryCharge(distance) {
+    const km = parseInt(distance);
+    if (!km || km <= 0) return 0;
+    if (km <= BASE_KM) return BASE_DELIVERY_CHARGE;
+    return BASE_DELIVERY_CHARGE + ((km - BASE_KM) * EXTRA_PER_KM);
+}
 
 // ════════════════════════════════════════════════════════════
 // GLOBALS
@@ -545,6 +610,8 @@ let cart = {};
 let popupCart = {};
 let currentBookingId = null;
 let currentPaymentStatus = '';
+let currentDeliveryDistance = 0;
+let currentDeliveryCharge = 0;
 
 // ════════════════════════════════════════════════════════════
 // HELPERS
@@ -562,13 +629,19 @@ function showLoading(show) {
     if (el) el.style.display = show ? 'flex' : 'none';
 }
 
-function updateDebug(msg) {
-    const el = document.getElementById('debugBox');
-    if (!el) return;
-    el.style.display = 'block';
-    el.innerHTML = '🔍 ' + msg;
-    console.log('DEBUG:', msg);
-}
+// ════════════════════════════════════════════════════════════
+// 🚚 DELIVERY CHARGE UPDATE
+// ════════════════════════════════════════════════════════════
+window.updateDeliveryCharge = function() {
+    const distanceSelect = document.getElementById('deliveryDistance');
+    const distance = parseInt(distanceSelect.value) || 0;
+    
+    currentDeliveryDistance = distance;
+    currentDeliveryCharge = calculateDeliveryCharge(distance);
+    
+    // Update total
+    updateTotalAndPayment();
+};
 
 // ════════════════════════════════════════════════════════════
 // INFO MODALS
@@ -630,6 +703,12 @@ const INFO_CONTENT = {
             <li>Secure UPI, Cards, Net Banking</li>
             <li>No cash on delivery</li>
         </ul>
+        <h4><i class="fas fa-truck"></i> Delivery Charges</h4>
+        <ul>
+            <li>Base charge: ₹50 (0-4 km)</li>
+            <li>Extra: ₹15 per km (after 4 km)</li>
+            <li>Customer selects distance at booking</li>
+        </ul>
         <h4><i class="fas fa-undo"></i> Refund Policy</h4>
         <ul>
             <li>Refund only if service not delivered</li>
@@ -646,6 +725,7 @@ const INFO_CONTENT = {
         </div>
         <h4><i class="fas fa-comments"></i> FAQ</h4>
         <p><strong>❓ Payment kaise?</strong><br>✅ Razorpay se UPI/Card/Netbanking</p>
+        <p><strong>❓ Delivery charge kaise?</strong><br>✅ ₹50 base (0-4 km) + ₹15/km after 4 km</p>
         <p><strong>❓ Payment fail?</strong><br>✅ Auto refund in 5-7 days</p>
         <p><strong>❓ Provider nahi aaya?</strong><br>✅ Support se contact karein</p>
     `}
@@ -873,7 +953,6 @@ window.selectService = function(service) {
     if (btns.length > 0) btns[0].classList.add('active');
 
     showToast('✅ Selected: ' + service);
-    updateDebug('Service: ' + service);
 
     const pincode = document.getElementById('pincode').value.trim();
     if (pincode && pincode.length === 6) {
@@ -891,8 +970,6 @@ window.searchServices = async function() {
     const pincode = document.getElementById('pincode').value.trim();
     if (!pincode || pincode.length !== 6) { showToast('Enter valid pincode!', true); return; }
 
-    updateDebug('Searching: ' + selectedService + ' in ' + pincode);
-
     document.getElementById('bookingModal').classList.add('show');
     document.getElementById('providerList').innerHTML = '<div style="text-align:center; padding:20px; color:rgba(255,255,255,0.2);"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
     document.getElementById('modalServiceName').textContent = selectedService;
@@ -903,6 +980,9 @@ window.searchServices = async function() {
     providerItems = [];
     cart = {};
     popupCart = {};
+    currentDeliveryDistance = 0;
+    currentDeliveryCharge = 0;
+    document.getElementById('deliveryDistance').value = '';
     document.getElementById('paymentSection').style.display = 'none';
 
     try {
@@ -910,21 +990,17 @@ window.searchServices = async function() {
         allProviders = [];
         snapshot.forEach(doc => allProviders.push({ id: doc.id, ...doc.data() }));
 
-        updateDebug('Total providers: ' + allProviders.length);
-
         if (allProviders.length === 0) {
             document.getElementById('providerList').innerHTML = '<div style="padding:30px; text-align:center; color:rgba(255,255,255,0.4);"><i class="fas fa-search" style="font-size:28px; display:block; margin-bottom:12px; color:#FF6B35;"></i><div style="font-size:14px; font-weight:600; color:#fff;">No providers available</div></div>';
             return;
         }
 
-        // Pincode filter
         const pincodeMatched = allProviders.filter(p => {
             return (p.pincode && p.pincode === pincode) ||
                 (p.pincodes && Array.isArray(p.pincodes) && p.pincodes.includes(pincode)) ||
                 (p.servicePincodes && Array.isArray(p.servicePincodes) && p.servicePincodes.includes(pincode));
         });
 
-        // Service filter
         const serviceLower = selectedService.toLowerCase().trim();
         const filtered = pincodeMatched.filter(p => {
             if (!p.services) return true;
@@ -934,8 +1010,6 @@ window.searchServices = async function() {
             }
             return (p.services || "").toString().toLowerCase().includes(serviceLower);
         });
-
-        updateDebug('Found: ' + filtered.length + ' providers');
 
         if (filtered.length === 0) {
             document.getElementById('providerList').innerHTML = `<div style="padding:30px; text-align:center; color:rgba(255,255,255,0.4);"><i class="fas fa-search" style="font-size:28px; display:block; margin-bottom:12px; color:#FF6B35;"></i><div style="font-size:14px; font-weight:600; color:#fff;">No providers found</div><div style="font-size:12px; color:rgba(255,255,255,0.3);">For "${selectedService}" in ${pincode}</div></div>`;
@@ -1005,83 +1079,47 @@ window.selectProvider = async function(id) {
 };
 
 // ════════════════════════════════════════════════════════════
-// 🔥 LOAD PROVIDER ITEMS — FIXED (uses 'items' collection)
+// LOAD PROVIDER ITEMS
 // ════════════════════════════════════════════════════════════
 async function loadProviderItems(providerId) {
     try {
         let rawItems = [];
-
         console.log('🔍 Loading items for provider:', providerId);
-
-        // ✅ CORRECT: 'items' collection
         const snap = await db.collection('items').where('providerId', '==', providerId).get();
-
         console.log('📦 Items found:', snap.size);
 
         snap.forEach(doc => {
             const data = doc.data();
             if (data && data.name && data.name !== 'undefined' && data.name.trim() !== '') {
-                // Skip hidden items
-                if (data.hidden === true) {
-                    console.log('⏭️ Skipping hidden item:', data.name);
-                    return;
-                }
+                if (data.hidden === true) return;
                 rawItems.push({ id: doc.id, ...data });
             }
         });
 
-        console.log('📦 Valid main items:', rawItems.length);
-
         if (rawItems.length === 0) {
             providerItems = [];
-            document.getElementById('popupItemsList').innerHTML = `
-                <div style="text-align:center;padding:40px 20px;color:rgba(255,255,255,0.25);">
-                    <i class="fas fa-box-open" style="font-size:48px;display:block;margin-bottom:12px;opacity:0.3;"></i>
-                    <div style="font-size:16px;font-weight:600;color:rgba(255,255,255,0.4);">No Items Available</div>
-                    <div style="font-size:12px;color:rgba(255,255,255,0.25);margin-top:6px;">Provider ne abhi tak koi item add nahi kiya</div>
-                </div>`;
+            document.getElementById('popupItemsList').innerHTML = `<div style="text-align:center;padding:40px 20px;color:rgba(255,255,255,0.25);"><i class="fas fa-box-open" style="font-size:48px;display:block;margin-bottom:12px;opacity:0.3;"></i><div style="font-size:16px;font-weight:600;color:rgba(255,255,255,0.4);">No Items Available</div><div style="font-size:12px;color:rgba(255,255,255,0.25);margin-top:6px;">Provider ne abhi tak koi item add nahi kiya</div></div>`;
             document.getElementById('selectedItemsSummary').innerHTML = '<div style="color:rgba(255,255,255,0.2); font-size:12px; padding:6px 0;"><i class="fas fa-info-circle"></i> No items available</div>';
             document.getElementById('paymentSection').style.display = 'none';
             return;
         }
 
-        // Structure banao — sab items ko main maano
-        providerItems = rawItems.map(item => ({
-            ...item,
-            isMain: true,
-            subItems: item.subItems || []
-        }));
+        providerItems = rawItems.map(item => ({ ...item, isMain: true, subItems: item.subItems || [] }));
 
-        // Cart initialize karo
         cart = {};
         popupCart = {};
 
         providerItems.forEach(item => {
             const subItems = item.subItems || [];
-            
             if (subItems.length > 0) {
-                // Sub items ka cart banao
                 subItems.forEach(sub => {
-                    // ✅ BACKWARD COMPATIBILITY: Agar sub.id nahi hai to auto-generate
-                    if (!sub.id) {
-                        sub.id = 'sub_auto_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
-                        console.log('⚠️ Auto-generated ID for sub-item:', sub.name, '→', sub.id);
-                    }
-                    if (sub.hidden !== true) {
-                        cart[sub.id] = 0;
-                        popupCart[sub.id] = 0;
-                    }
+                    if (!sub.id) sub.id = 'sub_auto_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+                    if (sub.hidden !== true) { cart[sub.id] = 0; popupCart[sub.id] = 0; }
                 });
             } else {
-                // Koi sub item nahi to main item ka cart banao
-                if (item.id) {
-                    cart[item.id] = 0;
-                    popupCart[item.id] = 0;
-                }
+                if (item.id) { cart[item.id] = 0; popupCart[item.id] = 0; }
             }
         });
-
-        console.log('🛒 Cart:', cart);
 
         renderPopupItems();
         updateSelectedItemsSummary();
@@ -1090,12 +1128,7 @@ async function loadProviderItems(providerId) {
     } catch (error) {
         console.error("❌ Error loading items:", error);
         providerItems = [];
-        document.getElementById('popupItemsList').innerHTML = `
-            <div style="text-align:center;padding:40px 20px;color:#FF4757;">
-                <i class="fas fa-exclamation-triangle" style="font-size:48px;display:block;margin-bottom:12px;"></i>
-                <div style="font-size:14px;">Error loading items</div>
-                <div style="font-size:11px;color:rgba(255,255,255,0.3);margin-top:6px;">${error.message}</div>
-            </div>`;
+        document.getElementById('popupItemsList').innerHTML = `<div style="text-align:center;padding:40px 20px;color:#FF4757;"><i class="fas fa-exclamation-triangle" style="font-size:48px;display:block;margin-bottom:12px;"></i><div style="font-size:14px;">Error loading items</div></div>`;
     }
 }
 
@@ -1104,7 +1137,6 @@ async function loadProviderItems(providerId) {
 // ════════════════════════════════════════════════════════════
 function renderPopupItems() {
     const container = document.getElementById('popupItemsList');
-    
     if (!providerItems || providerItems.length === 0) {
         container.innerHTML = '<div style="text-align:center;padding:40px 20px;color:rgba(255,255,255,0.25);"><i class="fas fa-box-open" style="font-size:48px;display:block;margin-bottom:12px;opacity:0.3;"></i><div style="font-size:16px;font-weight:600;color:rgba(255,255,255,0.4);">No Items Available</div></div>';
         return;
@@ -1113,7 +1145,6 @@ function renderPopupItems() {
     let html = '';
     providerItems.forEach((item) => {
         const subItems = (item.subItems || []).filter(s => s && s.name && s.hidden !== true);
-        
         html += `<div class="popup-main-item">
             <div class="main-item-header" style="cursor:default;">
                 <span class="main-name">📦 ${item.name} <span class="main-count">(${subItems.length} items)</span></span>
@@ -1135,7 +1166,6 @@ function renderPopupItems() {
                 </div>`;
             });
         } else {
-            // No sub-items — main item ko hi dikhao
             const qty = popupCart[item.id] || 0;
             html += `<div class="sub-item-row">
                 <span class="sub-name">${item.name}</span>
@@ -1147,7 +1177,6 @@ function renderPopupItems() {
                 </div>
             </div>`;
         }
-
         html += `</div></div>`;
     });
 
@@ -1177,12 +1206,8 @@ function updatePopupTotal() {
 
 function findItemById(id) {
     if (!Array.isArray(providerItems)) return null;
-    
     for (const main of providerItems) {
-        // Check main item
         if (main.id === id) return main;
-        
-        // Check sub-items
         if (main.subItems && Array.isArray(main.subItems)) {
             const found = main.subItems.find(s => s.id === id);
             if (found) return found;
@@ -1234,28 +1259,51 @@ function updateSelectedItemsSummary() {
 }
 
 function updateTotalAndPayment() {
-    let total = 0, hasItems = false;
+    let itemsTotal = 0, hasItems = false;
     for (const [id, qty] of Object.entries(cart)) {
         if (qty > 0) {
             let item = findItemById(id);
-            if (item) { hasItems = true; total += (item.price || 0) * qty; }
+            if (item) { hasItems = true; itemsTotal += (item.price || 0) * qty; }
         }
     }
-    document.getElementById('totalAmount').textContent = '₹' + total;
-    document.getElementById('payAmount').textContent = total;
+    
+    const deliveryCharge = currentDeliveryCharge;
+    const grandTotal = itemsTotal + deliveryCharge;
+    
+    // Update displays
+    document.getElementById('itemsTotalDisplay').textContent = '₹' + itemsTotal;
+    document.getElementById('deliveryChargeDisplay').textContent = '₹' + deliveryCharge;
+    document.getElementById('grandTotalDisplay').textContent = '₹' + grandTotal;
+    document.getElementById('payAmount').textContent = grandTotal;
+    
+    // Distance badge
+    const distanceBadge = document.getElementById('distanceBadge');
+    if (currentDeliveryDistance > 0) {
+        distanceBadge.textContent = `(${currentDeliveryDistance === 1 ? '0-4' : currentDeliveryDistance} km)`;
+        distanceBadge.style.color = '#FFD93D';
+        distanceBadge.style.fontSize = '11px';
+    } else {
+        distanceBadge.textContent = '';
+    }
+    
     const section = document.getElementById('paymentSection');
     const payBtn = document.getElementById('payBtn');
-    if (hasItems && total > 0) {
+    
+    if (hasItems && itemsTotal > 0 && currentDeliveryDistance > 0) {
         section.style.display = 'block';
-        payBtn.innerHTML = `<i class="fas fa-credit-card"></i> Pay ₹${total} via Razorpay`;
+        payBtn.innerHTML = `<i class="fas fa-credit-card"></i> Pay ₹${grandTotal} via Razorpay`;
         payBtn.disabled = false;
+    } else if (hasItems && itemsTotal > 0 && currentDeliveryDistance === 0) {
+        section.style.display = 'block';
+        payBtn.innerHTML = `<i class="fas fa-truck"></i> Select Distance First`;
+        payBtn.disabled = true;
     } else {
         section.style.display = 'none';
         payBtn.disabled = true;
     }
 }
 
-function getTotal() {
+function getItemsTotal() {
     let total = 0;
     for (const [id, qty] of Object.entries(cart)) {
         if (qty > 0) {
@@ -1281,24 +1329,34 @@ function getItemsSummary() {
 // 🔥 RAZORPAY PAYMENT
 // ════════════════════════════════════════════════════════════
 window.processRazorpayPayment = function() {
-    const total = getTotal();
-    if (total <= 0) { showToast('⚠️ Select at least one item!', true); return; }
+    if (currentDeliveryDistance === 0) {
+        showToast('⚠️ Pehle delivery distance select karein!', true);
+        return;
+    }
+    
+    const itemsTotal = getItemsTotal();
+    if (itemsTotal <= 0) { showToast('⚠️ Select at least one item!', true); return; }
+    
     const name = document.getElementById('custName').value.trim();
     const mobile = document.getElementById('custMobile').value.trim();
     const address = document.getElementById('custAddress').value.trim();
     const date = document.getElementById('bookingDate').value;
     const time = document.getElementById('bookingTime').value;
+    
     if (!name || !mobile || !address) { showToast('⚠️ Fill Name, Mobile & Address!', true); return; }
     if (mobile.length < 10) { showToast('⚠️ Valid 10-digit mobile!', true); return; }
     if (!date) { showToast('⚠️ Select date!', true); return; }
     if (!time) { showToast('⚠️ Select time!', true); return; }
     const selectedDate = new Date(date + 'T' + (time || '10:00'));
     if (selectedDate < new Date()) { showToast('⚠️ Select future date!', true); return; }
+    
     createRazorpayPayment();
 };
 
 function createRazorpayPayment() {
-    const total = getTotal();
+    const itemsTotal = getItemsTotal();
+    const deliveryCharge = currentDeliveryCharge;
+    const grandTotal = itemsTotal + deliveryCharge;
     const name = document.getElementById('custName').value.trim();
     const mobile = document.getElementById('custMobile').value.trim();
     const address = document.getElementById('custAddress').value.trim();
@@ -1313,9 +1371,10 @@ function createRazorpayPayment() {
     isBookingSubmitting = true;
     showLoading(true);
 
-    const gatewayFee = Math.round(total * 0.02);
-    const adminCommission = Math.round(total * 0.03);
-    const providerAmount = total - gatewayFee - adminCommission;
+    const gatewayFee = Math.round(grandTotal * 0.02);
+    const adminCommission = Math.round(grandTotal * 0.03);
+    const providerAmount = Math.round(itemsTotal * 0.95);           // 95% of items
+    const deliveryPartnerAmount = deliveryCharge;                    // Full delivery to partner
 
     try {
         const bookingData = {
@@ -1329,20 +1388,31 @@ function createRazorpayPayment() {
             customerName: name || '',
             customerMobile: mobile || '',
             customerAddress: address || '',
-            customerNotes: notes || '',
+            customerNotes: notes || '',                                   // ✅ Notes save
             customerPincode: document.getElementById('pincode').value.trim() || '',
             customerEmail: currentUser ? currentUser.email : '',
             customerUid: currentUser ? currentUser.uid : '',
             items: itemsSummary || '',
-            totalAmount: total || 0,
+            itemsTotal: itemsTotal,                                        // ✅ Items total
+            deliveryDistance: currentDeliveryDistance,                     // ✅ Distance selected
+            deliveryCharge: deliveryCharge,                                // ✅ Calculated delivery charge
+            totalAmount: grandTotal,                                       // ✅ Grand total
             gatewayFee: gatewayFee,
             adminCommission: adminCommission,
             providerAmount: providerAmount,
+            deliveryPartnerAmount: deliveryPartnerAmount,                  // ✅ Delivery partner ko
             paymentMethod: 'Razorpay',
             paymentStatus: 'pending',
             paymentConfirmed: false,
             status: 'pending',
             assignedTo: selectedProviderId || '',
+            // 🚚 Delivery fields
+            deliveryPartner: '',
+            deliveryPartnerMobile: '',
+            deliveryStatus: 'pending',
+            deliveryAssignedAt: '',
+            deliveryPickedAt: '',
+            deliveryDeliveredAt: '',
             createdAt: new Date().toISOString(),
             bookingType: 'customer'
         };
@@ -1354,7 +1424,7 @@ function createRazorpayPayment() {
 
                 const options = {
                     key: RAZORPAY_CONFIG.KEY_ID,
-                    amount: total * 100,
+                    amount: grandTotal * 100,
                     currency: "INR",
                     name: "NnlGharPro - Randhawa Enterprises",
                     description: `NnlGharPro - ${provider.name} - ${bookingId.slice(0,8)}`,
@@ -1372,10 +1442,14 @@ function createRazorpayPayment() {
                         service: selectedService || '',
                         customerName: name,
                         customerMobile: mobile,
-                        totalAmount: total,
+                        itemsTotal: itemsTotal,
+                        deliveryDistance: currentDeliveryDistance + ' km',
+                        deliveryCharge: deliveryCharge,
+                        totalAmount: grandTotal,
                         gatewayFee: gatewayFee,
                         adminCommission: adminCommission,
-                        providerAmount: providerAmount
+                        providerAmount: providerAmount,
+                        deliveryPartnerAmount: deliveryPartnerAmount
                     },
                     theme: { color: "#FF6B35" },
                     modal: {
@@ -1383,6 +1457,7 @@ function createRazorpayPayment() {
                             showToast('⚠️ Payment cancelled', true);
                             showLoading(false);
                             isBookingSubmitting = false;
+                            db.collection('bookings').doc(bookingId).delete().catch(() => {});
                         }
                     },
                     handler: function(response) {
@@ -1419,7 +1494,8 @@ async function verifyRazorpayPayment(bookingId, response) {
             transactionId: response.razorpay_payment_id || '',
             status: 'assigned',
             paidAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
+            updatedAt: new Date().toISOString(),
+            deliveryStatus: 'pending'
         };
         if (response.razorpay_order_id) updateData.razorpayOrderId = response.razorpay_order_id;
         if (response.razorpay_signature) updateData.razorpaySignature = response.razorpay_signature;
@@ -1462,8 +1538,10 @@ function showReceipt(bookingId, paymentStatus) {
             <div class="receipt-row"><span class="label">Service</span><span class="value">${data.service || ''}</span></div>
             <div class="receipt-row"><span class="label">Provider</span><span class="value">${data.providerName || ''}</span></div>
             <div class="receipt-row"><span class="label">Items</span><span class="value">${data.items || ''}</span></div>
-            <div class="receipt-row"><span class="label">Total</span><span class="value">₹${data.totalAmount || 0}</span></div>
+            <div class="receipt-row"><span class="label">Items Total</span><span class="value">₹${data.itemsTotal || 0}</span></div>
+            <div class="receipt-row"><span class="label">Delivery (${data.deliveryDistance || 0} km)</span><span class="value">₹${data.deliveryCharge || 0}</span></div>
             <div class="receipt-row"><span class="label">Payment</span><span class="value">Razorpay</span></div>
+            ${data.customerNotes ? `<div class="receipt-row" style="margin-top:6px;border-top:1px dashed #ccc;padding-top:6px"><span class="label">Notes</span><span class="value" style="font-size:10px">${data.customerNotes}</span></div>` : ''}
         `;
         document.getElementById('receiptTotal').textContent = '₹' + (data.totalAmount || 0);
         const statusEl = document.getElementById('receiptPaymentStatus');
@@ -1496,6 +1574,9 @@ window.closeBookingModal = function() {
     providerItems = [];
     cart = {};
     popupCart = {};
+    currentDeliveryDistance = 0;
+    currentDeliveryCharge = 0;
+    document.getElementById('deliveryDistance').value = '';
     document.body.style.overflow = 'auto';
 };
 
@@ -1508,12 +1589,15 @@ checkSession();
 updateDateTime();
 updateWeather();
 
-console.log('✅ NnlGharPro Customer Portal v5.0 — FIXED');
-console.log('📋 Fixes:');
-console.log('  ✅ loadProviderItems() uses "items" collection');
-console.log('  ✅ Sub-item IDs auto-handled');
-console.log('  ✅ Backward compatible with old data');
-console.log('  ✅ Future providers will work automatically');
+console.log('✅ NnlGharPro Customer Portal v7.0');
+console.log('📋 Features:');
+console.log('  ✅ Distance-based delivery charge (₹50 + ₹15/km after 4km)');
+console.log('  ✅ Customer manually selects distance');
+console.log('  ✅ Payment breakdown (Items + Delivery = Grand Total)');
+console.log('  ✅ Special notes saved (provider ko dikhega)');
+console.log('  ✅ Delivery charge → Delivery Partner');
+console.log('  ✅ 95% of items → Provider');
+console.log('  ✅ 3% admin commission');
 </script>
 </body>
 </html>
