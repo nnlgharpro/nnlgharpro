@@ -77,6 +77,7 @@ input,textarea{user-select:text;-webkit-user-select:text}
 .btn-reject{background:#FF4757;color:#fff;border:none;padding:8px 16px;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer}
 .btn-complete{background:linear-gradient(135deg,#00C853,#00E676);color:#fff;border:none;padding:8px 16px;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer}
 .btn-whatsapp{background:#25D366;border:none;padding:6px 14px;border-radius:10px;color:#fff;font-weight:600;font-size:12px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+.btn-delivery{background:linear-gradient(135deg,#FF6B35,#F7931E);border:none;padding:6px 14px;border-radius:10px;color:#fff;font-weight:600;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
 .blocked-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#0a0a2a,#1a1a4e);display:none;justify-content:center;align-items:center;z-index:9999;padding:20px;text-align:center}
 .blocked-overlay.show{display:flex}
 .blocked-box{max-width:400px;background:rgba(255,255,255,.03);border:1px solid rgba(255,71,87,.2);border-radius:24px;padding:40px 30px}
@@ -92,6 +93,7 @@ input,textarea{user-select:text;-webkit-user-select:text}
 .call-name{font-size:28px;font-weight:800;color:#fff;margin-bottom:4px}
 .call-service{font-size:16px;color:rgba(255,255,255,.5);margin-bottom:4px}
 .call-mobile{font-size:20px;font-weight:700;color:#4ECDC4;margin-bottom:20px}
+.call-amount{font-size:22px;font-weight:800;color:#00C853;margin-bottom:20px}
 .call-actions{display:flex;gap:20px;justify-content:center;margin-top:20px}
 .call-actions button{width:70px;height:70px;border-radius:50%;border:none;font-size:30px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .call-accept{background:linear-gradient(135deg,#00C853,#00E676);color:#fff}
@@ -142,7 +144,8 @@ input,textarea{user-select:text;-webkit-user-select:text}
         <div class="call-name" id="callCustomerName">Customer</div>
         <div class="call-service" id="callService">Service</div>
         <div class="call-mobile" id="callMobile">📱 ---</div>
-        <div class="call-ringing">🔔 INCOMING LEAD...</div>
+        <div class="call-amount" id="callAmount">₹0</div>
+        <div class="call-ringing">🔔 INCOMING PAID LEAD...</div>
         <div class="call-actions">
             <button class="call-accept" onclick="acceptLeadFromCall()">✅</button>
             <button class="call-reject" onclick="rejectLeadFromCall()">❌</button>
@@ -330,6 +333,7 @@ let autoReleaseTimeout = null;
 let sessionCheckInterval = null;
 let audioContext = null;
 let bellInterval = null;
+let wakeLock = null;
 
 // ═══════════════════════════════════════════════════════════
 // 🔐 SIMPLE HASH
@@ -373,7 +377,7 @@ function openModal(title, html) {
 function closeModal() { document.getElementById('modalOverlay').classList.remove('show'); }
 
 // ═══════════════════════════════════════════════════════════
-// 🔊 LOUD DUAL-TONE RINGING SOUND (Zomato/Swiggy Style)
+// 🔊 LOUD SOUND + VIBRATION + WAKE LOCK
 // ═══════════════════════════════════════════════════════════
 function unlockAudio() {
     try {
@@ -383,7 +387,6 @@ function unlockAudio() {
         if (audioContext.state === 'suspended') {
             audioContext.resume();
         }
-        // Silent play to unlock on mobile
         const osc = audioContext.createOscillator();
         const gain = audioContext.createGain();
         osc.connect(gain);
@@ -406,26 +409,26 @@ function playRingingSound() {
         
         const now = audioContext.currentTime;
         
-        // 🔊 Tone 1: High pitch (1200 Hz) - LOUD
+        // 🔊 Tone 1: High (1200 Hz)
         const osc1 = audioContext.createOscillator();
         const gain1 = audioContext.createGain();
         osc1.connect(gain1);
         gain1.connect(audioContext.destination);
         osc1.frequency.value = 1200;
         osc1.type = 'sine';
-        gain1.gain.setValueAtTime(1.0, now);          // 🔊 FULL VOLUME
+        gain1.gain.setValueAtTime(1.0, now);
         gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
         osc1.start(now);
         osc1.stop(now + 0.4);
         
-        // 🔊 Tone 2: Low pitch (900 Hz) - LOUD
+        // 🔊 Tone 2: Low (900 Hz)
         const osc2 = audioContext.createOscillator();
         const gain2 = audioContext.createGain();
         osc2.connect(gain2);
         gain2.connect(audioContext.destination);
         osc2.frequency.value = 900;
         osc2.type = 'sine';
-        gain2.gain.setValueAtTime(1.0, now + 0.2);    // 🔊 FULL VOLUME
+        gain2.gain.setValueAtTime(1.0, now + 0.2);
         gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
         osc2.start(now + 0.2);
         osc2.stop(now + 0.6);
@@ -435,23 +438,61 @@ function playRingingSound() {
     }
 }
 
+// 📳 Vibration
+function vibratePhone() {
+    if ('vibrate' in navigator) {
+        navigator.vibrate([500, 200, 500, 200, 500]);
+    }
+}
+
+// 💡 Wake Lock
+async function requestWakeLock() {
+    try {
+        if ('wakeLock' in navigator && wakeLock === null) {
+            wakeLock = await navigator.wakeLock.request('screen');
+            console.log('💡 Screen wake lock active');
+        }
+    } catch(e) { console.log('Wake lock error:', e); }
+}
+
+function releaseWakeLock() {
+    if (wakeLock) {
+        wakeLock.release().catch(() => {});
+        wakeLock = null;
+    }
+}
+
 function startBellLoop() {
     if (bellInterval) clearInterval(bellInterval);
     unlockAudio();
     playRingingSound();
+    vibratePhone();
+    requestWakeLock();
+    
     bellInterval = setInterval(() => {
         if (document.getElementById('callingOverlay').classList.contains('show')) {
             playRingingSound();
+            vibratePhone();
         } else {
             clearInterval(bellInterval);
             bellInterval = null;
         }
-    }, 1000);   // ✅ Every 1 second (fast)
+    }, 1000);
 }
 
 function stopBellLoop() {
     if (bellInterval) { clearInterval(bellInterval); bellInterval = null; }
+    if ('vibrate' in navigator) navigator.vibrate(0);
+    releaseWakeLock();
 }
+
+// 👁️ Page visibility check
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && pendingLeadId) {
+        console.log('📱 Page visible, restarting bell');
+        startBellLoop();
+    }
+});
 
 // ═══════════════════════════════════════════════════════════
 // WHATSAPP HELPERS
@@ -544,7 +585,6 @@ window.providerLogin = async function() {
             id: currentUser.id, sessionId: currentSessionId, name: currentUser.name
         }));
         
-        // ✅ Audio unlock on login
         unlockAudio();
         
         showToast('✅ Welcome ' + currentUser.name + '!');
@@ -685,7 +725,6 @@ function switchTab(tab, e) {
         const el = document.getElementById(t + 'Tab');
         if (el) el.style.display = (t === tab) ? 'block' : 'none';
     });
-    // ✅ Audio unlock on tab click
     unlockAudio();
 }
 
@@ -910,9 +949,9 @@ function loadLeads() {
 
 function updateLeadBadge() {
     const pending = allBookings.filter(b => 
-        b.status === 'pending' || b.status === 'assigned'
+        (b.status === 'pending' || b.status === 'assigned') && b.paymentStatus === 'paid'
     ).length;
-    document.getElementById('leadCounterBadge').textContent = pending + ' Pending';
+    document.getElementById('leadCounterBadge').textContent = pending + ' Paid';
 }
 
 function renderLeads() {
@@ -924,23 +963,36 @@ function renderLeads() {
     
     list.innerHTML = allBookings.map(b => {
         const status = b.status || 'pending';
+        const paymentStatus = b.paymentStatus || 'not_paid';
+        const isPaid = paymentStatus === 'paid' && b.paymentConfirmed === true;
         const amount = b.totalAmount || b.amount || b.providerAmount || 0;
         const customerName = b.customerName || 'Customer';
         const customerMobile = b.customerMobile || '';
         const service = b.service || 'Service';
         const address = b.customerAddress || b.address || '-';
         
+        let paymentBadge = isPaid 
+            ? '<span style="background:rgba(0,200,83,.15);color:#00C853;padding:3px 12px;border-radius:12px;font-size:10px;font-weight:700;display:inline-block">✅ PAID ₹' + amount + '</span>'
+            : '<span style="background:rgba(255,71,87,.15);color:#FF4757;padding:3px 12px;border-radius:12px;font-size:10px;font-weight:700;display:inline-block">❌ NOT PAID</span>';
+        
         let actionButtons = '';
         
-        if (status === 'pending' || status === 'assigned') {
+        if (!isPaid) {
+            actionButtons = `
+                <div style="font-size:11px;color:rgba(255,71,87,.8);padding:6px 0">⚠️ Payment pending — Action nahi le sakte</div>
+                <button class="btn-whatsapp" onclick="chatCustomer('${b.id}')">💬 Chat</button>
+            `;
+        } else if (status === 'pending' || status === 'assigned') {
             actionButtons = `
                 <button class="btn-accept" onclick="acceptLead('${b.id}')">✅ Accept</button>
                 <button class="btn-reject" onclick="rejectLead('${b.id}')">❌ Reject</button>
+                <button class="btn-delivery" onclick="sendToDeliveryPartnerFromLead('${b.id}')">🚚 Delivery</button>
                 <button class="btn-whatsapp" onclick="chatCustomer('${b.id}')">💬 Chat</button>
             `;
         } else if (status === 'accepted') {
             actionButtons = `
                 <button class="btn-complete" onclick="completeLead('${b.id}')">✅ Complete</button>
+                <button class="btn-delivery" onclick="sendToDeliveryPartnerFromLead('${b.id}')">🚚 Delivery</button>
                 <button class="btn-whatsapp" onclick="resendReceiptById('${b.id}')">🧾 Receipt</button>
                 <button class="btn-whatsapp" onclick="chatCustomer('${b.id}')">💬 Chat</button>
             `;
@@ -956,14 +1008,15 @@ function renderLeads() {
         }
         
         return `
-            <div class="lead-card">
+            <div class="lead-card" style="border-left-color:${isPaid ? '#00C853' : '#FF4757'}">
                 <div class="lead-service">${service}</div>
                 <div class="detail-row"><i class="fas fa-user"></i> ${customerName}</div>
                 <div class="detail-row"><i class="fas fa-phone"></i> ${customerMobile}</div>
                 <div class="detail-row"><i class="fas fa-map-marker-alt"></i> ${address}</div>
                 <div class="detail-row"><i class="fas fa-rupee-sign"></i> ₹${amount}</div>
-                <div style="margin-top:8px">
+                <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
                     <span class="status-badge status-${status}">${status.toUpperCase()}</span>
+                    ${paymentBadge}
                 </div>
                 <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
                     ${actionButtons}
@@ -999,6 +1052,12 @@ window.chatCustomer = function(id) {
 function acceptLead(id) {
     const lead = allBookings.find(b => b.id === id);
     if (!lead) return;
+    
+    if (lead.paymentStatus !== 'paid') {
+        showToast('❌ Payment nahi hui — Accept nahi kar sakte', true);
+        return;
+    }
+    
     db.collection('bookings').doc(id).update({ 
         status: 'accepted', 
         acceptedAt: firebase.firestore.FieldValue.serverTimestamp() 
@@ -1034,18 +1093,21 @@ function rejectLead(id) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// LEAD QUEUE SYSTEM
+// LEAD QUEUE — ONLY PAID + ASSIGNED
 // ═══════════════════════════════════════════════════════════
 function startLeadListener() {
+    // ✅ SIRF payment confirm + assigned wali lead
     db.collection('bookings')
       .where('providerId', '==', currentUser.id)
-      .where('status', 'in', ['pending', 'assigned'])
+      .where('status', '==', 'assigned')
+      .where('paymentStatus', '==', 'paid')
       .onSnapshot(snap => {
         snap.docChanges().forEach(change => {
             if (change.type === 'added') {
                 const lead = { id: change.doc.id, ...change.doc.data() };
                 if (!leadQueue.find(l => l.id === lead.id) && pendingLeadId !== lead.id) {
                     leadQueue.push(lead);
+                    console.log('🔔 New PAID lead:', lead.customerName);
                 }
             }
         });
@@ -1065,20 +1127,20 @@ function showCallingOverlay(lead) {
     document.getElementById('callCustomerName').textContent = lead.customerName || 'Customer';
     document.getElementById('callService').textContent = lead.service || 'Service';
     document.getElementById('callMobile').textContent = '📱 ' + (lead.customerMobile || '---');
+    document.getElementById('callAmount').textContent = '₹' + (lead.totalAmount || 0) + ' PAID';
     
     const queueRemaining = leadQueue.length;
     document.getElementById('callCounter').textContent = '1 of ' + (queueRemaining + 1);
     
     const queueInfo = document.getElementById('queueInfo');
     if (queueRemaining > 0) {
-        queueInfo.textContent = '📋 ' + queueRemaining + ' more lead(s) waiting';
+        queueInfo.textContent = '📋 ' + queueRemaining + ' more paid lead(s) waiting';
     } else {
         queueInfo.textContent = '';
     }
     
     document.getElementById('callingOverlay').classList.add('show');
     
-    // 🔊 START LOUD BELL
     startBellLoop();
     
     let sec = 0;
@@ -1213,6 +1275,48 @@ function resendReceiptById(id) {
 }
 
 // ═══════════════════════════════════════════════════════════
+// 🚚 DELIVERY FROM LEAD
+// ═══════════════════════════════════════════════════════════
+window.sendToDeliveryPartnerFromLead = function(bookingId) {
+    const booking = allBookings.find(b => b.id === bookingId);
+    if (!booking) { showToast('❌ Booking not found', true); return; }
+    
+    if (!deliveryPartners.length) {
+        showToast('⚠️ Pehle delivery partner add karein', true);
+        return;
+    }
+    
+    if (deliveryPartners.length === 1) {
+        sendOrderWhatsApp(deliveryPartners[0], booking);
+        return;
+    }
+    
+    const modalHtml = `
+        <div style="margin-bottom:12px;padding:10px;background:rgba(78,205,196,.08);border-radius:10px;font-size:12px;color:rgba(255,255,255,.8)">
+            <strong>Order:</strong> ${booking.service || 'Service'}<br>
+            <strong>Customer:</strong> ${booking.customerName || '-'}<br>
+            <strong>Amount:</strong> ₹${booking.totalAmount || 0}
+        </div>
+        <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:12px">
+            Delivery partner select karein:
+        </div>
+        <div style="max-height:400px;overflow-y:auto">
+            ${deliveryPartners.map(p => `
+                <div onclick="closeModal(); sendOrderWhatsApp(deliveryPartners.find(x => x.id === '${p.id}'), allBookings.find(b => b.id === '${bookingId}'));" 
+                     style="background:rgba(255,255,255,.03);padding:12px;border-radius:12px;margin-bottom:8px;cursor:pointer;border-left:3px solid #25D366;transition:.2s"
+                     onmouseover="this.style.background='rgba(37,211,102,.1)'"
+                     onmouseout="this.style.background='rgba(255,255,255,.03)'">
+                    <div style="font-weight:700;color:#fff;font-size:14px">${p.name}</div>
+                    <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:2px">📱 ${p.mobile}</div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+    
+    openModal('🚚 Delivery Partner Select Karein', modalHtml);
+};
+
+// ═══════════════════════════════════════════════════════════
 // ONBOARDING
 // ═══════════════════════════════════════════════════════════
 function loadOnboarding() {
@@ -1248,7 +1352,7 @@ function submitOnboarding() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// 🚚 DELIVERY PARTNERS (With WhatsApp Send Order)
+// DELIVERY PARTNERS
 // ═══════════════════════════════════════════════════════════
 function loadDeliveryPartners() {
     db.collection('deliveryPartners').where('providerId', '==', currentUser.id).onSnapshot(snap => {
@@ -1301,38 +1405,33 @@ function deleteDeliveryPartner(id) {
     db.collection('deliveryPartners').doc(id).delete().then(() => showToast('🗑️ Deleted'));
 }
 
-// ✅ NEW: Send Order to Delivery Partner
 window.sendOrderToDeliveryPartner = async function(deliveryPartnerId) {
     const partner = deliveryPartners.find(p => p.id === deliveryPartnerId);
     if (!partner) { showToast('❌ Delivery partner not found', true); return; }
     
-    // Active bookings dhundo
     const activeBookings = allBookings.filter(b => 
-        b.status === 'accepted' || b.status === 'assigned' || b.status === 'pending'
+        (b.status === 'accepted' || b.status === 'assigned' || b.status === 'pending') &&
+        b.paymentStatus === 'paid'
     );
     
     if (activeBookings.length === 0) {
-        showToast('⚠️ Koi active order nahi hai', true);
+        showToast('⚠️ Koi active paid order nahi hai', true);
         return;
     }
     
-    // Agar sirf ek order hai to direct bhejo
     if (activeBookings.length === 1) {
         sendOrderWhatsApp(partner, activeBookings[0]);
         return;
     }
     
-    // Multiple orders — modal mein select karwao
     const modalHtml = `
         <div style="max-height:400px;overflow-y:auto">
             <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:12px">
                 Select karein kaunsa order bhejna hai:
             </div>
             ${activeBookings.map(b => `
-                <div onclick="sendOrderWhatsAppFromModal('${partner.id}', '${b.id}')" 
-                     style="background:rgba(255,255,255,.03);padding:12px;border-radius:12px;margin-bottom:8px;cursor:pointer;border-left:3px solid #4ECDC4;transition:.2s"
-                     onmouseover="this.style.background='rgba(255,255,255,.06)'"
-                     onmouseout="this.style.background='rgba(255,255,255,.03)'">
+                <div onclick="closeModal(); sendOrderWhatsApp(deliveryPartners.find(x => x.id === '${partner.id}'), allBookings.find(b => b.id === '${b.id}'));" 
+                     style="background:rgba(255,255,255,.03);padding:12px;border-radius:12px;margin-bottom:8px;cursor:pointer;border-left:3px solid #4ECDC4;">
                     <div style="font-weight:700;color:#fff;font-size:14px">${b.service || 'Service'}</div>
                     <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:4px">
                         👤 ${b.customerName || 'Customer'}<br>
@@ -1345,14 +1444,6 @@ window.sendOrderToDeliveryPartner = async function(deliveryPartnerId) {
     `;
     
     openModal('🚚 Order Bhejein ' + partner.name, modalHtml);
-};
-
-window.sendOrderWhatsAppFromModal = function(partnerId, orderId) {
-    const partner = deliveryPartners.find(p => p.id === partnerId);
-    const booking = allBookings.find(b => b.id === orderId);
-    if (!partner || !booking) return;
-    closeModal();
-    sendOrderWhatsApp(partner, booking);
 };
 
 function sendOrderWhatsApp(partner, booking) {
@@ -1430,14 +1521,14 @@ function removePincode(pin) {
 
 document.addEventListener('DOMContentLoaded', checkSession);
 
-console.log('✅ NnlGharPro Provider Portal v7.0');
+console.log('✅ NnlGharPro Provider Portal v8.0');
 console.log('📋 Features:');
-console.log('  ✅ LOUD Dual-tone Ringing Sound (Zomato style)');
-console.log('  ✅ Zomato-style Lead Queue (100+ leads)');
-console.log('  ✅ Delivery Partner WhatsApp Integration');
-console.log('  ✅ Auto-release after 60s');
-console.log('  ✅ WhatsApp: Accept/Reject/Complete/Chat/Receipt/SendOrder');
-console.log('  ✅ 95% Provider Earnings');
+console.log('  ✅ Payment confirmed + assigned status only lead');
+console.log('  ✅ Loud sound + Vibration + Wake Lock');
+console.log('  ✅ Paid/Unpaid badges in leads');
+console.log('  ✅ Delivery button in leads');
+console.log('  ✅ Chat/Receipt WhatsApp buttons');
+console.log('  ✅ Auto-release 60s');
 </script>
 </body>
 </html>
