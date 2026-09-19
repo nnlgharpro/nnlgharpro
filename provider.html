@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<meta http-equiv="X-Frame-Options" content="DENY">
 <title>NnlGharPro - Provider Panel</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
@@ -18,7 +17,6 @@ input,textarea{user-select:text;-webkit-user-select:text}
 .logo p{font-size:10px;opacity:.7;margin-top:-2px}
 .provider-info{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:3px}
 .provider-name{font-weight:700;font-size:14px}
-.provider-status{font-size:9px;background:#4ECDC4;padding:2px 14px;border-radius:20px;font-weight:600}
 .logout-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.15);color:#fff;padding:4px 14px;border-radius:14px;font-size:11px;cursor:pointer}
 .subscription-card{background:linear-gradient(135deg,rgba(255,217,61,.06),rgba(78,205,196,.04));border:2px solid rgba(255,217,61,.15);border-radius:16px;padding:16px;margin-bottom:14px}
 .sub-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
@@ -34,7 +32,6 @@ input,textarea{user-select:text;-webkit-user-select:text}
 .sub-actions{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
 .btn-razorpay{flex:1;background:linear-gradient(135deg,#5F259F,#8B5CF6);color:#fff;border:none;padding:12px 20px;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;min-width:150px}
 .btn-cancel-sub{background:rgba(255,71,87,.15);color:#FF4757;border:1px solid rgba(255,71,87,.2);padding:12px 20px;border-radius:10px;font-weight:600;font-size:13px;cursor:pointer}
-.btn-demo{width:100%;margin-top:8px;padding:12px;background:rgba(255,193,7,.15);color:#FFC107;border:2px dashed #FFC107;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer}
 .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
 .stat-box{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:14px;text-align:center}
 .stat-number{font-size:22px;font-weight:800;color:#4ECDC4}
@@ -43,7 +40,7 @@ input,textarea{user-select:text;-webkit-user-select:text}
 .tab-btn{flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);padding:10px 4px;border-radius:14px;color:rgba(255,255,255,.4);cursor:pointer;font-size:11px;font-weight:600;min-width:70px;text-align:center}
 .tab-btn.active{background:linear-gradient(135deg,#1a237e,#283593);color:#fff;border-color:transparent}
 .card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.05);border-radius:18px;padding:16px;margin-bottom:14px}
-.card-title{font-size:16px;font-weight:700;color:#fff;margin-bottom:12px}
+.card-title{font-size:16px;font-weight:700;color:#fff;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px}
 .item-card{background:rgba(255,255,255,.03);border-radius:14px;padding:12px 14px;margin-bottom:8px;border-left:4px solid #4ECDC4}
 .item-card.hidden-item{opacity:.5;border-left-color:#666}
 .main-name{font-size:15px;font-weight:700;color:#4ECDC4;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
@@ -88,6 +85,7 @@ input,textarea{user-select:text;-webkit-user-select:text}
 .calling-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#0a0a2a,#1a1a4e);display:none;justify-content:center;align-items:center;z-index:99999;padding:20px}
 .calling-overlay.show{display:flex}
 .calling-box{text-align:center;max-width:380px;width:100%}
+.call-counter{font-size:13px;color:#FFD93D;font-weight:700;margin-bottom:8px;background:rgba(255,217,61,.1);padding:4px 14px;border-radius:20px;display:inline-block}
 .call-avatar{font-size:80px;display:block;margin-bottom:10px;animation:callAvatar 1s infinite}
 @keyframes callAvatar{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
 .call-name{font-size:28px;font-weight:800;color:#fff;margin-bottom:4px}
@@ -110,6 +108,7 @@ input,textarea{user-select:text;-webkit-user-select:text}
 .login-btn{width:100%;padding:16px;border:none;border-radius:16px;background:linear-gradient(135deg,#1a237e,#283593);color:#fff;font-size:18px;font-weight:700;cursor:pointer;margin-top:10px}
 .btn-forgot{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.6);padding:10px;border-radius:12px;font-size:13px;cursor:pointer;width:100%;margin-top:8px}
 .login-error{color:#FF4757;font-size:13px;margin-top:10px;display:none}
+.login-success{color:#4ECDC4;font-size:13px;margin-top:10px;display:none}
 .empty-msg{text-align:center;padding:30px 16px;color:rgba(255,255,255,.25);font-size:14px}
 .empty-msg .icon{font-size:40px;display:block;margin-bottom:8px}
 .footer{text-align:center;padding:18px 0;border-top:1px solid rgba(255,255,255,.1);margin-top:12px;font-size:12px;color:rgba(255,255,255,.5)}
@@ -125,6 +124,7 @@ input,textarea{user-select:text;-webkit-user-select:text}
 .form-group label{font-size:12px;font-weight:700;color:rgba(255,255,255,.4);display:block;margin-bottom:4px}
 .form-group input,.form-group select{width:100%;padding:10px 14px;border:1px solid rgba(255,255,255,.06);border-radius:10px;background:rgba(255,255,255,.03);color:#fff;font-size:14px;outline:none}
 .form-group input:focus{border-color:#4ECDC4}
+.onboard-status-box{background:rgba(78,205,196,.08);border:1px solid rgba(78,205,196,.2);border-radius:12px;padding:14px;margin-bottom:14px;font-size:13px;color:rgba(255,255,255,.8);text-align:center}
 @media(max-width:420px){.stats{grid-template-columns:1fr 1fr}.tabs{flex-wrap:wrap}.tab-btn{font-size:10px;padding:8px 4px;min-width:50px}}
 </style>
 </head>
@@ -132,9 +132,9 @@ input,textarea{user-select:text;-webkit-user-select:text}
 
 <div id="toast" class="toast"></div>
 
-<!-- CALLING OVERLAY -->
 <div class="calling-overlay" id="callingOverlay">
     <div class="calling-box">
+        <div class="call-counter" id="callCounter">1 of 1</div>
         <span class="call-avatar">📞</span>
         <div class="call-name" id="callCustomerName">Customer</div>
         <div class="call-service" id="callService">Service</div>
@@ -148,7 +148,6 @@ input,textarea{user-select:text;-webkit-user-select:text}
     </div>
 </div>
 
-<!-- BLOCKED OVERLAY -->
 <div class="blocked-overlay" id="blockedOverlay">
     <div class="blocked-box">
         <span class="lock-icon">🔒</span>
@@ -170,14 +169,15 @@ input,textarea{user-select:text;-webkit-user-select:text}
         <button onclick="providerLogin()" class="login-btn">🔐 Login</button>
         <button onclick="forgotPassword()" class="btn-forgot">🔑 Forgot Password? (WhatsApp)</button>
         <div id="loginError" class="login-error">❌ Invalid credentials</div>
+        <div id="loginSuccess" class="login-success">✅ Password sent to WhatsApp!</div>
         <div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.05);font-size:11px;color:rgba(255,255,255,.3)">
+            💡 Password wahi daalein jo admin ne WhatsApp par bheja tha<br>
             📞 Support: 9588562553<br>
             📧 nnlgharpro@gmail.com
         </div>
     </div>
 </div>
 
-<!-- MAIN APP -->
 <div id="mainApp" class="container" style="display:none">
     <div class="header">
         <div class="logo"><h2>🏠 Nnl<span>GharPro</span></h2><p>Provider Panel</p></div>
@@ -187,7 +187,6 @@ input,textarea{user-select:text;-webkit-user-select:text}
         </div>
     </div>
 
-    <!-- SUBSCRIPTION -->
     <div class="subscription-card">
         <div class="sub-header">
             <div class="sub-title">👑 Subscription</div>
@@ -201,25 +200,22 @@ input,textarea{user-select:text;-webkit-user-select:text}
             <button class="btn-razorpay" id="subActionBtn" onclick="razorpaySubscribe()">👑 Subscribe ₹500/month</button>
             <button class="btn-cancel-sub" id="subCancelBtn" onclick="cancelSubscription()" style="display:none">❌ Cancel</button>
         </div>
-        <button class="btn-demo" id="demoBtn" onclick="demoSubscribe()">🔧 TEST MODE: Activate (No Payment)</button>
     </div>
 
-    <!-- STATS -->
     <div class="stats">
         <div class="stat-box"><div class="stat-number" id="totalEarnings">₹0</div><div class="stat-label">💰 Earnings</div></div>
         <div class="stat-box"><div class="stat-number" id="totalOrders">0</div><div class="stat-label">📦 Orders</div></div>
     </div>
 
-    <!-- TABS -->
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('items',event)">📦 Items</button>
         <button class="tab-btn" onclick="switchTab('leads',event)">📋 Leads</button>
         <button class="tab-btn" onclick="switchTab('earnings',event)">💰 Earnings</button>
+        <button class="tab-btn" onclick="switchTab('onboarding',event)">🏦 Bank</button>
         <button class="tab-btn" onclick="switchTab('delivery',event)">🚚 Delivery</button>
         <button class="tab-btn" onclick="switchTab('pincodes',event)">📍 Pincodes</button>
     </div>
 
-    <!-- ITEMS TAB -->
     <div id="itemsTab">
         <div class="card">
             <div class="card-title">📦 My Services</div>
@@ -228,15 +224,16 @@ input,textarea{user-select:text;-webkit-user-select:text}
         </div>
     </div>
 
-    <!-- LEADS TAB -->
     <div id="leadsTab" style="display:none">
         <div class="card">
-            <div class="card-title">📋 Leads</div>
+            <div class="card-title">
+                <span>📋 Leads</span>
+                <span id="leadCounterBadge" style="font-size:12px;background:rgba(255,152,0,.15);color:#FF9800;padding:3px 12px;border-radius:12px">0 Pending</span>
+            </div>
             <div id="leadsList"><div class="empty-msg"><span class="icon">📋</span>No leads yet</div></div>
         </div>
     </div>
 
-    <!-- EARNINGS TAB -->
     <div id="earningsTab" style="display:none">
         <div class="card">
             <div class="card-title">💰 My Earnings</div>
@@ -244,7 +241,27 @@ input,textarea{user-select:text;-webkit-user-select:text}
         </div>
     </div>
 
-    <!-- DELIVERY TAB -->
+    <div id="onboardingTab" style="display:none">
+        <div class="card">
+            <div class="card-title">🏦 Bank Details for Payouts</div>
+            <div id="onboardStatusBox"></div>
+            <div id="onboardForm" style="display:none">
+                <div class="form-group"><label>Account Holder Name *</label><input type="text" id="obHolder" placeholder="As per bank records"></div>
+                <div class="form-group"><label>Bank Account Number *</label><input type="text" id="obAccount" placeholder="9-18 digit account number" maxlength="18" inputmode="numeric"></div>
+                <div class="form-group"><label>Confirm Account Number *</label><input type="text" id="obAccountConfirm" placeholder="Re-enter account number" maxlength="18" inputmode="numeric"></div>
+                <div class="form-group"><label>IFSC Code *</label><input type="text" id="obIFSC" placeholder="e.g. SBIN0001234" maxlength="11" style="text-transform:uppercase"></div>
+                <div class="form-group"><label>Bank Name *</label><input type="text" id="obBankName" placeholder="e.g. State Bank of India"></div>
+                <div class="form-group"><label>Branch</label><input type="text" id="obBranch" placeholder="Branch name"></div>
+                <div class="form-group"><label>PAN Card (optional)</label><input type="text" id="obPAN" placeholder="ABCDE1234F" maxlength="10" style="text-transform:uppercase"></div>
+                <div style="background:rgba(255,217,61,.05);border-radius:10px;padding:12px;margin:12px 0;font-size:12px;color:rgba(255,255,255,.7);line-height:1.6">
+                    <input type="checkbox" id="obTNC" style="margin-right:6px">
+                    <label for="obTNC" style="display:inline;cursor:pointer">I agree — 3% platform fee + 2% gateway fee will be deducted</label>
+                </div>
+                <button class="btn btn-success" onclick="submitOnboarding()" style="width:100%;padding:14px">📤 Submit Bank Details</button>
+            </div>
+        </div>
+    </div>
+
     <div id="deliveryTab" style="display:none">
         <div class="card">
             <div class="card-title">🚚 Delivery Partners</div>
@@ -254,11 +271,9 @@ input,textarea{user-select:text;-webkit-user-select:text}
                 <button class="btn btn-success" onclick="addDeliveryPartner()" style="width:100%">➕ Add Partner</button>
                 <div id="delPartnersList" style="margin-top:10px"></div>
             </div>
-            <div id="delList"><div class="empty-msg"><span class="icon">🚚</span>No deliveries</div></div>
         </div>
     </div>
 
-    <!-- PINCODES TAB -->
     <div id="pincodesTab" style="display:none">
         <div class="card">
             <div class="card-title">📍 Service Pincodes</div>
@@ -274,7 +289,6 @@ input,textarea{user-select:text;-webkit-user-select:text}
     </div>
 </div>
 
-<!-- MODAL -->
 <div class="modal-overlay" id="modalOverlay">
     <div class="modal-box">
         <button class="close-modal" onclick="closeModal()">✕</button>
@@ -282,18 +296,11 @@ input,textarea{user-select:text;-webkit-user-select:text}
         <div id="modalBody"></div>
     </div>
 </div>
+
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 <script>
-// ═══════════════════════════════════════════════════════════
-// DEMO_MODE FLAG
-// true = Demo button dikhega (testing)
-// false = Live mode
-// ═══════════════════════════════════════════════════════════
-const DEMO_MODE = true;
-const RAZORPAY_KEY = DEMO_MODE ? "rzp_test_1DP5mmOlF5G5ag" : "rzp_live_TUIiRB57IOF52";
-
-// FIREBASE
+const RAZORPAY_KEY = "rzp_live_TZVMRcs8uXxici";
 const firebaseConfig = {
     apiKey: "AIzaSyCBa8UmWUB-djAksNNvp14qoCY2y0HISoE",
     authDomain: "gharproindia.firebaseapp.com",
@@ -305,34 +312,40 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// GLOBALS
 let currentUser = null;
 let currentSessionId = null;
-let currentBookings = [];
 let providerItems = [];
+let allBookings = [];
 let deliveryPartners = [];
+let leadQueue = [];
+let isProcessing = false;
 let pendingLeadId = null;
 let callTimerInterval = null;
-let callAudioInterval = null;
-let isCallRinging = false;
 let autoReleaseTimeout = null;
+let sessionCheckInterval = null;
 
 // ═══════════════════════════════════════════════════════════
-// SECURITY
+// 🔐 SIMPLE HASH FUNCTION
 // ═══════════════════════════════════════════════════════════
+function simpleHash(str) {
+    if (!str) return '';
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        const c = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + c;
+        hash = hash & hash;
+    }
+    return 'h_' + Math.abs(hash).toString(36);
+}
+
+// SECURITY
 document.addEventListener('contextmenu', e => { e.preventDefault(); showToast('🔒 Right-click disabled', true); });
 document.addEventListener('keydown', e => {
     if (e.key === 'F12') { e.preventDefault(); showToast('🔒 F12 disabled', true); return false; }
-    if (e.ctrlKey && e.shiftKey && ['I','i','J','j','C','c'].includes(e.key)) { e.preventDefault(); showToast('🔒 DevTools disabled', true); return false; }
+    if (e.ctrlKey && e.shiftKey && ['I','i','J','j','C','c'].includes(e.key)) { e.preventDefault(); return false; }
     if (e.ctrlKey && ['u','U','s','S','p','P'].includes(e.key)) { e.preventDefault(); return false; }
-    if (e.ctrlKey && ['a','A'].includes(e.key) && !['INPUT','TEXTAREA'].includes(e.target.tagName)) { e.preventDefault(); return false; }
-    if (e.key === 'PrintScreen') { e.preventDefault(); navigator.clipboard.writeText('').catch(()=>{}); showToast('🔒 Screenshot disabled', true); return false; }
 });
-document.addEventListener('copy', e => { if (!['INPUT','TEXTAREA'].includes(e.target.tagName)) e.preventDefault(); });
-document.addEventListener('dragstart', e => e.preventDefault());
-if (window.top !== window.self) { window.top.location = window.self.location; }
 
-// HELPERS
 function showToast(msg, err) {
     const t = document.getElementById('toast');
     t.textContent = msg;
@@ -340,6 +353,10 @@ function showToast(msg, err) {
     t.style.display = 'block';
     clearTimeout(t._hide);
     t._hide = setTimeout(() => t.style.display = 'none', 3500);
+}
+function showLoading(s) {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.toggle('show', s);
 }
 function openModal(title, html) {
     document.getElementById('modalTitle').textContent = title;
@@ -349,554 +366,625 @@ function openModal(title, html) {
 function closeModal() { document.getElementById('modalOverlay').classList.remove('show'); }
 
 // ═══════════════════════════════════════════════════════════
-// LOGIN
+// WHATSAPP HELPERS
 // ═══════════════════════════════════════════════════════════
-async function providerLogin() {
+function cleanMobile(mobile) {
+    if (!mobile) return '';
+    let m = String(mobile).replace(/\D/g, '');
+    if (m.length === 10) m = '91' + m;
+    if (m.startsWith('0')) m = '91' + m.slice(1);
+    return m;
+}
+function sendWhatsApp(mobile, message) {
+    const cleanMob = cleanMobile(mobile);
+    if (!cleanMob) { showToast('❌ Invalid mobile', true); return; }
+    window.open(`https://wa.me/${cleanMob}?text=${encodeURIComponent(message)}`, '_blank');
+}
+
+function buildAcceptMessage(lead) {
+    return `🔔 *Aapka Order ACCEPT ho gaya!*\n\n👤 *Provider:* ${currentUser.name || 'Provider'}\n🔧 *Service:* ${lead.service || '-'}\n💰 *Amount:* ₹${lead.amount || 0}\n📅 *Date:* ${new Date().toLocaleString('en-IN')}\n\nProvider aapko jaldi call karega.\n\n_NnlGharPro - 9588562553_`;
+}
+function buildReceiptMessage(lead, orderId) {
+    return `✅ *Order COMPLETE!*\n\n📋 *Order ID:* #${String(orderId).slice(-6).toUpperCase()}\n🔧 *Service:* ${lead.service || '-'}\n👤 *Provider:* ${currentUser.name || 'Provider'}\n💰 *Total:* ₹${lead.amount || 0}\n📅 *Date:* ${new Date().toLocaleDateString('en-IN')}\n\nThank you for choosing *NnlGharPro*! 🙏\n\n_NnlGharPro - 9588562553_`;
+}
+function buildRejectMessage(lead) {
+    return `⚠️ *Order Cancelled*\n\n🔧 *Service:* ${lead.service || '-'}\n💰 *Amount:* ₹${lead.amount || 0}\n\nSorry, provider is currently unavailable.\n\n🔄 *Please book again*\n\n_NnlGharPro - 9588562553_`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// 🔐 LOGIN (PURANA — Firestore Based + Hashed)
+// ═══════════════════════════════════════════════════════════
+window.providerLogin = async function() {
     const email = document.getElementById('loginEmail').value.trim().toLowerCase();
     const password = document.getElementById('loginPassword').value.trim();
     const errorEl = document.getElementById('loginError');
+    const successEl = document.getElementById('loginSuccess');
     errorEl.style.display = 'none';
-    if (!email || !password) { errorEl.textContent = '❌ Enter email & password'; errorEl.style.display = 'block'; return; }
-    
+    if (successEl) successEl.style.display = 'none';
+
+    if (!email || !email.includes('@') || !password || password.length < 4) {
+        errorEl.textContent = '❌ Invalid email or password';
+        errorEl.style.display = 'block';
+        return;
+    }
+    showLoading(true);
     try {
-        const snap = await db.collection('providers').where('email','==',email).where('password','==',password).get();
-        if (snap.empty) { errorEl.textContent = '❌ Invalid credentials'; errorEl.style.display = 'block'; return; }
-        
-        snap.forEach(doc => { currentUser = { id: doc.id, ...doc.data() }; });
-        currentSessionId = Date.now() + '-' + Math.random().toString(36).substring(2,8);
-        await db.collection('providers').doc(currentUser.id).update({ currentSession: currentSessionId, lastLogin: new Date().toISOString() });
-        localStorage.setItem('gharpro_session', JSON.stringify({ id: currentUser.id, sessionId: currentSessionId, name: currentUser.name }));
+        const hashedPassword = simpleHash(password);
+        const snap = await db.collection('providers')
+            .where('email', '==', email)
+            .where('password', '==', hashedPassword)
+            .where('status', '==', 'active')
+            .get();
+
+        if (snap.empty) {
+            errorEl.textContent = '❌ Invalid credentials';
+            errorEl.style.display = 'block';
+            showLoading(false);
+            return;
+        }
+        snap.forEach(doc => {
+            const data = doc.data();
+            currentUser = { id: doc.id, name: data.name || 'Provider', mobile: data.mobile || '', email: data.email };
+        });
+        currentSessionId = Date.now() + '-' + Math.random().toString(36).substring(2, 8);
+        await db.collection('providers').doc(currentUser.id).update({
+            currentSession: currentSessionId,
+            lastLogin: new Date().toISOString()
+        });
+        localStorage.setItem('gharpro_session', JSON.stringify({
+            id: currentUser.id, sessionId: currentSessionId, name: currentUser.name
+        }));
         showToast('✅ Welcome ' + currentUser.name + '!');
         initApp();
-    } catch(e) { errorEl.textContent = '❌ ' + e.message; errorEl.style.display = 'block'; }
-}
+    } catch(e) {
+        console.error(e);
+        errorEl.textContent = '❌ ' + e.message;
+        errorEl.style.display = 'block';
+    }
+    showLoading(false);
+};
 
-async function forgotPassword() {
+// 🔑 FORGOT PASSWORD (WhatsApp — Naya Password)
+window.forgotPassword = async function() {
     const email = document.getElementById('loginEmail').value.trim().toLowerCase();
-    if (!email || !email.includes('@')) { showToast('⚠️ Enter email first', true); return; }
+    const errorEl = document.getElementById('loginError');
+    const successEl = document.getElementById('loginSuccess');
+    errorEl.style.display = 'none';
+    if (successEl) successEl.style.display = 'none';
+
+    if (!email || !email.includes('@')) {
+        errorEl.textContent = '❌ Pehle valid email daalein';
+        errorEl.style.display = 'block';
+        return;
+    }
+    showLoading(true);
     try {
-        const snap = await db.collection('providers').where('email','==',email).get();
-        if (snap.empty) { showToast('❌ Email not found', true); return; }
-        let docId, data;
-        snap.forEach(doc => { docId = doc.id; data = doc.data(); });
-        const newPass = Math.floor(100000 + Math.random() * 900000).toString();
-        await db.collection('providers').doc(docId).update({ password: newPass, passwordResetAt: new Date().toISOString() });
-        const msg = `🔑 *NnlGharPro Provider*\n\nHello ${data.name||'Provider'},\n\nYour new password: *${newPass}*\n\nLogin and continue.\n\n📌 Randhawa Enterprises`;
-        if (data.mobile && data.mobile.length >= 10) {
-            window.open(`https://wa.me/91${data.mobile}?text=${encodeURIComponent(msg)}`, '_blank');
-            showToast('✅ Password sent to WhatsApp!');
-        } else { showToast('❌ No mobile on file', true); }
-    } catch(e) { showToast('❌ ' + e.message, true); }
-}
+        const snap = await db.collection('providers').where('email', '==', email).get();
+        if (snap.empty) {
+            errorEl.textContent = '❌ Ye email registered nahi hai';
+            errorEl.style.display = 'block';
+            showLoading(false);
+            return;
+        }
+        const providerDoc = snap.docs[0];
+        const providerData = providerDoc.data();
+
+        // Naya 6-digit password generate
+        const newPlainPassword = Math.floor(100000 + Math.random() * 900000).toString();
+        const newHashedPassword = simpleHash(newPlainPassword);
+
+        await db.collection('providers').doc(providerDoc.id).update({
+            password: newHashedPassword,
+            lastPasswordReset: new Date().toISOString()
+        });
+
+        if (providerData.mobile) {
+            const msg =
+                `🔑 *Password Reset - NnlGharPro*\n\n` +
+                `Aapka naya password:\n\n` +
+                `*${newPlainPassword}*\n\n` +
+                `Login karke password change karein.\n\n` +
+                `🔗 Portal: https://www.nnlgharpro.in/provider.html\n\n` +
+                `📞 Support: 9588562553\n` +
+                `_NnlGharPro - Randhawa Enterprises_`;
+            window.open(`https://wa.me/91${providerData.mobile}?text=${encodeURIComponent(msg)}`, '_blank');
+            if (successEl) {
+                successEl.textContent = '✅ Naya password WhatsApp par bhej diya!';
+                successEl.style.display = 'block';
+            }
+            showToast('✅ Password reset ho gaya');
+        } else {
+            errorEl.textContent = '❌ Mobile number registered nahi hai';
+            errorEl.style.display = 'block';
+        }
+    } catch(e) {
+        console.error(e);
+        errorEl.textContent = '❌ ' + e.message;
+        errorEl.style.display = 'block';
+    }
+    showLoading(false);
+};
 
 document.getElementById('loginEmail').addEventListener('keyup', e => { if (e.key === 'Enter') document.getElementById('loginPassword').focus(); });
 document.getElementById('loginPassword').addEventListener('keyup', e => { if (e.key === 'Enter') providerLogin(); });
 
-// SESSION CHECK
 function checkSession() {
     const saved = localStorage.getItem('gharpro_session');
     if (!saved) return;
     try {
         const data = JSON.parse(saved);
         db.collection('providers').doc(data.id).get().then(doc => {
-            if (doc.exists && doc.data().currentSession === data.sessionId) {
-                currentUser = { id: data.id, name: data.name, email: doc.data().email, mobile: doc.data().mobile };
+            if (doc.exists && doc.data().currentSession === data.sessionId && doc.data().status === 'active') {
+                const d = doc.data();
+                currentUser = { id: data.id, name: d.name || data.name, mobile: d.mobile, email: d.email };
                 currentSessionId = data.sessionId;
                 initApp();
+            } else {
+                localStorage.removeItem('gharpro_session');
             }
         }).catch(() => {});
     } catch(e) {}
 }
 
-function logout() {
-    if (currentUser) db.collection('providers').doc(currentUser.id).update({ currentSession: '' }).catch(()=>{});
-    localStorage.removeItem('gharpro_session');
-    location.reload();
-}
-
-// ═══════════════════════════════════════════════════════════
-// INIT APP
-// ═══════════════════════════════════════════════════════════
-async function initApp() {
-    document.getElementById('loginScreen').classList.add('hidden');
-    document.getElementById('userName').textContent = currentUser.name;
-    document.getElementById('demoBtn').style.display = DEMO_MODE ? 'block' : 'none';
-    
-    const subDoc = await db.collection('subscriptions').doc(currentUser.id).get();
-    const sub = subDoc.exists ? subDoc.data() : null;
-    
-    if (!sub || !sub.active || new Date(sub.expiryDate) < new Date()) {
-        document.getElementById('mainApp').style.display = 'none';
-        document.getElementById('blockedOverlay').classList.add('show');
-        document.getElementById('blockedReason').textContent = sub ? 'expire ho gaya hai' : 'start nahi kiya gaya';
-        return;
-    }
-    
-    document.getElementById('blockedOverlay').classList.remove('show');
-    document.getElementById('mainApp').style.display = 'block';
-    
-    const daysLeft = Math.ceil((new Date(sub.expiryDate) - new Date()) / 86400000);
-    document.getElementById('subStatus').className = 'sub-status active';
-    document.getElementById('subStatus').textContent = '✅ Active';
-    document.getElementById('subExpiry').textContent = daysLeft + ' days';
-    document.getElementById('subActionBtn').style.display = 'none';
-    document.getElementById('subCancelBtn').style.display = 'block';
-    document.getElementById('demoBtn').style.display = 'none';
-    
-    loadItems();
-    loadLeads();
-    loadEarnings();
-    loadDeliveryPartners();
-    loadPincodes();
-    startRealtimeListener();
-    startSessionCheck();
-}
-
-// ═══════════════════════════════════════════════════════════
-// SUBSCRIPTION
-// ═══════════════════════════════════════════════════════════
-async function demoSubscribe() {
-    if (!DEMO_MODE) { showToast('❌ Demo disabled', true); return; }
-    if (!confirm('⚠️ TEST MODE: Activate subscription?')) return;
-    const expiry = new Date(); expiry.setMonth(expiry.getMonth() + 1);
-    await db.collection('subscriptions').doc(currentUser.id).set({
-        providerId: currentUser.id, providerName: currentUser.name,
-        amount: 500, active: true, isDemo: true,
-        startDate: new Date().toISOString(),
-        expiryDate: expiry.toISOString(),
-        updatedAt: new Date().toISOString()
-    });
-    showToast('✅ Demo activated!');
-    setTimeout(() => location.reload(), 1000);
-}
-
-function razorpaySubscribe() {
-    const options = {
-        key: RAZORPAY_KEY, amount: 50000, currency: 'INR',
-        name: 'Randhawa Enterprises',
-        description: 'NnlGharPro - Provider Subscription',
-        prefill: { name: currentUser.name, email: currentUser.email, contact: currentUser.mobile },
-        theme: { color: '#FF6B35' },
-        handler: async function(response) {
-            const expiry = new Date(); expiry.setMonth(expiry.getMonth() + 1);
-            await db.collection('subscriptions').doc(currentUser.id).set({
-                providerId: currentUser.id, providerName: currentUser.name,
-                amount: 500, active: true, isDemo: false,
-                startDate: new Date().toISOString(),
-                expiryDate: expiry.toISOString(),
-                razorpayPaymentId: response.razorpay_payment_id,
-                updatedAt: new Date().toISOString()
-            });
-            showToast('✅ Subscription activated!');
-            setTimeout(() => location.reload(), 1000);
-        }
-    };
-    new Razorpay(options).open();
-}
-
-async function cancelSubscription() {
-    if (!confirm('⚠️ Cancel subscription? Portal block ho jayega!')) return;
-    await db.collection('subscriptions').doc(currentUser.id).update({
-        active: false, cancelledAt: new Date().toISOString()
-    });
-    showToast('✅ Cancelled');
-    setTimeout(() => location.reload(), 1000);
-}
-
-// ═══════════════════════════════════════════════════════════
-// ITEMS (with Edit/Delete/Hide + Sub-items)
-// ═══════════════════════════════════════════════════════════
-function showAddMainForm() {
-    openModal('Add Main Item', `
-        <div class="form-group"><label>Name *</label><input id="newMainName" placeholder="e.g. Plumbing"></div>
-        <button class="btn btn-success" onclick="addMainItem()" style="width:100%;padding:12px">➕ Add</button>
-    `);
-}
-
-async function addMainItem() {
-    const name = document.getElementById('newMainName').value.trim();
-    if (!name) { showToast('❌ Enter name', true); return; }
-    await db.collection('providers').doc(currentUser.id).collection('items').add({
-        name, subItems: [], hidden: false, createdAt: new Date().toISOString()
-    });
-    showToast('✅ Added'); closeModal(); loadItems();
-}
-
-function showEditMainForm(id, name) {
-    openModal('Edit Main Item', `
-        <div class="form-group"><label>Name *</label><input id="editMainName" value="${name}"></div>
-        <button class="btn btn-success" onclick="saveEditMainItem('${id}')" style="width:100%;padding:12px">💾 Save</button>
-    `);
-}
-
-async function saveEditMainItem(id) {
-    const name = document.getElementById('editMainName').value.trim();
-    if (!name) { showToast('❌ Enter name', true); return; }
-    await db.collection('providers').doc(currentUser.id).collection('items').doc(id).update({ name, updatedAt: new Date().toISOString() });
-    showToast('✅ Updated'); closeModal(); loadItems();
-}
-
-async function toggleHideMain(id) {
-    const doc = await db.collection('providers').doc(currentUser.id).collection('items').doc(id).get();
-    await doc.ref.update({ hidden: !doc.data().hidden });
-    showToast('✅ Toggled'); loadItems();
-}
-
-async function deleteMainItem(id) {
-    if (!confirm('⚠️ Delete item + all sub-items?')) return;
-    await db.collection('providers').doc(currentUser.id).collection('items').doc(id).delete();
-    showToast('🗑️ Deleted'); loadItems();
-}
-
-function showAddSubForm(mainId, mainName) {
-    openModal('Add Sub-Item', `
-        <div style="font-size:12px;color:#4ECDC4;margin-bottom:10px">To: ${mainName}</div>
-        <div class="form-group"><label>Name *</label><input id="newSubName" placeholder="e.g. Tap Repair"></div>
-        <div class="form-group"><label>Price ₹ *</label><input type="number" id="newSubPrice" placeholder="200"></div>
-        <div class="form-group"><label>Category</label><input id="newSubCategory" placeholder="General"></div>
-        <button class="btn btn-success" onclick="addSubItem('${mainId}')" style="width:100%;padding:12px">➕ Add</button>
-    `);
-}
-
-async function addSubItem(mainId) {
-    const name = document.getElementById('newSubName').value.trim();
-    const price = parseFloat(document.getElementById('newSubPrice').value) || 0;
-    const category = document.getElementById('newSubCategory').value.trim() || 'General';
-    if (!name) { showToast('❌ Enter name', true); return; }
-    const doc = await db.collection('providers').doc(currentUser.id).collection('items').doc(mainId).get();
-    const subItems = doc.data().subItems || [];
-    subItems.push({ id: 'sub_' + Date.now(), name, price, category, hidden: false, createdAt: new Date().toISOString() });
-    await doc.ref.update({ subItems, updatedAt: new Date().toISOString() });
-    showToast('✅ Sub added'); closeModal(); loadItems();
-}
-
-function showEditSubForm(mainId, subId, name, price, cat) {
-    openModal('Edit Sub-Item', `
-        <div class="form-group"><label>Name *</label><input id="editSubName" value="${name}"></div>
-        <div class="form-group"><label>Price ₹ *</label><input type="number" id="editSubPrice" value="${price}"></div>
-        <div class="form-group"><label>Category</label><input id="editSubCategory" value="${cat}"></div>
-        <button class="btn btn-success" onclick="saveEditSubItem('${mainId}','${subId}')" style="width:100%;padding:12px">💾 Save</button>
-    `);
-}
-
-async function saveEditSubItem(mainId, subId) {
-    const name = document.getElementById('editSubName').value.trim();
-    const price = parseFloat(document.getElementById('editSubPrice').value) || 0;
-    const category = document.getElementById('editSubCategory').value.trim() || 'General';
-    const doc = await db.collection('providers').doc(currentUser.id).collection('items').doc(mainId).get();
-    const subItems = (doc.data().subItems || []).map(s => s.id === subId ? {...s, name, price, category, updatedAt: new Date().toISOString()} : s);
-    await doc.ref.update({ subItems });
-    showToast('✅ Updated'); closeModal(); loadItems();
-}
-
-async function toggleHideSub(mainId, subId) {
-    const doc = await db.collection('providers').doc(currentUser.id).collection('items').doc(mainId).get();
-    const subItems = (doc.data().subItems || []).map(s => s.id === subId ? {...s, hidden: !s.hidden} : s);
-    await doc.ref.update({ subItems }); loadItems();
-}
-
-async function deleteSubItem(mainId, subId) {
-    if (!confirm('Delete?')) return;
-    const doc = await db.collection('providers').doc(currentUser.id).collection('items').doc(mainId).get();
-    const subItems = (doc.data().subItems || []).filter(s => s.id !== subId);
-    await doc.ref.update({ subItems }); showToast('🗑️ Deleted'); loadItems();
-}
-
-async function loadItems() {
-    const snap = await db.collection('providers').doc(currentUser.id).collection('items').get();
-    providerItems = [];
-    snap.forEach(doc => providerItems.push({ id: doc.id, ...doc.data() }));
-    const container = document.getElementById('itemsList');
-    if (providerItems.length === 0) { container.innerHTML = '<div class="empty-msg"><span class="icon">📦</span>No items</div>'; return; }
-    
-    let html = '';
-    providerItems.forEach(item => {
-        const subs = item.subItems || [];
-        html += `<div class="item-card ${item.hidden ? 'hidden-item' : ''}">
-            <div class="main-name">${item.name} <span class="sub-count">(${subs.length})</span>${item.hidden ? '<span class="hidden-badge">HIDDEN</span>' : ''}</div>
-            <div class="main-actions">
-                <button class="btn-edit" onclick="showEditMainForm('${item.id}','${item.name.replace(/'/g,"\\'")}')">✏️ Edit</button>
-                <button class="${item.hidden ? 'btn-unhide' : 'btn-hide'}" onclick="toggleHideMain('${item.id}')">${item.hidden ? '👁️ Unhide' : '🙈 Hide'}</button>
-                <button class="btn-del" onclick="deleteMainItem('${item.id}')">🗑️ Delete</button>
-                <button class="btn-add-sub" onclick="showAddSubForm('${item.id}','${item.name.replace(/'/g,"\\'")}')">➕ Sub</button>
-            </div>
-            <div class="sub-items-container">
-                ${subs.length === 0 ? '<div style="font-size:11px;opacity:.3;padding:4px">No sub-items</div>' : ''}
-                ${subs.map(s => `<div class="sub-item-row ${s.hidden ? 'hidden-sub' : ''}">
-                    <div><span class="sub-name">${s.name}${s.hidden?' (hidden)':''}</span> <span class="sub-price">₹${s.price||0}</span></div>
-                    <div class="sub-actions">
-                        <button class="btn-edit" onclick="showEditSubForm('${item.id}','${s.id}','${(s.name||'').replace(/'/g,"\\'")}',${s.price||0},'${(s.category||'').replace(/'/g,"\\'")}')">✏️</button>
-                        <button class="${s.hidden ? 'btn-unhide' : 'btn-hide'}" onclick="toggleHideSub('${item.id}','${s.id}')">${s.hidden ? '👁️' : '🙈'}</button>
-                        <button class="btn-del" onclick="deleteSubItem('${item.id}','${s.id}')">🗑️</button>
-                    </div>
-                </div>`).join('')}
-            </div>
-        </div>`;
-    });
-    container.innerHTML = html;
-}
-
-// ═══════════════════════════════════════════════════════════
-// LEADS (Zamato Style)
-// ═══════════════════════════════════════════════════════════
-function startRealtimeListener() {
-    if (!currentUser) return;
-    try {
-        db.collection('bookings').where('assignedTo','==',currentUser.id).onSnapshot(snapshot => {
-            snapshot.docChanges().forEach(change => {
-                const data = change.doc.data();
-                if (change.type === 'added' && (data.status === 'pending' || data.status === 'assigned')) {
-                    playZamatoBell({ id: change.doc.id, ...data });
-                }
-            });
-            loadLeads();
-        }, () => setTimeout(startRealtimeListener, 5000));
-    } catch(e) { setTimeout(startRealtimeListener, 5000); }
-}
-
-function playZamatoBell(leadData) {
-    pendingLeadId = leadData.id;
-    isCallRinging = true;
-    document.getElementById('callCustomerName').textContent = leadData.customerName || 'Customer';
-    document.getElementById('callService').textContent = leadData.service || 'Service';
-    document.getElementById('callMobile').textContent = '📱 ' + (leadData.customerMobile || 'N/A');
-    document.getElementById('callingOverlay').classList.add('show');
-    
-    let sec = 0;
-    if (callTimerInterval) clearInterval(callTimerInterval);
-    callTimerInterval = setInterval(() => { sec++; document.getElementById('callTimer').textContent = '⏱️ ' + sec + 's'; }, 1000);
-    
-    if (callAudioInterval) clearInterval(callAudioInterval);
-    callAudioInterval = setInterval(() => {
-        if (!isCallRinging) { clearInterval(callAudioInterval); return; }
-        try {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = ctx.createOscillator(); const g = ctx.createGain();
-            osc.connect(g); g.connect(ctx.destination);
-            osc.frequency.value = 1600; osc.type = 'square'; g.gain.value = 0.4;
-            g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
-            osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.25);
-        } catch(e) {}
-    }, 500);
-    
-    clearTimeout(autoReleaseTimeout);
-    autoReleaseTimeout = setTimeout(() => {
-        if (pendingLeadId && isCallRinging) {
-            updateLeadStatus(pendingLeadId, 'rejected');
-            hideCallingScreen();
-            showToast('⏰ Auto-rejected', true);
-        }
-    }, 30000);
-    showToast('🔔 New Lead!');
-}
-
-function hideCallingScreen() {
-    document.getElementById('callingOverlay').classList.remove('show');
-    isCallRinging = false;
-    if (callTimerInterval) clearInterval(callTimerInterval);
-    if (callAudioInterval) clearInterval(callAudioInterval);
-    document.getElementById('callTimer').textContent = '⏱️ 0s';
-}
-
-function acceptLeadFromCall() {
-    if (pendingLeadId) {
-        updateLeadStatus(pendingLeadId, 'accepted');
-        hideCallingScreen(); showToast('✅ Accepted!');
-        pendingLeadId = null; setTimeout(loadLeads, 500);
-    }
-}
-
-function rejectLeadFromCall() {
-    if (pendingLeadId) {
-        updateLeadStatus(pendingLeadId, 'rejected');
-        hideCallingScreen(); showToast('❌ Rejected');
-        pendingLeadId = null; setTimeout(loadLeads, 500);
-    }
-}
-
-async function loadLeads() {
-    const snap = await db.collection('bookings').where('assignedTo','==',currentUser.id).get();
-    currentBookings = [];
-    snap.forEach(doc => currentBookings.push({ id: doc.id, ...doc.data() }));
-    currentBookings.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
-    
-    const container = document.getElementById('leadsList');
-    if (currentBookings.length === 0) { container.innerHTML = '<div class="empty-msg"><span class="icon">📋</span>No leads</div>'; return; }
-    
-    let html = '';
-    currentBookings.forEach(lead => {
-        let badge = 'status-pending', label = '⏳ Pending';
-        if (lead.status === 'accepted') { badge = 'status-accepted'; label = '✅ Accepted'; }
-        else if (lead.status === 'rejected') { badge = 'status-rejected'; label = '❌ Rejected'; }
-        else if (lead.status === 'completed') { badge = 'status-completed'; label = '🏁 Completed'; }
-        
-        let actions = '';
-        if (lead.status === 'pending' || lead.status === 'assigned') {
-            actions = `<div style="display:flex;gap:6px;margin-top:8px">
-                <button class="btn-accept" onclick="updateLeadStatus('${lead.id}','accepted')" style="flex:1">✅ Accept</button>
-                <button class="btn-reject" onclick="updateLeadStatus('${lead.id}','rejected')" style="flex:1">❌ Reject</button>
-            </div>`;
-        } else if (lead.status === 'accepted') {
-            actions = `<div style="display:flex;gap:6px;margin-top:8px">
-                <button class="btn-complete" onclick="completeLead('${lead.id}')" style="flex:1">🏁 Complete</button>
-                <button class="btn-whatsapp" onclick="sendWhatsApp('${lead.id}')" style="flex:1">💬 Chat</button>
-            </div>`;
-        }
-        
-        html += `<div class="lead-card">
-            <div class="lead-service">${lead.service || 'Service'}</div>
-            <div class="detail-row"><i class="fas fa-user"></i> ${lead.customerName || 'N/A'}</div>
-            <div class="detail-row"><i class="fas fa-phone"></i> ${lead.customerMobile || 'N/A'}</div>
-            <div class="detail-row"><i class="fas fa-map-marker-alt"></i> ${lead.customerPincode || 'N/A'}</div>
-            <div class="detail-row"><i class="fas fa-rupee-sign"></i> ₹${lead.totalAmount || 0} (You: ₹${lead.providerAmount || 0})</div>
-            <div style="margin-top:6px"><span class="status-badge ${badge}">${label}</span></div>
-            ${actions}
-        </div>`;
-    });
-    container.innerHTML = html;
-}
-
-async function updateLeadStatus(id, status) {
-    await db.collection('bookings').doc(id).update({ status, updatedAt: new Date().toISOString() });
-    const lead = currentBookings.find(b => b.id === id);
-    if (lead && lead.customerMobile) {
-        const msg = status === 'accepted' ? `✅ Your ${lead.service} ACCEPTED!` : `❌ Not accepted.`;
-        window.open(`https://wa.me/91${lead.customerMobile}?text=${encodeURIComponent(msg)}`, '_blank');
-    }
-    showToast('✅ ' + status); loadLeads();
-}
-
-async function completeLead(id) {
-    if (!confirm('Mark completed?')) return;
-    await db.collection('bookings').doc(id).update({ status: 'completed', completedAt: new Date().toISOString() });
-    showToast('🏁 Completed'); loadLeads(); loadEarnings();
-}
-
-function sendWhatsApp(id) {
-    const lead = currentBookings.find(b => b.id === id);
-    if (!lead) return;
-    const msg = `Hi ${lead.customerName}, Service: ${lead.service}, Amount: ₹${lead.totalAmount}\n\nNnlGharPro`;
-    window.open(`https://wa.me/91${lead.customerMobile}?text=${encodeURIComponent(msg)}`, '_blank');
-}
-
-// ═══════════════════════════════════════════════════════════
-// EARNINGS
-// ═══════════════════════════════════════════════════════════
-async function loadEarnings() {
-    const snap = await db.collection('bookings').where('assignedTo','==',currentUser.id).where('paymentStatus','==','paid').get();
-    let total = 0, count = 0;
-    snap.forEach(doc => { total += doc.data().providerAmount || 0; count++; });
-    document.getElementById('totalEarnings').textContent = '₹' + total.toLocaleString();
-    document.getElementById('totalOrders').textContent = count;
-    document.getElementById('earningsList').innerHTML = `
-        <div style="text-align:center;padding:30px">
-            <div style="font-size:42px;font-weight:800;color:#FFD93D">₹${total.toLocaleString()}</div>
-            <div style="font-size:14px;color:rgba(255,255,255,.5);margin-top:8px">Total Earnings</div>
-            <div style="font-size:12px;color:rgba(255,255,255,.3);margin-top:12px">From ${count} paid orders</div>
-        </div>`;
-}
-
-// ═══════════════════════════════════════════════════════════
-// DELIVERY
-// ═══════════════════════════════════════════════════════════
-async function addDeliveryPartner() {
-    const name = document.getElementById('delName').value.trim();
-    const mobile = document.getElementById('delMobile').value.trim();
-    if (!name || mobile.length < 10) { showToast('❌ Valid name & mobile', true); return; }
-    await db.collection('providers').doc(currentUser.id).collection('deliveryPartners').add({
-        name, mobile, status: 'active', createdAt: new Date().toISOString()
-    });
-    showToast('✅ Partner added');
-    document.getElementById('delName').value = '';
-    document.getElementById('delMobile').value = '';
-    loadDeliveryPartners();
-}
-
-async function loadDeliveryPartners() {
-    const snap = await db.collection('providers').doc(currentUser.id).collection('deliveryPartners').get();
-    deliveryPartners = [];
-    let html = '';
-    snap.forEach(doc => {
-        const d = doc.data();
-        deliveryPartners.push({ id: doc.id, ...d });
-        html += `<span style="background:rgba(37,211,102,.12);color:#25D366;padding:4px 10px;border-radius:12px;font-size:11px;display:inline-flex;align-items:center;gap:4px;margin:2px">${d.name} - ${d.mobile} <span onclick="removeDeliveryPartner('${doc.id}')" style="cursor:pointer;color:#FF4757;font-weight:700">×</span></span>`;
-    });
-    document.getElementById('delPartnersList').innerHTML = html || '<span style="opacity:.3;font-size:11px">No partners</span>';
-}
-
-async function removeDeliveryPartner(id) {
-    if (!confirm('Remove?')) return;
-    await db.collection('providers').doc(currentUser.id).collection('deliveryPartners').doc(id).delete();
-    loadDeliveryPartners();
-}
-
-// ═══════════════════════════════════════════════════════════
-// PINCODES
-// ═══════════════════════════════════════════════════════════
-async function addPincode() {
-    const pin = document.getElementById('pincodeInput').value.trim();
-    if (pin.length !== 6) { showToast('❌ 6-digit pincode', true); return; }
-    const doc = await db.collection('providers').doc(currentUser.id).get();
-    const pincodes = doc.data().pincodes || [];
-    if (pincodes.includes(pin)) { showToast('⚠️ Already added', true); return; }
-    pincodes.push(pin);
-    await doc.ref.update({ pincodes });
-    document.getElementById('pincodeInput').value = '';
-    showToast('✅ Added'); loadPincodes();
-}
-
-async function loadPincodes() {
-    const doc = await db.collection('providers').doc(currentUser.id).get();
-    const pincodes = doc.data().pincodes || [];
-    let html = '';
-    pincodes.forEach(p => {
-        html += `<span style="background:rgba(78,205,196,.12);color:#4ECDC4;padding:4px 12px;border-radius:12px;font-size:12px;display:inline-flex;align-items:center;gap:4px">${p} <span onclick="removePincode('${p}')" style="cursor:pointer;color:#FF4757;font-weight:700">×</span></span>`;
-    });
-    document.getElementById('pincodeTags').innerHTML = html || '<span style="opacity:.3;font-size:12px">No pincodes</span>';
-}
-
-async function removePincode(pin) {
-    const doc = await db.collection('providers').doc(currentUser.id).get();
-    const pincodes = (doc.data().pincodes || []).filter(p => p !== pin);
-    await doc.ref.update({ pincodes });
-    loadPincodes();
-}
-
-// ═══════════════════════════════════════════════════════════
-// SESSION CHECK + AUTO REFRESH
-// ═══════════════════════════════════════════════════════════
 function startSessionCheck() {
-    setInterval(() => {
+    if (sessionCheckInterval) clearInterval(sessionCheckInterval);
+    sessionCheckInterval = setInterval(() => {
         if (!currentUser) return;
         db.collection('providers').doc(currentUser.id).get().then(doc => {
             if (doc.exists && doc.data().currentSession !== currentSessionId) {
                 localStorage.removeItem('gharpro_session');
+                document.getElementById('mainApp').style.display = 'none';
+                document.getElementById('loginScreen').classList.remove('hidden');
                 showToast('Logged out from another device', true);
-                setTimeout(() => location.reload(), 2000);
+                clearInterval(sessionCheckInterval);
+                hideCallingOverlay();
             }
         }).catch(() => {});
-    }, 15000);
+    }, 5000);
 }
 
-// ═══════════════════════════════════════════════════════════
-// TABS
-// ═══════════════════════════════════════════════════════════
-function switchTab(tab, evt) {
+window.logout = async function() {
+    if (currentUser) try { await db.collection('providers').doc(currentUser.id).update({ currentSession: '' }); } catch(e) {}
+    localStorage.removeItem('gharpro_session');
+    if (sessionCheckInterval) clearInterval(sessionCheckInterval);
+    hideCallingOverlay();
+    location.reload();
+};
+
+function initApp() {
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('mainApp').style.display = 'block';
+    document.getElementById('userName').textContent = '👤 ' + (currentUser.name || 'User');
+    loadSubscription();
+    loadItems();
+    loadLeads();
+    loadEarnings();
+    loadOnboarding();
+    loadDeliveryPartners();
+    loadPincodes();
+    startLeadListener();
+    startSessionCheck();
+}
+
+function switchTab(tab, e) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    if (evt && evt.target) evt.target.classList.add('active');
-    ['itemsTab','leadsTab','earningsTab','deliveryTab','pincodesTab'].forEach(id => document.getElementById(id).style.display = 'none');
-    document.getElementById(tab + 'Tab').style.display = 'block';
-    if (tab === 'items') loadItems();
-    else if (tab === 'leads') loadLeads();
-    else if (tab === 'earnings') loadEarnings();
-    else if (tab === 'delivery') { loadDeliveryPartners(); }
-    else if (tab === 'pincodes') loadPincodes();
+    if (e && e.target) e.target.classList.add('active');
+    ['items','leads','earnings','onboarding','delivery','pincodes'].forEach(t => {
+        const el = document.getElementById(t + 'Tab');
+        if (el) el.style.display = (t === tab) ? 'block' : 'none';
+    });
 }
 
-// INIT
+// SUBSCRIPTION
+function loadSubscription() {
+    db.collection('providers').doc(currentUser.id).onSnapshot(doc => {
+        const statusEl = document.getElementById('subStatus');
+        const expiryEl = document.getElementById('subExpiry');
+        const actionBtn = document.getElementById('subActionBtn');
+        const cancelBtn = document.getElementById('subCancelBtn');
+        const blocked = document.getElementById('blockedOverlay');
+        if (!doc.exists || !doc.data().subscriptionExpiry) {
+            statusEl.textContent = '⏳ Not Subscribed';
+            statusEl.className = 'sub-status inactive';
+            expiryEl.textContent = '-';
+            actionBtn.style.display = 'block';
+            cancelBtn.style.display = 'none';
+            blocked.classList.add('show');
+            return;
+        }
+        const d = doc.data();
+        const now = Date.now();
+        const expiry = d.subscriptionExpiry.toMillis ? d.subscriptionExpiry.toMillis() : 0;
+        const isActive = d.subscriptionActive && expiry > now;
+        if (isActive) {
+            statusEl.textContent = '✅ Active';
+            statusEl.className = 'sub-status active';
+            expiryEl.textContent = new Date(expiry).toLocaleDateString('en-IN');
+            actionBtn.style.display = 'none';
+            cancelBtn.style.display = 'block';
+            blocked.classList.remove('show');
+        } else {
+            statusEl.textContent = expiry > 0 ? '⚠️ Expired' : '❌ Inactive';
+            statusEl.className = 'sub-status ' + (expiry > 0 ? 'expired' : 'inactive');
+            expiryEl.textContent = expiry > 0 ? new Date(expiry).toLocaleDateString('en-IN') : '-';
+            actionBtn.style.display = 'block';
+            cancelBtn.style.display = 'none';
+            blocked.classList.add('show');
+        }
+    });
+}
+
+function razorpaySubscribe() {
+    const options = {
+        key: RAZORPAY_KEY, amount: 50000, currency: "INR",
+        name: "NnlGharPro", description: "Provider Subscription - ₹500/month",
+        handler: function (response) {
+            db.collection('providers').doc(currentUser.id).set({
+                subscriptionActive: true,
+                subscriptionExpiry: firebase.firestore.Timestamp.fromMillis(Date.now() + 30 * 24 * 60 * 60 * 1000),
+                lastPaymentId: response.razorpay_payment_id,
+                email: currentUser.email
+            }, { merge: true }).then(() => showToast('✅ Subscription Active!'));
+        },
+        prefill: { email: currentUser.email },
+        theme: { color: "#4ECDC4" }
+    };
+    new Razorpay(options).open();
+}
+
+function cancelSubscription() {
+    if (!confirm('Subscription cancel karna chahte hain?')) return;
+    db.collection('providers').doc(currentUser.id).update({ subscriptionActive: false })
+      .then(() => showToast('❌ Subscription Cancelled'));
+}
+
+// ITEMS
+function loadItems() {
+    db.collection('items').where('providerId', '==', currentUser.id).onSnapshot(snap => {
+        providerItems = [];
+        snap.forEach(d => providerItems.push({ id: d.id, ...d.data() }));
+        renderItems();
+    });
+}
+function renderItems() {
+    const list = document.getElementById('itemsList');
+    if (!providerItems.length) { list.innerHTML = '<div class="empty-msg"><span class="icon">📦</span>No items yet</div>'; return; }
+    list.innerHTML = providerItems.map(item => `
+        <div class="item-card ${item.hidden ? 'hidden-item' : ''}">
+            <div class="main-name">${item.name}${item.hidden ? '<span class="hidden-badge">Hidden</span>' : ''}<span class="sub-count">(${(item.subItems || []).length} sub-items)</span></div>
+            <div class="main-actions">
+                <button class="btn-edit" onclick="editItem('${item.id}')">✏️ Edit</button>
+                <button class="${item.hidden ? 'btn-unhide' : 'btn-hide'}" onclick="toggleHideItem('${item.id}', ${!item.hidden})">${item.hidden ? '👁️ Unhide' : '🙈 Hide'}</button>
+                <button class="btn-del" onclick="deleteItem('${item.id}')">🗑️ Delete</button>
+                <button class="btn-add-sub" onclick="addSubItem('${item.id}')">➕ Add Sub</button>
+            </div>
+            <div class="sub-items-container">
+                ${(item.subItems || []).map((sub, i) => `
+                    <div class="sub-item-row ${sub.hidden ? 'hidden-sub' : ''}">
+                        <span class="sub-name">${sub.name}</span>
+                        <span class="sub-price">₹${sub.price}</span>
+                        <div class="sub-actions">
+                            <button onclick="editSubItem('${item.id}', ${i})">✏️</button>
+                            <button onclick="deleteSubItem('${item.id}', ${i})">🗑️</button>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `).join('');
+}
+function showAddMainForm() {
+    openModal('➕ Add Main Item', `
+        <div class="form-group"><label>Item Name</label><input id="mName" placeholder="e.g. AC Repair"></div>
+        <button class="btn btn-primary" onclick="saveMainItem()" style="width:100%">Save</button>
+    `);
+}
+function saveMainItem() {
+    const name = document.getElementById('mName').value.trim();
+    if (!name) { showToast('❌ Name required', true); return; }
+    db.collection('items').add({
+        providerId: currentUser.id, name, hidden: false, subItems: [],
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => { closeModal(); showToast('✅ Item added'); });
+}
+function editItem(id) {
+    const item = providerItems.find(i => i.id === id);
+    openModal('✏️ Edit Item', `
+        <div class="form-group"><label>Item Name</label><input id="mName" value="${item.name}"></div>
+        <button class="btn btn-primary" onclick="updateItem('${id}')" style="width:100%">Update</button>
+    `);
+}
+function updateItem(id) {
+    const name = document.getElementById('mName').value.trim();
+    db.collection('items').doc(id).update({ name }).then(() => { closeModal(); showToast('✅ Updated'); });
+}
+function toggleHideItem(id, hidden) {
+    db.collection('items').doc(id).update({ hidden }).then(() => showToast('✅ Updated'));
+}
+function deleteItem(id) {
+    if (!confirm('Delete this item?')) return;
+    db.collection('items').doc(id).delete().then(() => showToast('🗑️ Deleted'));
+}
+function addSubItem(id) {
+    openModal('➕ Add Sub Item', `
+        <div class="form-group"><label>Sub Item Name</label><input id="sName"></div>
+        <div class="form-group"><label>Price (₹)</label><input id="sPrice" type="number"></div>
+        <button class="btn btn-primary" onclick="saveSubItem('${id}')" style="width:100%">Save</button>
+    `);
+}
+function saveSubItem(id) {
+    const name = document.getElementById('sName').value.trim();
+    const price = parseFloat(document.getElementById('sPrice').value);
+    if (!name || !price) { showToast('❌ Fill all fields', true); return; }
+    const item = providerItems.find(i => i.id === id);
+    const subItems = item.subItems || [];
+    subItems.push({ name, price, hidden: false });
+    db.collection('items').doc(id).update({ subItems }).then(() => { closeModal(); showToast('✅ Sub item added'); });
+}
+function editSubItem(id, index) {
+    const item = providerItems.find(i => i.id === id);
+    const sub = item.subItems[index];
+    openModal('✏️ Edit Sub Item', `
+        <div class="form-group"><label>Name</label><input id="sName" value="${sub.name}"></div>
+        <div class="form-group"><label>Price</label><input id="sPrice" type="number" value="${sub.price}"></div>
+        <button class="btn btn-primary" onclick="updateSubItem('${id}', ${index})" style="width:100%">Update</button>
+    `);
+}
+function updateSubItem(id, index) {
+    const name = document.getElementById('sName').value.trim();
+    const price = parseFloat(document.getElementById('sPrice').value);
+    const item = providerItems.find(i => i.id === id);
+    item.subItems[index] = { ...item.subItems[index], name, price };
+    db.collection('items').doc(id).update({ subItems: item.subItems }).then(() => { closeModal(); showToast('✅ Updated'); });
+}
+function deleteSubItem(id, index) {
+    if (!confirm('Delete this sub item?')) return;
+    const item = providerItems.find(i => i.id === id);
+    item.subItems.splice(index, 1);
+    db.collection('items').doc(id).update({ subItems: item.subItems }).then(() => showToast('🗑️ Deleted'));
+}
+
+// LEADS
+function loadLeads() {
+    db.collection('bookings').where('providerId', '==', currentUser.id).onSnapshot(snap => {
+        allBookings = [];
+        snap.forEach(d => allBookings.push({ id: d.id, ...d.data() }));
+        allBookings.sort((a, b) => {
+            const at = a.createdAt?.toMillis ? a.createdAt.toMillis() : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+            const bt = b.createdAt?.toMillis ? b.createdAt.toMillis() : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
+            return bt - at;
+        });
+        renderLeads();
+        updateLeadBadge();
+    });
+}
+function updateLeadBadge() {
+    const pending = allBookings.filter(b => b.status === 'pending').length;
+    document.getElementById('leadCounterBadge').textContent = pending + ' Pending';
+}
+function renderLeads() {
+    const list = document.getElementById('leadsList');
+    if (!allBookings.length) { list.innerHTML = '<div class="empty-msg"><span class="icon">📋</span>No leads yet</div>'; return; }
+    list.innerHTML = allBookings.map(b => `
+        <div class="lead-card">
+            <div class="lead-service">${b.service || 'Service'}</div>
+            <div class="detail-row"><i class="fas fa-user"></i> ${b.customerName || '-'}</div>
+            <div class="detail-row"><i class="fas fa-phone"></i> ${b.customerMobile || '-'}</div>
+            <div class="detail-row"><i class="fas fa-map-marker-alt"></i> ${b.address || '-'}</div>
+            <div class="detail-row"><i class="fas fa-rupee-sign"></i> ₹${b.amount || 0}</div>
+            <div style="margin-top:8px"><span class="status-badge status-${b.status || 'pending'}">${(b.status || 'pending').toUpperCase()}</span></div>
+            <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
+                ${b.status === 'pending' ? `
+                    <button class="btn-accept" onclick="acceptLead('${b.id}')">✅ Accept</button>
+                    <button class="btn-reject" onclick="rejectLead('${b.id}')">❌ Reject</button>
+                ` : ''}
+                ${b.status === 'accepted' ? `<button class="btn-complete" onclick="completeLead('${b.id}')">✅ Complete</button>` : ''}
+                <a href="https://wa.me/91${b.customerMobile}?text=${encodeURIComponent('Hello ' + (b.customerName || '') + ', regarding your ' + (b.service || 'order') + ' on NnlGharPro...')}" target="_blank" class="btn-whatsapp">💬 WhatsApp</a>
+            </div>
+        </div>
+    `).join('');
+}
+function acceptLead(id) {
+    const lead = allBookings.find(b => b.id === id);
+    if (!lead) return;
+    db.collection('bookings').doc(id).update({ status: 'accepted', acceptedAt: firebase.firestore.FieldValue.serverTimestamp() })
+      .then(() => { showToast('✅ Lead Accepted'); sendWhatsApp(lead.customerMobile, buildAcceptMessage(lead)); });
+}
+function completeLead(id) {
+    const lead = allBookings.find(b => b.id === id);
+    if (!lead) return;
+    db.collection('bookings').doc(id).update({ status: 'completed', completedAt: firebase.firestore.FieldValue.serverTimestamp() })
+      .then(() => { showToast('✅ Order Completed'); sendWhatsApp(lead.customerMobile, buildReceiptMessage(lead, id)); });
+}
+function rejectLead(id) {
+    const lead = allBookings.find(b => b.id === id);
+    if (!lead) return;
+    if (!confirm('Lead reject karna chahte hain?')) return;
+    db.collection('bookings').doc(id).update({ status: 'rejected', rejectedAt: firebase.firestore.FieldValue.serverTimestamp() })
+      .then(() => { showToast('❌ Lead Rejected'); sendWhatsApp(lead.customerMobile, buildRejectMessage(lead)); });
+}
+
+// CALLING OVERLAY
+function startLeadListener() {
+    db.collection('bookings').where('providerId', '==', currentUser.id).where('status', '==', 'pending').onSnapshot(snap => {
+        snap.docChanges().forEach(change => {
+            if (change.type === 'added') {
+                const lead = { id: change.doc.id, ...change.doc.data() };
+                if (!leadQueue.find(l => l.id === lead.id)) leadQueue.push(lead);
+            }
+        });
+        processQueue();
+    });
+}
+function processQueue() {
+    if (isProcessing || leadQueue.length === 0) return;
+    isProcessing = true;
+    const next = leadQueue.shift();
+    showCallingOverlay(next);
+}
+function showCallingOverlay(lead) {
+    pendingLeadId = lead.id;
+    document.getElementById('callCustomerName').textContent = lead.customerName || 'Customer';
+    document.getElementById('callService').textContent = lead.service || 'Service';
+    document.getElementById('callMobile').textContent = '📱 ' + (lead.customerMobile || '---');
+    document.getElementById('callCounter').textContent = '1 of ' + (leadQueue.length + 1);
+    document.getElementById('callingOverlay').classList.add('show');
+    let sec = 0;
+    document.getElementById('callTimer').textContent = '⏱️ 0s';
+    callTimerInterval = setInterval(() => { sec++; document.getElementById('callTimer').textContent = '⏱️ ' + sec + 's'; }, 1000);
+    autoReleaseTimeout = setTimeout(() => {
+        if (pendingLeadId) { hideCallingOverlay(); showToast('⏰ Lead auto-released', true); }
+    }, 60000);
+}
+function acceptLeadFromCall() {
+    if (!pendingLeadId) return;
+    const lead = allBookings.find(b => b.id === pendingLeadId) || leadQueue.find(l => l.id === pendingLeadId);
+    clearInterval(callTimerInterval); clearTimeout(autoReleaseTimeout);
+    db.collection('bookings').doc(pendingLeadId).update({ status: 'accepted', acceptedAt: firebase.firestore.FieldValue.serverTimestamp() })
+      .then(() => { showToast('✅ Lead Accepted'); if (lead) sendWhatsApp(lead.customerMobile, buildAcceptMessage(lead)); hideCallingOverlay(); });
+}
+function rejectLeadFromCall() {
+    if (!pendingLeadId) return;
+    const lead = allBookings.find(b => b.id === pendingLeadId) || leadQueue.find(l => l.id === pendingLeadId);
+    clearInterval(callTimerInterval); clearTimeout(autoReleaseTimeout);
+    db.collection('bookings').doc(pendingLeadId).update({ status: 'rejected', rejectedAt: firebase.firestore.FieldValue.serverTimestamp() })
+      .then(() => { showToast('❌ Lead Rejected'); if (lead) sendWhatsApp(lead.customerMobile, buildRejectMessage(lead)); hideCallingOverlay(); });
+}
+function hideCallingOverlay() {
+    pendingLeadId = null;
+    document.getElementById('callingOverlay').classList.remove('show');
+    clearInterval(callTimerInterval); clearTimeout(autoReleaseTimeout);
+    isProcessing = false;
+    processQueue();
+}
+
+// EARNINGS
+function loadEarnings() {
+    db.collection('bookings').where('providerId', '==', currentUser.id).where('status', '==', 'completed').onSnapshot(snap => {
+        let total = 0, count = 0, html = '';
+        snap.forEach(d => {
+            const b = d.data();
+            total += (b.amount || 0); count++;
+            html += `
+                <div class="item-card">
+                    <div class="main-name">${b.service || 'Service'}</div>
+                    <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px">${b.customerName || '-'} • ₹${b.amount || 0}</div>
+                    <div style="margin-top:6px"><button class="btn-whatsapp" onclick="resendReceiptById('${d.id}')">🧾 Resend Receipt</button></div>
+                </div>
+            `;
+        });
+        document.getElementById('totalEarnings').textContent = '₹' + total;
+        document.getElementById('totalOrders').textContent = count;
+        document.getElementById('earningsList').innerHTML = html || '<div class="empty-msg"><span class="icon">💰</span>No earnings yet</div>';
+    });
+}
+function resendReceiptById(id) {
+    const lead = allBookings.find(b => b.id === id);
+    if (!lead) { showToast('❌ Lead not found', true); return; }
+    sendWhatsApp(lead.customerMobile, buildReceiptMessage(lead, id));
+}
+
+// ONBOARDING
+function loadOnboarding() {
+    db.collection('providers').doc(currentUser.id).onSnapshot(doc => {
+        const box = document.getElementById('onboardStatusBox');
+        const form = document.getElementById('onboardForm');
+        if (doc.exists && doc.data().bankDetails) {
+            const b = doc.data().bankDetails;
+            box.innerHTML = `<div class="onboard-status-box">✅ Bank Details Submitted<br><strong>${b.holder}</strong><br>A/C: ****${String(b.account).slice(-4)}<br>IFSC: ${b.ifsc}<br>Bank: ${b.bankName}</div>`;
+            form.style.display = 'none';
+        } else {
+            box.innerHTML = '<div class="onboard-status-box">⚠️ Bank details pending. Please submit for payouts.</div>';
+            form.style.display = 'block';
+        }
+    });
+}
+function submitOnboarding() {
+    const holder = document.getElementById('obHolder').value.trim();
+    const account = document.getElementById('obAccount').value.trim();
+    const accountConfirm = document.getElementById('obAccountConfirm').value.trim();
+    const ifsc = document.getElementById('obIFSC').value.trim().toUpperCase();
+    const bankName = document.getElementById('obBankName').value.trim();
+    const branch = document.getElementById('obBranch').value.trim();
+    const pan = document.getElementById('obPAN').value.trim().toUpperCase();
+    const tnc = document.getElementById('obTNC').checked;
+    if (!holder || !account || !accountConfirm || !ifsc || !bankName) { showToast('❌ Fill all fields', true); return; }
+    if (account !== accountConfirm) { showToast('❌ Account numbers do not match', true); return; }
+    if (!tnc) { showToast('❌ Please accept terms', true); return; }
+    db.collection('providers').doc(currentUser.id).set({
+        bankDetails: { holder, account, ifsc, bankName, branch, pan, submittedAt: firebase.firestore.FieldValue.serverTimestamp() }
+    }, { merge: true }).then(() => showToast('✅ Bank details submitted'));
+}
+
+// DELIVERY
+function loadDeliveryPartners() {
+    db.collection('deliveryPartners').where('providerId', '==', currentUser.id).onSnapshot(snap => {
+        deliveryPartners = [];
+        snap.forEach(d => deliveryPartners.push({ id: d.id, ...d.data() }));
+        renderDeliveryPartners();
+    });
+}
+function renderDeliveryPartners() {
+    const list = document.getElementById('delPartnersList');
+    if (!deliveryPartners.length) { list.innerHTML = '<div style="font-size:12px;color:rgba(255,255,255,.3);text-align:center">No partners added</div>'; return; }
+    list.innerHTML = deliveryPartners.map(p => `
+        <div class="sub-item-row">
+            <span class="sub-name">${p.name}</span>
+            <span class="sub-price">${p.mobile}</span>
+            <div class="sub-actions"><button onclick="deleteDeliveryPartner('${p.id}')">🗑️</button></div>
+        </div>
+    `).join('');
+}
+function addDeliveryPartner() {
+    const name = document.getElementById('delName').value.trim();
+    const mobile = document.getElementById('delMobile').value.trim();
+    if (!name || mobile.length !== 10) { showToast('❌ Enter valid name & mobile', true); return; }
+    db.collection('deliveryPartners').add({
+        providerId: currentUser.id, name, mobile,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+        document.getElementById('delName').value = '';
+        document.getElementById('delMobile').value = '';
+        showToast('✅ Partner added');
+    });
+}
+function deleteDeliveryPartner(id) {
+    if (!confirm('Delete partner?')) return;
+    db.collection('deliveryPartners').doc(id).delete().then(() => showToast('🗑️ Deleted'));
+}
+
+// PINCODES
+function loadPincodes() {
+    db.collection('providers').doc(currentUser.id).onSnapshot(doc => {
+        const tags = document.getElementById('pincodeTags');
+        const pins = (doc.exists && doc.data().pincodes) || [];
+        tags.innerHTML = pins.map(p => `
+            <span style="background:rgba(78,205,196,.15);color:#4ECDC4;padding:4px 10px;border-radius:12px;font-size:12px;display:inline-flex;align-items:center;gap:6px">
+                ${p}<button onclick="removePincode('${p}')" style="background:none;border:none;color:#FF4757;cursor:pointer;font-size:14px">✕</button>
+            </span>
+        `).join('');
+    });
+}
+function addPincode() {
+    const pin = document.getElementById('pincodeInput').value.trim();
+    if (!pin || pin.length !== 6 || isNaN(pin)) { showToast('❌ Enter valid 6-digit pincode', true); return; }
+    db.collection('providers').doc(currentUser.id).get().then(doc => {
+        const pins = (doc.exists && doc.data().pincodes) || [];
+        if (pins.includes(pin)) { showToast('⚠️ Already added', true); return; }
+        pins.push(pin);
+        db.collection('providers').doc(currentUser.id).set({ pincodes: pins }, { merge: true })
+          .then(() => { document.getElementById('pincodeInput').value = ''; showToast('✅ Pincode added'); });
+    });
+}
+function removePincode(pin) {
+    db.collection('providers').doc(currentUser.id).get().then(doc => {
+        let pins = (doc.exists && doc.data().pincodes) || [];
+        pins = pins.filter(p => p !== pin);
+        db.collection('providers').doc(currentUser.id).set({ pincodes: pins }, { merge: true }).then(() => showToast('🗑️ Removed'));
+    });
+}
+
 document.addEventListener('DOMContentLoaded', checkSession);
-console.log('✅ NnlGharPro Provider Panel v8.0');
-console.log('🔧 DEMO_MODE:', DEMO_MODE);
 </script>
 </body>
 </html>
