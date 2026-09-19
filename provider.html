@@ -134,7 +134,7 @@ input,textarea{user-select:text;-webkit-user-select:text}
 
 <div id="toast" class="toast"></div>
 
-<!-- CALLING OVERLAY (Zomato Style) -->
+<!-- CALLING OVERLAY -->
 <div class="calling-overlay" id="callingOverlay">
     <div class="calling-box">
         <div class="call-counter" id="callCounter">1 of 1</div>
@@ -332,7 +332,7 @@ let audioContext = null;
 let bellInterval = null;
 
 // ═══════════════════════════════════════════════════════════
-// 🔐 SIMPLE HASH FUNCTION
+// 🔐 SIMPLE HASH
 // ═══════════════════════════════════════════════════════════
 function simpleHash(str) {
     if (!str) return '';
@@ -373,29 +373,71 @@ function openModal(title, html) {
 function closeModal() { document.getElementById('modalOverlay').classList.remove('show'); }
 
 // ═══════════════════════════════════════════════════════════
-// 🔔 RINGING SOUND (Zomato Style)
+// 🔊 LOUD DUAL-TONE RINGING SOUND (Zomato/Swiggy Style)
 // ═══════════════════════════════════════════════════════════
+function unlockAudio() {
+    try {
+        if (!audioContext) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioContext.state === 'suspended') {
+            audioContext.resume();
+        }
+        // Silent play to unlock on mobile
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        gain.gain.value = 0.001;
+        osc.start();
+        osc.stop(audioContext.currentTime + 0.01);
+        console.log('🔊 Audio unlocked');
+    } catch(e) { console.log('Audio unlock failed:', e); }
+}
+
 function playRingingSound() {
     try {
         if (!audioContext) {
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
         }
+        if (audioContext.state === 'suspended') {
+            audioContext.resume();
+        }
+        
         const now = audioContext.currentTime;
-        const osc = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-        osc.connect(gain);
-        gain.connect(audioContext.destination);
-        osc.frequency.value = 1600;
-        osc.type = 'square';
-        gain.gain.value = 0.3;
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-        osc.start(now);
-        osc.stop(now + 0.3);
-    } catch(e) { console.log('Audio not supported'); }
+        
+        // 🔊 Tone 1: High pitch (1200 Hz) - LOUD
+        const osc1 = audioContext.createOscillator();
+        const gain1 = audioContext.createGain();
+        osc1.connect(gain1);
+        gain1.connect(audioContext.destination);
+        osc1.frequency.value = 1200;
+        osc1.type = 'sine';
+        gain1.gain.setValueAtTime(1.0, now);          // 🔊 FULL VOLUME
+        gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+        osc1.start(now);
+        osc1.stop(now + 0.4);
+        
+        // 🔊 Tone 2: Low pitch (900 Hz) - LOUD
+        const osc2 = audioContext.createOscillator();
+        const gain2 = audioContext.createGain();
+        osc2.connect(gain2);
+        gain2.connect(audioContext.destination);
+        osc2.frequency.value = 900;
+        osc2.type = 'sine';
+        gain2.gain.setValueAtTime(1.0, now + 0.2);    // 🔊 FULL VOLUME
+        gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+        osc2.start(now + 0.2);
+        osc2.stop(now + 0.6);
+        
+    } catch(e) { 
+        console.log('Sound error:', e); 
+    }
 }
 
 function startBellLoop() {
     if (bellInterval) clearInterval(bellInterval);
+    unlockAudio();
     playRingingSound();
     bellInterval = setInterval(() => {
         if (document.getElementById('callingOverlay').classList.contains('show')) {
@@ -404,7 +446,7 @@ function startBellLoop() {
             clearInterval(bellInterval);
             bellInterval = null;
         }
-    }, 1500);
+    }, 1000);   // ✅ Every 1 second (fast)
 }
 
 function stopBellLoop() {
@@ -501,6 +543,10 @@ window.providerLogin = async function() {
         localStorage.setItem('gharpro_session', JSON.stringify({
             id: currentUser.id, sessionId: currentSessionId, name: currentUser.name
         }));
+        
+        // ✅ Audio unlock on login
+        unlockAudio();
+        
         showToast('✅ Welcome ' + currentUser.name + '!');
         initApp();
     } catch(e) {
@@ -639,6 +685,8 @@ function switchTab(tab, e) {
         const el = document.getElementById(t + 'Tab');
         if (el) el.style.display = (t === tab) ? 'block' : 'none';
     });
+    // ✅ Audio unlock on tab click
+    unlockAudio();
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -791,7 +839,6 @@ function addSubItem(id) {
     `);
 }
 
-// ✅ FIXED: Sub-item with unique ID
 function saveSubItem(id) {
     const name = document.getElementById('sName').value.trim();
     const price = parseFloat(document.getElementById('sPrice').value);
@@ -838,7 +885,7 @@ function deleteSubItem(id, index) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// 🔥 FIX 1: LEADS — Listen to 'pending' AND 'assigned'
+// LEADS
 // ═══════════════════════════════════════════════════════════
 function loadLeads() {
     db.collection('bookings')
@@ -857,7 +904,7 @@ function loadLeads() {
         
         renderLeads();
         updateLeadBadge();
-        loadEarnings();  // ✅ Refresh earnings bhi
+        loadEarnings();
     });
 }
 
@@ -868,7 +915,6 @@ function updateLeadBadge() {
     document.getElementById('leadCounterBadge').textContent = pending + ' Pending';
 }
 
-// ✅ FIXED: Full WhatsApp buttons
 function renderLeads() {
     const list = document.getElementById('leadsList');
     if (!allBookings.length) { 
@@ -927,7 +973,6 @@ function renderLeads() {
     }).join('');
 }
 
-// ✅ NEW: Chat with customer
 window.chatCustomer = function(id) {
     const lead = allBookings.find(b => b.id === id);
     if (!lead) { showToast('❌ Lead not found', true); return; }
@@ -989,10 +1034,9 @@ function rejectLead(id) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// 🔥 FIX 2: LEAD QUEUE SYSTEM (100+ leads handle)
+// LEAD QUEUE SYSTEM
 // ═══════════════════════════════════════════════════════════
 function startLeadListener() {
-    // ✅ 'pending' aur 'assigned' dono suno
     db.collection('bookings')
       .where('providerId', '==', currentUser.id)
       .where('status', 'in', ['pending', 'assigned'])
@@ -1000,7 +1044,6 @@ function startLeadListener() {
         snap.docChanges().forEach(change => {
             if (change.type === 'added') {
                 const lead = { id: change.doc.id, ...change.doc.data() };
-                // Duplicate check
                 if (!leadQueue.find(l => l.id === lead.id) && pendingLeadId !== lead.id) {
                     leadQueue.push(lead);
                 }
@@ -1023,11 +1066,9 @@ function showCallingOverlay(lead) {
     document.getElementById('callService').textContent = lead.service || 'Service';
     document.getElementById('callMobile').textContent = '📱 ' + (lead.customerMobile || '---');
     
-    // ✅ Queue counter
     const queueRemaining = leadQueue.length;
     document.getElementById('callCounter').textContent = '1 of ' + (queueRemaining + 1);
     
-    // ✅ Queue info
     const queueInfo = document.getElementById('queueInfo');
     if (queueRemaining > 0) {
         queueInfo.textContent = '📋 ' + queueRemaining + ' more lead(s) waiting';
@@ -1037,7 +1078,7 @@ function showCallingOverlay(lead) {
     
     document.getElementById('callingOverlay').classList.add('show');
     
-    // ✅ Ringing sound loop
+    // 🔊 START LOUD BELL
     startBellLoop();
     
     let sec = 0;
@@ -1047,7 +1088,6 @@ function showCallingOverlay(lead) {
         document.getElementById('callTimer').textContent = '⏱️ ' + sec + 's'; 
     }, 1000);
     
-    // ✅ Auto-release after 60 seconds
     autoReleaseTimeout = setTimeout(() => {
         if (pendingLeadId) { 
             hideCallingOverlay(); 
@@ -1097,12 +1137,11 @@ function hideCallingOverlay() {
     clearTimeout(autoReleaseTimeout);
     stopBellLoop();
     isProcessing = false;
-    // ✅ Process next lead in queue
     processQueue();
 }
 
 // ═══════════════════════════════════════════════════════════
-// 🔥 FIX 3: EARNINGS — providerAmount (95%) + WhatsApp
+// EARNINGS
 // ═══════════════════════════════════════════════════════════
 function loadEarnings() {
     db.collection('bookings')
@@ -1137,7 +1176,6 @@ function loadEarnings() {
     });
 }
 
-// ✅ FIXED: Detailed receipt
 function resendReceiptById(id) {
     const lead = allBookings.find(b => b.id === id);
     if (!lead) { showToast('❌ Booking not found', true); return; }
@@ -1210,7 +1248,7 @@ function submitOnboarding() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// DELIVERY
+// 🚚 DELIVERY PARTNERS (With WhatsApp Send Order)
 // ═══════════════════════════════════════════════════════════
 function loadDeliveryPartners() {
     db.collection('deliveryPartners').where('providerId', '==', currentUser.id).onSnapshot(snap => {
@@ -1222,12 +1260,24 @@ function loadDeliveryPartners() {
 
 function renderDeliveryPartners() {
     const list = document.getElementById('delPartnersList');
-    if (!deliveryPartners.length) { list.innerHTML = '<div style="font-size:12px;color:rgba(255,255,255,.3);text-align:center">No partners added</div>'; return; }
+    if (!deliveryPartners.length) { 
+        list.innerHTML = '<div style="font-size:12px;color:rgba(255,255,255,.3);text-align:center;padding:10px">No partners added</div>'; 
+        return; 
+    }
     list.innerHTML = deliveryPartners.map(p => `
-        <div class="sub-item-row">
-            <span class="sub-name">${p.name}</span>
-            <span class="sub-price">${p.mobile}</span>
-            <div class="sub-actions"><button onclick="deleteDeliveryPartner('${p.id}')">🗑️</button></div>
+        <div class="sub-item-row" style="flex-wrap:wrap;gap:8px">
+            <div style="flex:1;min-width:120px">
+                <div class="sub-name" style="font-weight:700">${p.name}</div>
+                <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:2px">📱 ${p.mobile}</div>
+            </div>
+            <div class="sub-actions" style="gap:6px">
+                <button onclick="sendOrderToDeliveryPartner('${p.id}')" style="background:#25D366;color:#fff;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:600;border:none;cursor:pointer">
+                    💬 Send Order
+                </button>
+                <button onclick="deleteDeliveryPartner('${p.id}')" style="background:rgba(255,71,87,.15);color:#FF4757;padding:6px 10px;border-radius:8px;font-size:11px;border:none;cursor:pointer">
+                    🗑️
+                </button>
+            </div>
         </div>
     `).join('');
 }
@@ -1249,6 +1299,98 @@ function addDeliveryPartner() {
 function deleteDeliveryPartner(id) {
     if (!confirm('Delete partner?')) return;
     db.collection('deliveryPartners').doc(id).delete().then(() => showToast('🗑️ Deleted'));
+}
+
+// ✅ NEW: Send Order to Delivery Partner
+window.sendOrderToDeliveryPartner = async function(deliveryPartnerId) {
+    const partner = deliveryPartners.find(p => p.id === deliveryPartnerId);
+    if (!partner) { showToast('❌ Delivery partner not found', true); return; }
+    
+    // Active bookings dhundo
+    const activeBookings = allBookings.filter(b => 
+        b.status === 'accepted' || b.status === 'assigned' || b.status === 'pending'
+    );
+    
+    if (activeBookings.length === 0) {
+        showToast('⚠️ Koi active order nahi hai', true);
+        return;
+    }
+    
+    // Agar sirf ek order hai to direct bhejo
+    if (activeBookings.length === 1) {
+        sendOrderWhatsApp(partner, activeBookings[0]);
+        return;
+    }
+    
+    // Multiple orders — modal mein select karwao
+    const modalHtml = `
+        <div style="max-height:400px;overflow-y:auto">
+            <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:12px">
+                Select karein kaunsa order bhejna hai:
+            </div>
+            ${activeBookings.map(b => `
+                <div onclick="sendOrderWhatsAppFromModal('${partner.id}', '${b.id}')" 
+                     style="background:rgba(255,255,255,.03);padding:12px;border-radius:12px;margin-bottom:8px;cursor:pointer;border-left:3px solid #4ECDC4;transition:.2s"
+                     onmouseover="this.style.background='rgba(255,255,255,.06)'"
+                     onmouseout="this.style.background='rgba(255,255,255,.03)'">
+                    <div style="font-weight:700;color:#fff;font-size:14px">${b.service || 'Service'}</div>
+                    <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:4px">
+                        👤 ${b.customerName || 'Customer'}<br>
+                        📞 ${b.customerMobile || 'N/A'}<br>
+                        💰 ₹${b.totalAmount || 0} • ${b.status || 'pending'}
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+    
+    openModal('🚚 Order Bhejein ' + partner.name, modalHtml);
+};
+
+window.sendOrderWhatsAppFromModal = function(partnerId, orderId) {
+    const partner = deliveryPartners.find(p => p.id === partnerId);
+    const booking = allBookings.find(b => b.id === orderId);
+    if (!partner || !booking) return;
+    closeModal();
+    sendOrderWhatsApp(partner, booking);
+};
+
+function sendOrderWhatsApp(partner, booking) {
+    const amount = booking.totalAmount || booking.amount || 0;
+    const deliveryCharge = 50;
+    
+    const msg = 
+        `🚚 *New Delivery Assignment*\n` +
+        `_NnlGharPro - Randhawa Enterprises_\n\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━\n` +
+        `📋 *Order ID:* #${booking.id.slice(-6).toUpperCase()}\n` +
+        `📅 *Date:* ${booking.bookingDate || 'N/A'}\n` +
+        `⏰ *Time:* ${booking.bookingTime || 'N/A'}\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━\n\n` +
+        `👤 *Customer Details:*\n` +
+        `Name: ${booking.customerName || 'N/A'}\n` +
+        `Mobile: ${booking.customerMobile || 'N/A'}\n` +
+        `Address: ${booking.customerAddress || 'N/A'}\n` +
+        `Pincode: ${booking.customerPincode || 'N/A'}\n\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━\n` +
+        `🔧 *Service:* ${booking.service || 'N/A'}\n` +
+        `🛒 *Items:* ${booking.items || 'N/A'}\n` +
+        `💰 *Order Amount:* ₹${amount}\n` +
+        `🚚 *Delivery Charge:* ₹${deliveryCharge}\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━\n\n` +
+        `🏪 *Pickup From:*\n` +
+        `${currentUser.name || 'Provider'}\n` +
+        `📞 ${currentUser.mobile || 'N/A'}\n\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━\n` +
+        `✅ *Kripya order pickup karein aur customer ko deliver karein.*\n\n` +
+        `📞 *Support:* 9588562553\n` +
+        `_NnlGharPro_`;
+    
+    const cleanMob = cleanMobile(partner.mobile);
+    if (!cleanMob) { showToast('❌ Invalid mobile', true); return; }
+    
+    window.open(`https://wa.me/${cleanMob}?text=${encodeURIComponent(msg)}`, '_blank');
+    showToast('✅ Order ' + partner.name + ' ko bhej diya');
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1288,13 +1430,14 @@ function removePincode(pin) {
 
 document.addEventListener('DOMContentLoaded', checkSession);
 
-console.log('✅ NnlGharPro Provider Portal v6.0');
+console.log('✅ NnlGharPro Provider Portal v7.0');
 console.log('📋 Features:');
+console.log('  ✅ LOUD Dual-tone Ringing Sound (Zomato style)');
 console.log('  ✅ Zomato-style Lead Queue (100+ leads)');
-console.log('  ✅ Ringing Sound + Auto-release');
-console.log('  ✅ WhatsApp Integration (Accept/Reject/Complete/Chat/Receipt)');
-console.log('  ✅ Earnings (95% provider amount)');
-console.log('  ✅ Bank Details + Delivery Partners + Pincodes');
+console.log('  ✅ Delivery Partner WhatsApp Integration');
+console.log('  ✅ Auto-release after 60s');
+console.log('  ✅ WhatsApp: Accept/Reject/Complete/Chat/Receipt/SendOrder');
+console.log('  ✅ 95% Provider Earnings');
 </script>
 </body>
 </html>
