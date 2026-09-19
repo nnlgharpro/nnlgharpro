@@ -64,6 +64,12 @@ input,textarea{user-select:text;-webkit-user-select:text}
 .lead-service{font-size:17px;font-weight:700;color:#fff;margin-bottom:6px}
 .detail-row{display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.6);padding:2px 0}
 .detail-row i{width:18px;color:#4ECDC4}
+.customer-notes-box{background:rgba(255,217,61,.08);border:1px solid rgba(255,217,61,.2);border-radius:10px;padding:8px 10px;margin-top:6px;font-size:12px;color:#FFD93D;line-height:1.5}
+.customer-notes-box i{color:#FF6B35;margin-right:4px}
+.delivery-info-box{background:rgba(255,107,53,.06);border:1px solid rgba(255,107,53,.15);border-radius:10px;padding:8px 10px;margin-top:6px;font-size:12px;color:rgba(255,255,255,.8);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px}
+.delivery-info-box .d-label{display:flex;align-items:center;gap:6px}
+.delivery-info-box .d-label i{color:#FF6B35}
+.delivery-info-box .d-amount{font-weight:700;color:#FFD93D}
 .status-badge{padding:3px 12px;border-radius:12px;font-size:10px;font-weight:600;display:inline-block}
 .status-pending{background:rgba(255,152,0,.15);color:#FF9800}
 .status-assigned{background:rgba(52,152,219,.15);color:#3498db}
@@ -92,7 +98,7 @@ input,textarea{user-select:text;-webkit-user-select:text}
 @keyframes callAvatar{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
 .call-name{font-size:28px;font-weight:800;color:#fff;margin-bottom:4px}
 .call-service{font-size:16px;color:rgba(255,255,255,.5);margin-bottom:4px}
-.call-mobile{font-size:20px;font-weight:700;color:#4ECDC4;margin-bottom:20px}
+.call-mobile{font-size:20px;font-weight:700;color:#4ECDC4;margin-bottom:8px}
 .call-amount{font-size:22px;font-weight:800;color:#00C853;margin-bottom:20px}
 .call-actions{display:flex;gap:20px;justify-content:center;margin-top:20px}
 .call-actions button{width:70px;height:70px;border-radius:50%;border:none;font-size:30px;cursor:pointer;display:flex;align-items:center;justify-content:center}
@@ -144,7 +150,7 @@ input,textarea{user-select:text;-webkit-user-select:text}
         <div class="call-name" id="callCustomerName">Customer</div>
         <div class="call-service" id="callService">Service</div>
         <div class="call-mobile" id="callMobile">📱 ---</div>
-        <div class="call-amount" id="callAmount">₹0</div>
+        <div class="call-amount" id="callAmount">₹0 PAID</div>
         <div class="call-ringing">🔔 INCOMING PAID LEAD...</div>
         <div class="call-actions">
             <button class="call-accept" onclick="acceptLeadFromCall()">✅</button>
@@ -236,7 +242,7 @@ input,textarea{user-select:text;-webkit-user-select:text}
         <div class="card">
             <div class="card-title">
                 <span>📋 Leads</span>
-                <span id="leadCounterBadge" style="font-size:12px;background:rgba(255,152,0,.15);color:#FF9800;padding:3px 12px;border-radius:12px">0 Pending</span>
+                <span id="leadCounterBadge" style="font-size:12px;background:rgba(255,152,0,.15);color:#FF9800;padding:3px 12px;border-radius:12px">0 Paid</span>
             </div>
             <div id="leadsList"><div class="empty-msg"><span class="icon">📋</span>No leads yet</div></div>
         </div>
@@ -377,16 +383,12 @@ function openModal(title, html) {
 function closeModal() { document.getElementById('modalOverlay').classList.remove('show'); }
 
 // ═══════════════════════════════════════════════════════════
-// 🔊 LOUD SOUND + VIBRATION + WAKE LOCK
+// 🔊 SOUND
 // ═══════════════════════════════════════════════════════════
 function unlockAudio() {
     try {
-        if (!audioContext) {
-            audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (audioContext.state === 'suspended') {
-            audioContext.resume();
-        }
+        if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioContext.state === 'suspended') audioContext.resume();
         const osc = audioContext.createOscillator();
         const gain = audioContext.createGain();
         osc.connect(gain);
@@ -394,22 +396,14 @@ function unlockAudio() {
         gain.gain.value = 0.001;
         osc.start();
         osc.stop(audioContext.currentTime + 0.01);
-        console.log('🔊 Audio unlocked');
-    } catch(e) { console.log('Audio unlock failed:', e); }
+    } catch(e) {}
 }
 
 function playRingingSound() {
     try {
-        if (!audioContext) {
-            audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (audioContext.state === 'suspended') {
-            audioContext.resume();
-        }
-        
+        if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioContext.state === 'suspended') audioContext.resume();
         const now = audioContext.currentTime;
-        
-        // 🔊 Tone 1: High (1200 Hz)
         const osc1 = audioContext.createOscillator();
         const gain1 = audioContext.createGain();
         osc1.connect(gain1);
@@ -420,8 +414,6 @@ function playRingingSound() {
         gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
         osc1.start(now);
         osc1.stop(now + 0.4);
-        
-        // 🔊 Tone 2: Low (900 Hz)
         const osc2 = audioContext.createOscillator();
         const gain2 = audioContext.createGain();
         osc2.connect(gain2);
@@ -432,34 +424,23 @@ function playRingingSound() {
         gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
         osc2.start(now + 0.2);
         osc2.stop(now + 0.6);
-        
-    } catch(e) { 
-        console.log('Sound error:', e); 
-    }
+    } catch(e) {}
 }
 
-// 📳 Vibration
 function vibratePhone() {
-    if ('vibrate' in navigator) {
-        navigator.vibrate([500, 200, 500, 200, 500]);
-    }
+    if ('vibrate' in navigator) navigator.vibrate([500, 200, 500, 200, 500]);
 }
 
-// 💡 Wake Lock
 async function requestWakeLock() {
     try {
         if ('wakeLock' in navigator && wakeLock === null) {
             wakeLock = await navigator.wakeLock.request('screen');
-            console.log('💡 Screen wake lock active');
         }
-    } catch(e) { console.log('Wake lock error:', e); }
+    } catch(e) {}
 }
 
 function releaseWakeLock() {
-    if (wakeLock) {
-        wakeLock.release().catch(() => {});
-        wakeLock = null;
-    }
+    if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null; }
 }
 
 function startBellLoop() {
@@ -468,7 +449,6 @@ function startBellLoop() {
     playRingingSound();
     vibratePhone();
     requestWakeLock();
-    
     bellInterval = setInterval(() => {
         if (document.getElementById('callingOverlay').classList.contains('show')) {
             playRingingSound();
@@ -486,12 +466,8 @@ function stopBellLoop() {
     releaseWakeLock();
 }
 
-// 👁️ Page visibility check
 document.addEventListener('visibilitychange', () => {
-    if (!document.hidden && pendingLeadId) {
-        console.log('📱 Page visible, restarting bell');
-        startBellLoop();
-    }
+    if (!document.hidden && pendingLeadId) startBellLoop();
 });
 
 // ═══════════════════════════════════════════════════════════
@@ -584,13 +560,10 @@ window.providerLogin = async function() {
         localStorage.setItem('gharpro_session', JSON.stringify({
             id: currentUser.id, sessionId: currentSessionId, name: currentUser.name
         }));
-        
         unlockAudio();
-        
         showToast('✅ Welcome ' + currentUser.name + '!');
         initApp();
     } catch(e) {
-        console.error(e);
         errorEl.textContent = '❌ ' + e.message;
         errorEl.style.display = 'block';
     }
@@ -620,24 +593,14 @@ window.forgotPassword = async function() {
         }
         const providerDoc = snap.docs[0];
         const providerData = providerDoc.data();
-
         const newPlainPassword = Math.floor(100000 + Math.random() * 900000).toString();
         const newHashedPassword = simpleHash(newPlainPassword);
-
         await db.collection('providers').doc(providerDoc.id).update({
             password: newHashedPassword,
             lastPasswordReset: new Date().toISOString()
         });
-
         if (providerData.mobile) {
-            const msg =
-                `🔑 *Password Reset - NnlGharPro*\n\n` +
-                `Aapka naya password:\n\n` +
-                `*${newPlainPassword}*\n\n` +
-                `Login karke password change karein.\n\n` +
-                `🔗 Portal: https://www.nnlgharpro.in/provider.html\n\n` +
-                `📞 Support: 9588562553\n` +
-                `_NnlGharPro - Randhawa Enterprises_`;
+            const msg = `🔑 *Password Reset - NnlGharPro*\n\nAapka naya password:\n\n*${newPlainPassword}*\n\nLogin karke password change karein.\n\n📞 Support: 9588562553\n_NnlGharPro_`;
             window.open(`https://wa.me/91${providerData.mobile}?text=${encodeURIComponent(msg)}`, '_blank');
             if (successEl) {
                 successEl.textContent = '✅ Naya password WhatsApp par bhej diya!';
@@ -649,7 +612,6 @@ window.forgotPassword = async function() {
             errorEl.style.display = 'block';
         }
     } catch(e) {
-        console.error(e);
         errorEl.textContent = '❌ ' + e.message;
         errorEl.style.display = 'block';
     }
@@ -882,16 +844,11 @@ function saveSubItem(id) {
     const name = document.getElementById('sName').value.trim();
     const price = parseFloat(document.getElementById('sPrice').value);
     if (!name || !price) { showToast('❌ Fill all fields', true); return; }
-    
     const item = providerItems.find(i => i.id === id);
     const subItems = item.subItems || [];
-    
     const subId = 'sub_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
-    
     subItems.push({ id: subId, name, price, hidden: false });
-    
-    db.collection('items').doc(id).update({ subItems })
-        .then(() => { closeModal(); showToast('✅ Sub item added'); });
+    db.collection('items').doc(id).update({ subItems }).then(() => { closeModal(); showToast('✅ Sub item added'); });
 }
 
 function editSubItem(id, index) {
@@ -909,11 +866,8 @@ function updateSubItem(id, index) {
     const price = parseFloat(document.getElementById('sPrice').value);
     const item = providerItems.find(i => i.id === id);
     const existingSub = item.subItems[index];
-    
     item.subItems[index] = { ...existingSub, name, price };
-    
-    db.collection('items').doc(id).update({ subItems: item.subItems })
-        .then(() => { closeModal(); showToast('✅ Updated'); });
+    db.collection('items').doc(id).update({ subItems: item.subItems }).then(() => { closeModal(); showToast('✅ Updated'); });
 }
 
 function deleteSubItem(id, index) {
@@ -932,15 +886,11 @@ function loadLeads() {
       .onSnapshot(snap => {
         allBookings = [];
         snap.forEach(d => allBookings.push({ id: d.id, ...d.data() }));
-        
         allBookings.sort((a, b) => {
-            const at = a.createdAt?.toMillis ? a.createdAt.toMillis() : 
-                       (a.createdAt ? new Date(a.createdAt).getTime() : 0);
-            const bt = b.createdAt?.toMillis ? b.createdAt.toMillis() : 
-                       (b.createdAt ? new Date(b.createdAt).getTime() : 0);
+            const at = a.createdAt?.toMillis ? a.createdAt.toMillis() : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+            const bt = b.createdAt?.toMillis ? b.createdAt.toMillis() : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
             return bt - at;
         });
-        
         renderLeads();
         updateLeadBadge();
         loadEarnings();
@@ -965,15 +915,33 @@ function renderLeads() {
         const status = b.status || 'pending';
         const paymentStatus = b.paymentStatus || 'not_paid';
         const isPaid = paymentStatus === 'paid' && b.paymentConfirmed === true;
-        const amount = b.totalAmount || b.amount || b.providerAmount || 0;
+        const amount = b.totalAmount || b.amount || 0;
+        const itemsTotal = b.itemsTotal || 0;
+        const deliveryCharge = b.deliveryCharge || 0;
+        const deliveryDistance = b.deliveryDistance || 0;
+        const providerAmount = b.providerAmount || Math.round(itemsTotal * 0.95);
         const customerName = b.customerName || 'Customer';
         const customerMobile = b.customerMobile || '';
         const service = b.service || 'Service';
         const address = b.customerAddress || b.address || '-';
+        const customerNotes = b.customerNotes || '';
         
         let paymentBadge = isPaid 
             ? '<span style="background:rgba(0,200,83,.15);color:#00C853;padding:3px 12px;border-radius:12px;font-size:10px;font-weight:700;display:inline-block">✅ PAID ₹' + amount + '</span>'
             : '<span style="background:rgba(255,71,87,.15);color:#FF4757;padding:3px 12px;border-radius:12px;font-size:10px;font-weight:700;display:inline-block">❌ NOT PAID</span>';
+        
+        let notesBox = customerNotes ? `
+            <div class="customer-notes-box">
+                <i class="fas fa-sticky-note"></i> <strong>Customer Notes:</strong> ${customerNotes}
+            </div>
+        ` : '';
+        
+        let deliveryBox = (deliveryCharge > 0) ? `
+            <div class="delivery-info-box">
+                <div class="d-label"><i class="fas fa-truck"></i> Delivery (${deliveryDistance === 1 ? '0-4' : deliveryDistance} km)</div>
+                <div class="d-amount">₹${deliveryCharge}</div>
+            </div>
+        ` : '';
         
         let actionButtons = '';
         
@@ -1013,8 +981,12 @@ function renderLeads() {
                 <div class="detail-row"><i class="fas fa-user"></i> ${customerName}</div>
                 <div class="detail-row"><i class="fas fa-phone"></i> ${customerMobile}</div>
                 <div class="detail-row"><i class="fas fa-map-marker-alt"></i> ${address}</div>
-                <div class="detail-row"><i class="fas fa-rupee-sign"></i> ₹${amount}</div>
-                <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+                <div class="detail-row"><i class="fas fa-shopping-cart"></i> Items: ₹${itemsTotal}</div>
+                ${deliveryBox}
+                <div class="detail-row" style="margin-top:6px"><i class="fas fa-rupee-sign" style="color:#00C853"></i> <strong>Total: ₹${amount}</strong></div>
+                <div class="detail-row" style="color:rgba(78,205,196,.9)"><i class="fas fa-wallet"></i> <strong>Aapko: ₹${providerAmount}</strong> (95%)</div>
+                ${notesBox}
+                <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
                     <span class="status-badge status-${status}">${status.toUpperCase()}</span>
                     ${paymentBadge}
                 </div>
@@ -1029,14 +1001,11 @@ function renderLeads() {
 window.chatCustomer = function(id) {
     const lead = allBookings.find(b => b.id === id);
     if (!lead) { showToast('❌ Lead not found', true); return; }
-    
     const mobile = lead.customerMobile;
     if (!mobile) { showToast('❌ Customer mobile not available', true); return; }
-    
     const service = lead.service || 'Service';
     const name = lead.customerName || 'Customer';
     const amount = lead.totalAmount || lead.amount || 0;
-    
     const msg = 
         `Hello ${name} 👋\n\n` +
         `Aapki *${service}* booking ke regarding baat karni hai.\n\n` +
@@ -1045,19 +1014,16 @@ window.chatCustomer = function(id) {
         `⏰ Time: ${lead.bookingTime || 'N/A'}\n\n` +
         `Kripya apni address aur convenient time confirm karein.\n\n` +
         `_NnlGharPro - 9588562553_`;
-    
     window.open(`https://wa.me/91${cleanMobile(mobile)}?text=${encodeURIComponent(msg)}`, '_blank');
 };
 
 function acceptLead(id) {
     const lead = allBookings.find(b => b.id === id);
     if (!lead) return;
-    
     if (lead.paymentStatus !== 'paid') {
         showToast('❌ Payment nahi hui — Accept nahi kar sakte', true);
         return;
     }
-    
     db.collection('bookings').doc(id).update({ 
         status: 'accepted', 
         acceptedAt: firebase.firestore.FieldValue.serverTimestamp() 
@@ -1093,7 +1059,7 @@ function rejectLead(id) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// LEAD QUEUE — ONLY PAID + ASSIGNED
+// LEAD QUEUE — SIRF PAID + ASSIGNED
 // ═══════════════════════════════════════════════════════════
 function startLeadListener() {
     // ✅ SIRF payment confirm + assigned wali lead
@@ -1140,7 +1106,6 @@ function showCallingOverlay(lead) {
     }
     
     document.getElementById('callingOverlay').classList.add('show');
-    
     startBellLoop();
     
     let sec = 0;
@@ -1164,7 +1129,6 @@ function acceptLeadFromCall() {
     clearInterval(callTimerInterval); 
     clearTimeout(autoReleaseTimeout);
     stopBellLoop();
-    
     db.collection('bookings').doc(pendingLeadId).update({ 
         status: 'accepted', 
         acceptedAt: firebase.firestore.FieldValue.serverTimestamp() 
@@ -1181,7 +1145,6 @@ function rejectLeadFromCall() {
     clearInterval(callTimerInterval); 
     clearTimeout(autoReleaseTimeout);
     stopBellLoop();
-    
     db.collection('bookings').doc(pendingLeadId).update({ 
         status: 'rejected', 
         rejectedAt: firebase.firestore.FieldValue.serverTimestamp() 
@@ -1213,10 +1176,9 @@ function loadEarnings() {
         let total = 0, count = 0, html = '';
         snap.forEach(d => {
             const b = d.data();
-            const amount = b.providerAmount || b.totalAmount || b.amount || 0;
+            const amount = b.providerAmount || Math.round((b.itemsTotal || 0) * 0.95) || 0;
             total += amount; 
             count++;
-            
             html += `
                 <div class="item-card">
                     <div class="main-name">${b.service || 'Service'}</div>
@@ -1241,12 +1203,12 @@ function loadEarnings() {
 function resendReceiptById(id) {
     const lead = allBookings.find(b => b.id === id);
     if (!lead) { showToast('❌ Booking not found', true); return; }
-    
     const mobile = lead.customerMobile;
     if (!mobile) { showToast('❌ Customer mobile not available', true); return; }
-    
     const amount = lead.totalAmount || lead.amount || 0;
-    
+    const itemsTotal = lead.itemsTotal || 0;
+    const deliveryCharge = lead.deliveryCharge || 0;
+    const deliveryDistance = lead.deliveryDistance || 0;
     const receipt = 
         `✅ *Booking Receipt - NnlGharPro*\n\n` +
         `📋 *Booking ID:* #${id.slice(-6).toUpperCase()}\n` +
@@ -1259,8 +1221,10 @@ function resendReceiptById(id) {
         `━━━━━━━━━━━━━━━━━━━━━━\n` +
         `🔧 *Service:* ${lead.service || 'N/A'}\n` +
         `🛒 *Items:* ${lead.items || 'N/A'}\n` +
+        `💰 *Items Total:* ₹${itemsTotal}\n` +
+        `🚚 *Delivery (${deliveryDistance === 1 ? '0-4' : deliveryDistance} km):* ₹${deliveryCharge}\n` +
         `━━━━━━━━━━━━━━━━━━━━━━\n` +
-        `💰 *Total:* ₹${amount}\n` +
+        `💵 *Grand Total:* ₹${amount}\n` +
         `✅ *Status:* ${(lead.status || 'pending').toUpperCase()}\n` +
         `💳 *Payment:* ${lead.paymentStatus === 'paid' ? '✅ PAID' : '⏳ Pending'}\n` +
         `━━━━━━━━━━━━━━━━━━━━━━\n\n` +
@@ -1268,7 +1232,6 @@ function resendReceiptById(id) {
         `Managed by Randhawa Enterprises\n` +
         `📞 Support: 9588562553\n\n` +
         `🙏 Thank you for choosing us!`;
-    
     const cleanMob = cleanMobile(mobile);
     window.open(`https://wa.me/${cleanMob}?text=${encodeURIComponent(receipt)}`, '_blank');
     showToast('✅ Receipt WhatsApp par bhej diya');
@@ -1303,9 +1266,7 @@ window.sendToDeliveryPartnerFromLead = function(bookingId) {
         <div style="max-height:400px;overflow-y:auto">
             ${deliveryPartners.map(p => `
                 <div onclick="closeModal(); sendOrderWhatsApp(deliveryPartners.find(x => x.id === '${p.id}'), allBookings.find(b => b.id === '${bookingId}'));" 
-                     style="background:rgba(255,255,255,.03);padding:12px;border-radius:12px;margin-bottom:8px;cursor:pointer;border-left:3px solid #25D366;transition:.2s"
-                     onmouseover="this.style.background='rgba(37,211,102,.1)'"
-                     onmouseout="this.style.background='rgba(255,255,255,.03)'">
+                     style="background:rgba(255,255,255,.03);padding:12px;border-radius:12px;margin-bottom:8px;cursor:pointer;border-left:3px solid #25D366;">
                     <div style="font-weight:700;color:#fff;font-size:14px">${p.name}</div>
                     <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:2px">📱 ${p.mobile}</div>
                 </div>
@@ -1408,22 +1369,18 @@ function deleteDeliveryPartner(id) {
 window.sendOrderToDeliveryPartner = async function(deliveryPartnerId) {
     const partner = deliveryPartners.find(p => p.id === deliveryPartnerId);
     if (!partner) { showToast('❌ Delivery partner not found', true); return; }
-    
     const activeBookings = allBookings.filter(b => 
         (b.status === 'accepted' || b.status === 'assigned' || b.status === 'pending') &&
         b.paymentStatus === 'paid'
     );
-    
     if (activeBookings.length === 0) {
         showToast('⚠️ Koi active paid order nahi hai', true);
         return;
     }
-    
     if (activeBookings.length === 1) {
         sendOrderWhatsApp(partner, activeBookings[0]);
         return;
     }
-    
     const modalHtml = `
         <div style="max-height:400px;overflow-y:auto">
             <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:12px">
@@ -1442,13 +1399,14 @@ window.sendOrderToDeliveryPartner = async function(deliveryPartnerId) {
             `).join('')}
         </div>
     `;
-    
     openModal('🚚 Order Bhejein ' + partner.name, modalHtml);
 };
 
 function sendOrderWhatsApp(partner, booking) {
     const amount = booking.totalAmount || booking.amount || 0;
-    const deliveryCharge = 50;
+    const deliveryCharge = booking.deliveryCharge || 0;
+    const deliveryDistance = booking.deliveryDistance || 0;
+    const customerNotes = booking.customerNotes || '';
     
     const msg = 
         `🚚 *New Delivery Assignment*\n` +
@@ -1463,11 +1421,13 @@ function sendOrderWhatsApp(partner, booking) {
         `Mobile: ${booking.customerMobile || 'N/A'}\n` +
         `Address: ${booking.customerAddress || 'N/A'}\n` +
         `Pincode: ${booking.customerPincode || 'N/A'}\n\n` +
+        (customerNotes ? `📝 *Customer Notes:* ${customerNotes}\n\n` : '') +
         `━━━━━━━━━━━━━━━━━━━━━━\n` +
         `🔧 *Service:* ${booking.service || 'N/A'}\n` +
         `🛒 *Items:* ${booking.items || 'N/A'}\n` +
         `💰 *Order Amount:* ₹${amount}\n` +
-        `🚚 *Delivery Charge:* ₹${deliveryCharge}\n` +
+        `🚚 *Distance:* ${deliveryDistance === 1 ? '0-4' : deliveryDistance} km\n` +
+        `💰 *Delivery Charge (Aapko):* ₹${deliveryCharge}\n` +
         `━━━━━━━━━━━━━━━━━━━━━━\n\n` +
         `🏪 *Pickup From:*\n` +
         `${currentUser.name || 'Provider'}\n` +
@@ -1521,14 +1481,15 @@ function removePincode(pin) {
 
 document.addEventListener('DOMContentLoaded', checkSession);
 
-console.log('✅ NnlGharPro Provider Portal v8.0');
+console.log('✅ NnlGharPro Provider Portal v9.0');
 console.log('📋 Features:');
-console.log('  ✅ Payment confirmed + assigned status only lead');
-console.log('  ✅ Loud sound + Vibration + Wake Lock');
-console.log('  ✅ Paid/Unpaid badges in leads');
-console.log('  ✅ Delivery button in leads');
-console.log('  ✅ Chat/Receipt WhatsApp buttons');
-console.log('  ✅ Auto-release 60s');
+console.log('  ✅ Payment confirm + assigned status only lead');
+console.log('  ✅ Customer notes visible in lead');
+console.log('  ✅ Distance + delivery charge visible');
+console.log('  ✅ Provider amount (95%) visible');
+console.log('  ✅ Loud sound + vibration + wake lock');
+console.log('  ✅ Delivery partner WhatsApp with notes');
+console.log('  ✅ 100+ lead queue system');
 </script>
 </body>
 </html>
