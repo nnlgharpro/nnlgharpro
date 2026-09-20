@@ -58,6 +58,7 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
 .admin-tab[data-tab="delivery"].active{background:linear-gradient(135deg,#FF6B35,#F7931E)}
 .admin-tab[data-tab="broadcast"].active{background:linear-gradient(135deg,#FFD93D,#F4A261)}
 .admin-tab[data-tab="payments"].active{background:linear-gradient(135deg,#4ECDC4,#1a237e)}
+.admin-tab[data-tab="reports"].active{background:linear-gradient(135deg,#8B5CF6,#6D28D9)}
 .admin-tab[data-tab="bulkwa"].active{background:linear-gradient(135deg,#25D366,#128C7E)}
 .admin-tab[data-tab="ecommerce"].active{background:linear-gradient(135deg,#FF6B35,#FF8C42)}
 .admin-tab[data-tab="activity"].active{background:linear-gradient(135deg,#3498db,#2980b9)}
@@ -75,7 +76,8 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
 .btn-delete{background:rgba(255,71,87,.15);color:#FF4757}
 .btn-block{background:rgba(255,71,87,.12);color:#FF4757}
 .btn-unblock{background:rgba(78,205,196,.12);color:#4ECDC4}
-.btn-excel{background:linear-gradient(135deg,#1D6F42,#217346);color:#fff;padding:8px 16px;border-radius:10px;border:none;font-weight:700;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn-excel{background:linear-gradient(135deg,#1D6F42,#217346);color:#fff;padding:8px 16px;border-radius:10px;border:none;font-weight:700;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.3s}
+.btn-excel:hover{transform:scale(1.03)}
 .btn-whatsapp{background:#25D366;color:#fff;padding:8px 16px;border-radius:10px;border:none;font-weight:700;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
 .btn-success{padding:12px 24px;background:linear-gradient(135deg,#4ECDC4,#44B3A8);color:#fff;border:none;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;width:100%}
 .btn-danger{padding:12px 24px;background:linear-gradient(135deg,#FF4757,#FF6B6B);color:#fff;border:none;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;width:100%}
@@ -145,13 +147,45 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
 .logo-upload-box{background:rgba(255,255,255,.03);border:2px dashed rgba(78,205,196,.3);border-radius:12px;padding:16px;text-align:center;margin-bottom:10px;cursor:pointer;transition:.3s}
 .logo-upload-box:hover{border-color:#4ECDC4;background:rgba(78,205,196,.05)}
 .logo-preview{width:80px;height:80px;object-fit:cover;border-radius:10px;border:2px solid #4ECDC4;margin:8px auto;display:block}
-@media(max-width:600px){.dashboard-top{grid-template-columns:1fr}.admin-stats{grid-template-columns:repeat(2,1fr)}.list-item{flex-direction:column;align-items:stretch}.admin-tab{min-width:60px;font-size:9px;padding:8px 4px}.wa-stats{grid-template-columns:repeat(2,1fr)}}
+
+/* 📅 DATE FILTER SECTION */
+.date-filter-section{background:linear-gradient(135deg,rgba(139,92,246,.08),rgba(109,40,217,.04));border:2px solid rgba(139,92,246,.2);border-radius:16px;padding:16px;margin-bottom:16px}
+.date-filter-section .df-title{font-size:14px;font-weight:800;color:#8B5CF6;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.date-filter-section .df-title i{color:#8B5CF6}
+.date-filter-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.date-filter-row select{flex:1;min-width:180px;padding:12px 14px;border:1px solid rgba(139,92,246,.3);border-radius:10px;background:rgba(139,92,246,.05);color:#fff;font-size:14px;font-weight:700;outline:none;cursor:pointer}
+.date-filter-row select option{background:#1a1a2e;color:#fff}
+.custom-date-range{display:none;gap:10px;flex-wrap:wrap;margin-top:10px}
+.custom-date-range.show{display:flex}
+.custom-date-range input{padding:10px 14px;border:1px solid rgba(255,255,255,.1);border-radius:10px;background:rgba(255,255,255,.03);color:#fff;font-size:14px;flex:1;min-width:120px}
+.date-info-badge{background:rgba(78,205,196,.1);color:#4ECDC4;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;display:inline-block;margin-top:8px}
+
+/* 📊 REPORTS SECTION */
+.reports-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:16px}
+.report-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:16px;padding:18px;transition:.3s}
+.report-card:hover{background:rgba(255,255,255,.05);transform:translateY(-2px)}
+.report-card .rc-icon{font-size:32px;margin-bottom:10px;display:block}
+.report-card .rc-title{font-size:15px;font-weight:800;color:#fff;margin-bottom:6px}
+.report-card .rc-desc{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:14px;line-height:1.5;min-height:36px}
+.report-card .rc-btn{width:100%;padding:10px;background:linear-gradient(135deg,#1D6F42,#217346);color:#fff;border:none;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:.3s}
+.report-card .rc-btn:hover{transform:scale(1.02);opacity:.9}
+.report-card.daily{border-left:4px solid #00C853}
+.report-card.weekly{border-left:4px solid #4ECDC4}
+.report-card.monthly{border-left:4px solid #FFD93D}
+.report-card.custom{border-left:4px solid #8B5CF6}
+.report-card.alltime{border-left:4px solid #FF6B35}
+.report-card.provider{border-left:4px solid #3498db}
+.report-card.delivery{border-left:4px solid #F7931E}
+
+@media(max-width:600px){.dashboard-top{grid-template-columns:1fr}.admin-stats{grid-template-columns:repeat(2,1fr)}.list-item{flex-direction:column;align-items:stretch}.admin-tab{min-width:60px;font-size:9px;padding:8px 4px}.wa-stats{grid-template-columns:repeat(2,1fr)}.reports-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
+
 <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
 <div class="toast" id="toast"></div>
 
+<!-- MODAL -->
 <div class="modal-overlay" id="modalOverlay">
     <div class="modal-box">
         <button class="close-modal" onclick="closeModal()">✕</button>
@@ -160,6 +194,7 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
     </div>
 </div>
 
+<!-- LOGIN -->
 <div class="login-overlay" id="loginOverlay">
     <div class="login-box">
         <div class="login-logo">👑</div>
@@ -173,6 +208,7 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
     </div>
 </div>
 
+<!-- MAIN APP -->
 <div class="container" id="mainApp" style="display:none">
     <div class="header">
         <div class="header-left">
@@ -185,12 +221,14 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
         </div>
     </div>
 
+    <!-- DASHBOARD TOP -->
     <div class="dashboard-top">
         <div class="box"><div class="label"><i class="fas fa-calendar"></i> Date</div><div class="value" id="currentDate">Loading...</div></div>
         <div class="box"><div class="label"><i class="fas fa-clock"></i> Time</div><div class="value" id="currentTime">--:-- --</div></div>
         <div class="box"><div class="label"><i class="fas fa-cloud-sun"></i> Weather</div><div style="display:flex;align-items:center;gap:10px;margin-top:4px"><span class="weather-icon" id="weatherIcon">☀️</span><div><div class="weather-temp" id="weatherTemp">32°C</div><div class="weather-condition" id="weatherCondition">Sunny</div></div></div></div>
     </div>
 
+    <!-- STATS -->
     <div class="admin-stats">
         <div class="admin-stat stat-total"><span class="icon">📄</span><div class="number" id="statTotal">0</div><div class="label">Total Bookings</div></div>
         <div class="admin-stat stat-pending"><span class="icon">⏳</span><div class="number" id="statPending">0</div><div class="label">Pending</div></div>
@@ -198,6 +236,7 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
         <div class="admin-stat stat-allcustomers"><span class="icon">👥</span><div class="number" id="statAllCustomers">0</div><div class="label">All Users</div></div>
     </div>
 
+    <!-- TABS -->
     <div class="admin-tabs">
         <button class="admin-tab active" data-tab="dashboard" onclick="switchTab('dashboard')"><i class="fas fa-chart-pie"></i> Dashboard</button>
         <button class="admin-tab" data-tab="bookings" onclick="switchTab('bookings')"><i class="fas fa-calendar-check"></i> Bookings</button>
@@ -207,11 +246,13 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
         <button class="admin-tab" data-tab="delivery" onclick="switchTab('delivery')"><i class="fas fa-truck"></i> Delivery</button>
         <button class="admin-tab" data-tab="broadcast" onclick="switchTab('broadcast')"><i class="fas fa-bullhorn"></i> Broadcast</button>
         <button class="admin-tab" data-tab="payments" onclick="switchTab('payments')"><i class="fas fa-credit-card"></i> Payments</button>
+        <button class="admin-tab" data-tab="reports" onclick="switchTab('reports')"><i class="fas fa-file-excel"></i> Reports</button>
         <button class="admin-tab" data-tab="bulkwa" onclick="switchTab('bulkwa')"><i class="fab fa-whatsapp"></i> Bulk WhatsApp</button>
         <button class="admin-tab" data-tab="ecommerce" onclick="switchTab('ecommerce')"><i class="fas fa-shopping-bag"></i> Stores</button>
         <button class="admin-tab" data-tab="activity" onclick="switchTab('activity')"><i class="fas fa-history"></i> Activity</button>
     </div>
 
+    <!-- DASHBOARD TAB -->
     <div id="tab-dashboard" class="admin-tab-content active">
         <div class="card">
             <div class="card-title"><span><i class="fas fa-chart-bar"></i> Analytics Dashboard</span><span class="badge">📊 Live</span></div>
@@ -219,6 +260,7 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
         </div>
     </div>
 
+    <!-- BOOKINGS TAB -->
     <div id="tab-bookings" class="admin-tab-content">
         <div class="card">
             <div class="card-title"><span><i class="fas fa-calendar-check"></i> All Bookings</span>
@@ -233,6 +275,7 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
         </div>
     </div>
 
+    <!-- PROVIDERS TAB -->
     <div id="tab-providers" class="admin-tab-content">
         <div class="card">
             <div class="card-title"><span><i class="fas fa-users"></i> All Providers</span>
@@ -242,6 +285,7 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
         </div>
     </div>
 
+    <!-- SUBSCRIPTIONS TAB -->
     <div id="tab-subscriptions" class="admin-tab-content">
         <div class="card">
             <div class="card-title"><span><i class="fas fa-crown"></i> Provider Subscriptions</span>
@@ -257,6 +301,7 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
         </div>
     </div>
 
+    <!-- ONBOARDING TAB -->
     <div id="tab-onboarding" class="admin-tab-content">
         <div class="card">
             <div class="card-title"><span><i class="fas fa-store"></i> Provider Bank Details</span>
@@ -266,6 +311,7 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
         </div>
     </div>
 
+    <!-- DELIVERY TAB -->
     <div id="tab-delivery" class="admin-tab-content">
         <div class="card">
             <div class="card-title"><span><i class="fas fa-truck"></i> All Delivery Partners</span>
@@ -275,6 +321,7 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
         </div>
     </div>
 
+    <!-- BROADCAST TAB -->
     <div id="tab-broadcast" class="admin-tab-content">
         <div class="card">
             <div class="card-title"><span><i class="fas fa-bullhorn"></i> 📢 Broadcast Announcement</span><span class="badge">📨 Live</span></div>
@@ -294,15 +341,10 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
         </div>
     </div>
 
+    <!-- PAYMENTS TAB -->
     <div id="tab-payments" class="admin-tab-content">
         <div class="card">
-            <div class="card-title">
-                <span><i class="fas fa-credit-card"></i> Payment Analytics</span>
-                <div style="display:flex;gap:8px;flex-wrap:wrap">
-                    <button class="btn-excel" onclick="downloadProviderExcel()"><i class="fas fa-file-excel"></i> Provider Settlement</button>
-                    <button class="btn-excel" onclick="downloadIncomeExcel()"><i class="fas fa-file-invoice-dollar"></i> Income Summary</button>
-                </div>
-            </div>
+            <div class="card-title"><span><i class="fas fa-credit-card"></i> Payment Analytics</span></div>
             <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px">
                 <div style="background:rgba(255,255,255,.03);border-radius:12px;padding:14px;text-align:center"><div style="font-size:22px;font-weight:900;color:#4ECDC4" id="totalPayments">0</div><div style="font-size:10px;color:rgba(255,255,255,.4)">Total Payments</div></div>
                 <div style="background:rgba(255,255,255,.03);border-radius:12px;padding:14px;text-align:center"><div style="font-size:22px;font-weight:900;color:#00C853" id="paidPayments">0</div><div style="font-size:10px;color:rgba(255,255,255,.4)">✅ Paid</div></div>
@@ -314,6 +356,95 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
         </div>
     </div>
 
+    <!-- 🆕 REPORTS TAB -->
+    <div id="tab-reports" class="admin-tab-content">
+        <div class="card">
+            <div class="card-title"><span><i class="fas fa-file-excel"></i> Reports & Excel Downloads</span><span class="badge">📊 Advanced</span></div>
+
+            <!-- DATE FILTER -->
+            <div class="date-filter-section">
+                <div class="df-title"><i class="fas fa-calendar-alt"></i> Date Range Select Karein</div>
+                <div class="date-filter-row">
+                    <select id="reportDateFilter" onchange="handleDateFilterChange()">
+                        <option value="today">📅 Aaj (Today)</option>
+                        <option value="yesterday">📅 Kal (Yesterday)</option>
+                        <option value="last7days">📅 Last 7 Days</option>
+                        <option value="last30days">📅 Last 30 Days</option>
+                        <option value="thisMonth">📅 Is Mahine (This Month)</option>
+                        <option value="lastMonth">📅 Pichla Mahina (Last Month)</option>
+                        <option value="custom">📅 Custom Range</option>
+                        <option value="all">📅 All Time (Saara Data)</option>
+                    </select>
+                </div>
+                <div class="custom-date-range" id="customDateRange">
+                    <input type="date" id="customFromDate" placeholder="From Date">
+                    <input type="date" id="customToDate" placeholder="To Date">
+                </div>
+                <div id="dateRangeInfo" class="date-info-badge">📅 Aaj ka data</div>
+            </div>
+
+            <!-- REPORTS GRID -->
+            <div class="reports-grid">
+                <!-- Customer Report -->
+                <div class="report-card daily">
+                    <span class="rc-icon">📋</span>
+                    <div class="rc-title">Customer Report</div>
+                    <div class="rc-desc">Har booking ka full breakdown — items, delivery, admin commission, provider payout</div>
+                    <button class="rc-btn" onclick="downloadReport('customer')"><i class="fas fa-file-excel"></i> Download</button>
+                </div>
+
+                <!-- Provider Settlement -->
+                <div class="report-card provider">
+                    <span class="rc-icon">👤</span>
+                    <div class="rc-title">Provider Settlement</div>
+                    <div class="rc-desc">Provider-wise 95% payout with bank details</div>
+                    <button class="rc-btn" onclick="downloadReport('provider')"><i class="fas fa-file-excel"></i> Download</button>
+                </div>
+
+                <!-- Delivery Report -->
+                <div class="report-card delivery">
+                    <span class="rc-icon">🚚</span>
+                    <div class="rc-title">Delivery Report</div>
+                    <div class="rc-desc">Delivery partner-wise payout details</div>
+                    <button class="rc-btn" onclick="downloadReport('delivery')"><i class="fas fa-file-excel"></i> Download</button>
+                </div>
+
+                <!-- Income Summary -->
+                <div class="report-card monthly">
+                    <span class="rc-icon">💰</span>
+                    <div class="rc-title">Income Summary</div>
+                    <div class="rc-desc">Aapki total income — admin commission + Razorpay fee</div>
+                    <button class="rc-btn" onclick="downloadReport('income')"><i class="fas fa-file-excel"></i> Download</button>
+                </div>
+
+                <!-- Weekly Report -->
+                <div class="report-card weekly">
+                    <span class="rc-icon">📊</span>
+                    <div class="rc-title">Weekly Summary</div>
+                    <div class="rc-desc">Hafte ka summary — day-wise breakdown</div>
+                    <button class="rc-btn" onclick="downloadReport('weekly')"><i class="fas fa-file-excel"></i> Download</button>
+                </div>
+
+                <!-- Monthly Report -->
+                <div class="report-card monthly">
+                    <span class="rc-icon">📈</span>
+                    <div class="rc-title">Monthly Summary</div>
+                    <div class="rc-desc">Mahine ka summary — daily breakdown</div>
+                    <button class="rc-btn" onclick="downloadReport('monthly')"><i class="fas fa-file-excel"></i> Download</button>
+                </div>
+
+                <!-- All-in-One Report -->
+                <div class="report-card alltime">
+                    <span class="rc-icon">🎯</span>
+                    <div class="rc-title">Complete Report (All-in-One)</div>
+                    <div class="rc-desc">Ek hi Excel mein — Customer, Provider, Delivery, Income (multi-sheet)</div>
+                    <button class="rc-btn" onclick="downloadReport('complete')"><i class="fas fa-file-excel"></i> Download</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BULK WHATSAPP TAB -->
     <div id="tab-bulkwa" class="admin-tab-content">
         <div class="card">
             <div class="card-title">
@@ -344,6 +475,7 @@ Book now: https://nnlgharpro.in</textarea>
         </div>
     </div>
 
+    <!-- STORES TAB -->
     <div id="tab-ecommerce" class="admin-tab-content">
         <div class="card">
             <div class="card-title"><span><i class="fas fa-shopping-bag"></i> Partner Stores</span><button class="btn-primary" style="width:auto;padding:8px 20px;font-size:13px" onclick="showAddStore()"><i class="fas fa-plus"></i> Add Store</button></div>
@@ -351,6 +483,7 @@ Book now: https://nnlgharpro.in</textarea>
         </div>
     </div>
 
+    <!-- ACTIVITY TAB -->
     <div id="tab-activity" class="admin-tab-content">
         <div class="card">
             <div class="card-title"><span><i class="fas fa-history"></i> Activity Logs</span><span class="badge">📜 Audit Trail</span></div>
@@ -362,6 +495,9 @@ Book now: https://nnlgharpro.in</textarea>
 </div>
 
 <script>
+// ═══════════════════════════════════════════════════════════
+// SERVICES LIST
+// ═══════════════════════════════════════════════════════════
 const SERVICES_LIST = [
     { id: 'Plumbing',         name: 'Plumbing',         icon: '🔧' },
     { id: 'Electrician',      name: 'Electrician',      icon: '⚡' },
@@ -388,6 +524,9 @@ const SERVICES_LIST = [
 
 const PROVIDER_PORTAL_URL = "https://www.nnlgharpro.in/provider.html";
 
+// ═══════════════════════════════════════════════════════════
+// SIMPLE HASH
+// ═══════════════════════════════════════════════════════════
 function simpleHash(str) {
     if (!str) return '';
     let hash = 0;
@@ -399,6 +538,7 @@ function simpleHash(str) {
     return 'h_' + Math.abs(hash).toString(36);
 }
 
+// SECURITY
 document.addEventListener('contextmenu', e => { e.preventDefault(); showToast('🔒 Right-click disabled', true); });
 document.addEventListener('keydown', e => {
     if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) || (e.ctrlKey && e.key === 'u')) {
@@ -406,6 +546,9 @@ document.addEventListener('keydown', e => {
     }
 });
 
+// ═══════════════════════════════════════════════════════════
+// FIREBASE
+// ═══════════════════════════════════════════════════════════
 const firebaseConfig = {
     apiKey: "AIzaSyCBa8UmWUB-djAksNNvp14qoCY2y0HISoE",
     authDomain: "gharproindia.firebaseapp.com",
@@ -420,6 +563,9 @@ const auth = firebase.auth();
 let storage = null;
 try { storage = firebase.storage(); } catch(e) { console.log('Storage not available'); }
 
+// ═══════════════════════════════════════════════════════════
+// GLOBALS
+// ═══════════════════════════════════════════════════════════
 let allBookings = [];
 let allProviders = [];
 let allProviderBankDetails = {};
@@ -429,7 +575,11 @@ let currentTab = 'dashboard';
 let selectedServices = [];
 let currentLogoFile = null;
 let currentLogoUrl = '';
+let currentDateFilter = 'today';
 
+// ═══════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════
 function showToast(msg, err = false) {
     const t = document.getElementById('toast');
     t.textContent = msg;
@@ -446,6 +596,108 @@ function openModal(title, html) {
 }
 function closeModal() { document.getElementById('modalOverlay').classList.remove('show'); }
 
+// ═══════════════════════════════════════════════════════════
+// DATE FILTER LOGIC
+// ═══════════════════════════════════════════════════════════
+function getDateRange(filterType) {
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    let from, to;
+    
+    switch(filterType) {
+        case 'today':
+            from = startOfToday;
+            to = new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000 - 1);
+            break;
+        case 'yesterday':
+            from = new Date(startOfToday.getTime() - 24 * 60 * 60 * 1000);
+            to = new Date(startOfToday.getTime() - 1);
+            break;
+        case 'last7days':
+            from = new Date(startOfToday.getTime() - 7 * 24 * 60 * 60 * 1000);
+            to = new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000 - 1);
+            break;
+        case 'last30days':
+            from = new Date(startOfToday.getTime() - 30 * 24 * 60 * 60 * 1000);
+            to = new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000 - 1);
+            break;
+        case 'thisMonth':
+            from = new Date(now.getFullYear(), now.getMonth(), 1);
+            to = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+            break;
+        case 'lastMonth':
+            from = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            to = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+            break;
+        case 'custom':
+            const fromInput = document.getElementById('customFromDate').value;
+            const toInput = document.getElementById('customToDate').value;
+            if (fromInput && toInput) {
+                from = new Date(fromInput + 'T00:00:00');
+                to = new Date(toInput + 'T23:59:59');
+            } else {
+                from = startOfToday;
+                to = new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000 - 1);
+            }
+            break;
+        case 'all':
+            from = new Date(2020, 0, 1);
+            to = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+            break;
+        default:
+            from = startOfToday;
+            to = new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000 - 1);
+    }
+    
+    return { from, to };
+}
+
+function getDateRangeLabel(filterType) {
+    const labels = {
+        'today': '📅 Aaj ka data',
+        'yesterday': '📅 Kal ka data',
+        'last7days': '📅 Last 7 days ka data',
+        'last30days': '📅 Last 30 days ka data',
+        'thisMonth': '📅 Is mahine ka data',
+        'lastMonth': '📅 Pichle mahine ka data',
+        'custom': '📅 Custom date range',
+        'all': '📅 Saara data (All Time)'
+    };
+    return labels[filterType] || '📅 Aaj ka data';
+}
+
+function filterBookingsByDate(bookings, from, to) {
+    return bookings.filter(b => {
+        const dateStr = b.bookingDate || b.createdAt;
+        if (!dateStr) return false;
+        let bookingDate;
+        if (typeof dateStr === 'string') {
+            bookingDate = new Date(dateStr);
+        } else if (dateStr.toMillis) {
+            bookingDate = new Date(dateStr.toMillis());
+        } else if (dateStr.seconds) {
+            bookingDate = new Date(dateStr.seconds * 1000);
+        } else {
+            bookingDate = new Date(dateStr);
+        }
+        return bookingDate >= from && bookingDate <= to;
+    });
+}
+
+window.handleDateFilterChange = function() {
+    currentDateFilter = document.getElementById('reportDateFilter').value;
+    const customRange = document.getElementById('customDateRange');
+    if (currentDateFilter === 'custom') {
+        customRange.classList.add('show');
+    } else {
+        customRange.classList.remove('show');
+    }
+    document.getElementById('dateRangeInfo').textContent = getDateRangeLabel(currentDateFilter);
+};
+
+// ═══════════════════════════════════════════════════════════
+// DATE / TIME / WEATHER
+// ═══════════════════════════════════════════════════════════
 function updateDateTime() {
     const now = new Date();
     document.getElementById('currentDate').textContent = now.toLocaleDateString('en-IN', { weekday: 'long', day: '2-digit', month: 'short', year: 'numeric' });
@@ -471,7 +723,9 @@ function updateWeather() {
 }
 updateWeather(); setInterval(updateWeather, 300000);
 
+// ═══════════════════════════════════════════════════════════
 // LOGIN
+// ═══════════════════════════════════════════════════════════
 window.adminLogin = async function() {
     let email = document.getElementById('adminEmail').value.trim();
     const password = document.getElementById('adminPassword').value.trim();
@@ -540,6 +794,7 @@ window.switchTab = function(tab) {
     else if (tab === 'ecommerce') loadStores();
     else if (tab === 'activity') loadActivityLogs();
     else if (tab === 'bulkwa') { if (whatsappNumbers.length === 0) collectNumbers(); }
+    else if (tab === 'reports') { /* Already loaded */ }
 };
 
 async function loadAllData() {
@@ -568,7 +823,9 @@ async function updateStats() {
     } catch (e) { console.error(e); }
 }
 
+// ═══════════════════════════════════════════════════════════
 // DASHBOARD
+// ═══════════════════════════════════════════════════════════
 async function loadDashboard() {
     const container = document.getElementById('dashboardContent');
     try {
@@ -591,7 +848,7 @@ async function loadDashboard() {
                 <div style="background:rgba(255,255,255,.03);border-radius:12px;padding:16px">
                     <div style="font-size:11px;color:rgba(255,255,255,.3);font-weight:600;margin-bottom:8px">📊 Quick Stats</div>
                     <div style="padding:4px 0;color:rgba(255,255,255,.6);font-size:13px">
-                        <div>📄 Recent Bookings: <strong style="color:#4ECDC4">${bookings.size}</strong></div>
+                        <div>📄 Recent: <strong style="color:#4ECDC4">${bookings.size}</strong></div>
                         <div>👤 Providers: <strong style="color:#4ECDC4">${providers.size}</strong></div>
                     </div>
                 </div>
@@ -600,7 +857,9 @@ async function loadDashboard() {
     } catch (e) { container.innerHTML = `<div class="empty-msg">Error loading dashboard</div>`; }
 }
 
+// ═══════════════════════════════════════════════════════════
 // BOOKINGS
+// ═══════════════════════════════════════════════════════════
 async function loadBookings() {
     const container = document.getElementById('adminBookingList');
     container.innerHTML = '<div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
@@ -667,7 +926,18 @@ window.deleteAllBookings = async function() {
     showLoading(false);
 };
 
-// EXCEL DOWNLOADS
+// ═══════════════════════════════════════════════════════════
+// EXCEL HELPERS
+// ═══════════════════════════════════════════════════════════
+function getBookingItemsTotal(d) {
+    if (d.itemsTotal) return d.itemsTotal;
+    if (d.totalAmount && d.deliveryCharge) return d.totalAmount - d.deliveryCharge;
+    return d.totalAmount || 0;
+}
+
+// ═══════════════════════════════════════════════════════════
+// CUSTOMER EXCEL (From Bookings Tab)
+// ═══════════════════════════════════════════════════════════
 window.downloadCustomerExcel = async function() {
     showLoading(true);
     try {
@@ -676,16 +946,17 @@ window.downloadCustomerExcel = async function() {
         const data = [];
         snapshot.forEach(doc => {
             const d = doc.data();
-            const itemsAmount = d.itemsTotal || 0;
+            const itemsAmount = getBookingItemsTotal(d);
             const deliveryCharge = d.deliveryCharge || 0;
             const amount = d.totalAmount || 0;
             const gatewayFee = d.gatewayFee || Math.round(amount * 0.02);
             const commission = d.adminCommission || Math.round(amount * 0.03);
             const providerAmount = d.providerAmount || Math.round(itemsAmount * 0.95);
             data.push({
-                'Date': d.bookingDate || '', 'Order ID': doc.id.slice(0, 8),
+                'Date': d.bookingDate || '', 'Time': d.bookingTime || '', 'Order ID': doc.id.slice(0, 8),
                 'Customer': d.customerName || '', 'Mobile': d.customerMobile || '',
-                'Provider': d.providerName || '', 'Service': d.service || '', 'Items': d.items || '',
+                'Provider': d.providerName || '', 'Service': d.service || '',
+                'Order Type': d.orderType || 'N/A', 'Items': d.items || '',
                 'Items Total': itemsAmount,
                 'Distance (km)': d.deliveryDistance || 0,
                 'Delivery Charge': deliveryCharge,
@@ -702,93 +973,291 @@ window.downloadCustomerExcel = async function() {
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Customers');
         XLSX.writeFile(wb, `NnlGharPro_Customers_${new Date().toISOString().slice(0,10)}.xlsx`);
-        showToast(`✅ Excel downloaded`);
+        showToast(`✅ Excel downloaded (${data.length} records)`);
     } catch (e) { showToast('❌ ' + e.message, true); }
     showLoading(false);
 };
 
-window.downloadProviderExcel = async function() {
+// ═══════════════════════════════════════════════════════════
+// REPORTS TAB — DOWNLOAD WITH DATE FILTER
+// ═══════════════════════════════════════════════════════════
+window.downloadReport = async function(reportType) {
     showLoading(true);
     try {
-        const providersSnap = await db.collection('providers').get();
-        allProviderBankDetails = {};
-        providersSnap.forEach(doc => {
-            const d = doc.data();
-            allProviderBankDetails[d.name] = {
-                bankAccount: (d.bankDetails && d.bankDetails.account) || d.bankAccount || '',
-                ifscCode: (d.bankDetails && d.bankDetails.ifsc) || d.ifscCode || '',
-                accountHolder: (d.bankDetails && d.bankDetails.holder) || d.accountHolder || '',
-                bankName: (d.bankDetails && d.bankDetails.bankName) || d.bankName || '',
-                mobile: d.mobile || '', email: d.email || ''
-            };
-        });
-        const snapshot = await db.collection('bookings').where('paymentStatus', '==', 'paid').get();
-        if (snapshot.empty) { showToast('⚠️ No paid bookings!', true); showLoading(false); return; }
-        const providerMap = {};
-        snapshot.forEach(doc => {
-            const d = doc.data();
-            const itemsAmount = d.itemsTotal || 0;
-            const providerAmount = d.providerAmount || Math.round(itemsAmount * 0.95);
-            const pName = d.providerName || 'Unknown';
-            if (!providerMap[pName]) providerMap[pName] = { name: pName, orders: 0, totalItems: 0, payable: 0 };
-            providerMap[pName].orders++;
-            providerMap[pName].totalItems += itemsAmount;
-            providerMap[pName].payable += providerAmount;
-        });
-        const data = Object.values(providerMap).map(p => {
-            const bank = allProviderBankDetails[p.name] || {};
-            return {
-                'Provider Name': p.name, 'Mobile': bank.mobile || '', 'Email': bank.email || '',
-                'Bank Account': bank.bankAccount || '⚠️ Not Submitted', 'IFSC': bank.ifscCode || '⚠️ Not Submitted',
-                'Account Holder': bank.accountHolder || '', 'Bank Name': bank.bankName || '',
-                'Orders': p.orders, 'Items Total': p.totalItems, 'Net Payable': p.payable, 'Status': 'Pending'
-            };
-        });
-        const ws = XLSX.utils.json_to_sheet(data);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Provider Settlement');
-        XLSX.writeFile(wb, `NnlGharPro_Provider_Settlement_${new Date().toISOString().slice(0,10)}.xlsx`);
-        showToast(`✅ Provider Excel downloaded`);
+        const { from, to } = getDateRange(currentDateFilter);
+        const dateLabel = currentDateFilter.charAt(0).toUpperCase() + currentDateFilter.slice(1);
+        
+        const snapshot = await db.collection('bookings').get();
+        let allBookings = [];
+        snapshot.forEach(doc => allBookings.push({ id: doc.id, ...doc.data() }));
+        
+        const filtered = filterBookingsByDate(allBookings, from, to);
+        
+        if (filtered.length === 0) {
+            showToast(`⚠️ ${dateLabel} mein koi booking nahi hai!`, true);
+            showLoading(false);
+            return;
+        }
+        
+        if (reportType === 'customer') downloadCustomerReport(filtered, currentDateFilter);
+        else if (reportType === 'provider') await downloadProviderReport(filtered, currentDateFilter);
+        else if (reportType === 'delivery') downloadDeliveryReport(filtered, currentDateFilter);
+        else if (reportType === 'income') downloadIncomeReport(filtered, currentDateFilter);
+        else if (reportType === 'weekly') downloadWeeklyReport(filtered, currentDateFilter);
+        else if (reportType === 'monthly') downloadMonthlyReport(filtered, currentDateFilter);
+        else if (reportType === 'complete') await downloadCompleteReport(filtered, currentDateFilter);
+        
+        showToast(`✅ ${dateLabel} report downloaded (${filtered.length} records)`);
     } catch (e) { showToast('❌ ' + e.message, true); }
     showLoading(false);
 };
 
-window.downloadIncomeExcel = async function() {
-    showLoading(true);
-    try {
-        const snapshot = await db.collection('bookings').where('paymentStatus', '==', 'paid').get();
-        if (snapshot.empty) { showToast('⚠️ No paid bookings!', true); showLoading(false); return; }
-        let totalOrders = 0, totalItems = 0, totalDelivery = 0, totalAmount = 0, totalGatewayFee = 0, totalCommission = 0, totalProviderPay = 0;
-        snapshot.forEach(doc => {
-            const d = doc.data();
-            totalOrders++;
-            totalItems += (d.itemsTotal || 0);
-            totalDelivery += (d.deliveryCharge || 0);
-            totalAmount += (d.totalAmount || 0);
-            totalGatewayFee += (d.gatewayFee || 0);
-            totalCommission += (d.adminCommission || 0);
-            totalProviderPay += (d.providerAmount || 0);
+// CUSTOMER REPORT
+function downloadCustomerReport(bookings, filterLabel) {
+    const data = [];
+    bookings.forEach(d => {
+        const itemsAmount = getBookingItemsTotal(d);
+        const deliveryCharge = d.deliveryCharge || 0;
+        const amount = d.totalAmount || 0;
+        const gatewayFee = d.gatewayFee || Math.round(amount * 0.02);
+        const commission = d.adminCommission || Math.round(amount * 0.03);
+        const providerAmount = d.providerAmount || Math.round(itemsAmount * 0.95);
+        data.push({
+            'Date': d.bookingDate || '', 'Time': d.bookingTime || '', 'Order ID': d.id.slice(0, 8),
+            'Customer': d.customerName || '', 'Mobile': d.customerMobile || '',
+            'Provider': d.providerName || '', 'Service': d.service || '',
+            'Order Type': d.orderType || 'N/A', 'Items': d.items || '',
+            'Items Total': itemsAmount,
+            'Distance (km)': d.deliveryDistance || 0,
+            'Delivery Charge': deliveryCharge,
+            'Grand Total': amount,
+            'Razorpay (2%)': gatewayFee,
+            'Admin Commission (3%)': commission,
+            'Provider Amount (95%)': providerAmount,
+            'Delivery Partner Amt': deliveryCharge,
+            'Payment': d.paymentStatus || '',
+            'Status': d.status || ''
         });
-        const summaryData = [
-            { 'Item': '📦 Total Orders', 'Amount': totalOrders },
-            { 'Item': '🛒 Total Items Amount', 'Amount': '₹' + totalItems.toLocaleString() },
-            { 'Item': '🚚 Total Delivery Charge', 'Amount': '₹' + totalDelivery.toLocaleString() },
-            { 'Item': '💰 Grand Total (Revenue)', 'Amount': '₹' + totalAmount.toLocaleString() },
-            { 'Item': '💳 Razorpay Fee (2%)', 'Amount': '-₹' + totalGatewayFee.toLocaleString() },
-            { 'Item': '💵 Admin Commission (3%)', 'Amount': '₹' + totalCommission.toLocaleString() },
-            { 'Item': '👤 Provider Payout', 'Amount': '-₹' + totalProviderPay.toLocaleString() },
-            { 'Item': '🚚 Delivery Partner Payout', 'Amount': '-₹' + totalDelivery.toLocaleString() },
-            { 'Item': '💎 Net Income (Aapki)', 'Amount': '₹' + totalCommission.toLocaleString() }
-        ];
-        const ws = XLSX.utils.json_to_sheet(summaryData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Income Summary');
-        XLSX.writeFile(wb, `NnlGharPro_Income_${new Date().toISOString().slice(0,10)}.xlsx`);
-        showToast('✅ Income Excel downloaded');
-    } catch (e) { showToast('❌ ' + e.message, true); }
-    showLoading(false);
-};
+    });
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Customer Report');
+    XLSX.writeFile(wb, `NnlGharPro_Customer_${filterLabel}_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
 
+// PROVIDER REPORT
+async function downloadProviderReport(bookings, filterLabel) {
+    await loadProviderBankDetails();
+    const providerMap = {};
+    bookings.forEach(d => {
+        if (d.paymentStatus !== 'paid') return;
+        const itemsAmount = getBookingItemsTotal(d);
+        const providerAmount = Math.round(itemsAmount * 0.95);
+        const pName = d.providerName || 'Unknown';
+        if (!providerMap[pName]) providerMap[pName] = { name: pName, orders: 0, totalItems: 0, payable: 0 };
+        providerMap[pName].orders++;
+        providerMap[pName].totalItems += itemsAmount;
+        providerMap[pName].payable += providerAmount;
+    });
+    const data = Object.values(providerMap).map(p => {
+        const bank = allProviderBankDetails[p.name] || {};
+        return {
+            'Provider Name': p.name, 'Mobile': bank.mobile || '', 'Email': bank.email || '',
+            'Bank Account': bank.bankAccount || '⚠️ Not Submitted', 'IFSC': bank.ifscCode || '⚠️ Not Submitted',
+            'Account Holder': bank.accountHolder || '', 'Bank Name': bank.bankName || '',
+            'Orders': p.orders, 'Items Total': p.totalItems, 'Net Payable (95%)': p.payable, 'Status': 'Pending'
+        };
+    });
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Provider Settlement');
+    XLSX.writeFile(wb, `NnlGharPro_Provider_${filterLabel}_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+// DELIVERY REPORT
+function downloadDeliveryReport(bookings, filterLabel) {
+    const deliveryMap = {};
+    bookings.forEach(d => {
+        if (d.paymentStatus !== 'paid') return;
+        if (!d.deliveryPartner || d.deliveryPartner === '') return;
+        const deliveryCharge = d.deliveryCharge || 0;
+        const key = d.deliveryPartner;
+        if (!deliveryMap[key]) deliveryMap[key] = { name: key, mobile: d.deliveryPartnerMobile || '', orders: 0, totalDelivery: 0 };
+        deliveryMap[key].orders++;
+        deliveryMap[key].totalDelivery += deliveryCharge;
+    });
+    const data = Object.values(deliveryMap).map(p => ({
+        'Delivery Partner': p.name, 'Mobile': p.mobile, 'Orders': p.orders, 'Net Payable': p.totalDelivery, 'Status': 'Pending'
+    }));
+    if (data.length === 0) {
+        showToast('⚠️ Koi delivery partner assignment nahi hai', true);
+        return;
+    }
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Delivery Report');
+    XLSX.writeFile(wb, `NnlGharPro_Delivery_${filterLabel}_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+// INCOME REPORT
+function downloadIncomeReport(bookings, filterLabel) {
+    let totalOrders = 0, totalItems = 0, totalDelivery = 0, totalAmount = 0, totalGatewayFee = 0, totalCommission = 0, totalProviderPay = 0, totalDeliveryPay = 0;
+    bookings.forEach(d => {
+        if (d.paymentStatus !== 'paid') return;
+        const itemsAmount = getBookingItemsTotal(d);
+        const deliveryCharge = d.deliveryCharge || 0;
+        const amount = d.totalAmount || 0;
+        totalOrders++;
+        totalItems += itemsAmount;
+        totalDelivery += deliveryCharge;
+        totalAmount += amount;
+        totalGatewayFee += (d.gatewayFee || Math.round(amount * 0.02));
+        totalCommission += (d.adminCommission || Math.round(amount * 0.03));
+        totalProviderPay += Math.round(itemsAmount * 0.95);
+        totalDeliveryPay += deliveryCharge;
+    });
+    const summaryData = [
+        { 'Item': '📦 Total Orders', 'Amount': totalOrders },
+        { 'Item': '🛒 Total Items Amount', 'Amount': '₹' + totalItems.toLocaleString() },
+        { 'Item': '🚚 Total Delivery Charge', 'Amount': '₹' + totalDelivery.toLocaleString() },
+        { 'Item': '💰 Grand Total Revenue', 'Amount': '₹' + totalAmount.toLocaleString() },
+        { 'Item': '💳 Razorpay Fee (2%)', 'Amount': '-₹' + totalGatewayFee.toLocaleString() },
+        { 'Item': '💵 Admin Commission (3%)', 'Amount': '₹' + totalCommission.toLocaleString() },
+        { 'Item': '👤 Provider Payout (95%)', 'Amount': '-₹' + totalProviderPay.toLocaleString() },
+        { 'Item': '🚚 Delivery Partner Payout', 'Amount': '-₹' + totalDeliveryPay.toLocaleString() },
+        { 'Item': '💎 NET INCOME (Aapki)', 'Amount': '₹' + totalCommission.toLocaleString() }
+    ];
+    const ws = XLSX.utils.json_to_sheet(summaryData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Income Summary');
+    XLSX.writeFile(wb, `NnlGharPro_Income_${filterLabel}_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+// WEEKLY REPORT
+function downloadWeeklyReport(bookings, filterLabel) {
+    const dayMap = {};
+    bookings.forEach(d => {
+        if (!d.bookingDate) return;
+        const day = d.bookingDate;
+        if (!dayMap[day]) dayMap[day] = { date: day, orders: 0, items: 0, delivery: 0, revenue: 0, commission: 0 };
+        const itemsAmount = getBookingItemsTotal(d);
+        const amount = d.totalAmount || 0;
+        dayMap[day].orders++;
+        dayMap[day].items += itemsAmount;
+        dayMap[day].delivery += (d.deliveryCharge || 0);
+        dayMap[day].revenue += amount;
+        dayMap[day].commission += (d.adminCommission || Math.round(amount * 0.03));
+    });
+    const data = Object.values(dayMap).sort((a, b) => a.date.localeCompare(b.date)).map(d => ({
+        'Date': d.date, 'Orders': d.orders, 'Items Total': d.items, 'Delivery': d.delivery, 'Revenue': d.revenue, 'Admin Income': d.commission
+    }));
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Weekly Report');
+    XLSX.writeFile(wb, `NnlGharPro_Weekly_${filterLabel}_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+// MONTHLY REPORT
+function downloadMonthlyReport(bookings, filterLabel) {
+    const dayMap = {};
+    bookings.forEach(d => {
+        if (!d.bookingDate) return;
+        const day = d.bookingDate;
+        if (!dayMap[day]) dayMap[day] = { date: day, orders: 0, items: 0, delivery: 0, revenue: 0, commission: 0 };
+        const itemsAmount = getBookingItemsTotal(d);
+        const amount = d.totalAmount || 0;
+        dayMap[day].orders++;
+        dayMap[day].items += itemsAmount;
+        dayMap[day].delivery += (d.deliveryCharge || 0);
+        dayMap[day].revenue += amount;
+        dayMap[day].commission += (d.adminCommission || Math.round(amount * 0.03));
+    });
+    const data = Object.values(dayMap).sort((a, b) => a.date.localeCompare(b.date)).map(d => ({
+        'Date': d.date, 'Orders': d.orders, 'Items Total': d.items, 'Delivery': d.delivery, 'Revenue': d.revenue, 'Admin Income': d.commission
+    }));
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Monthly Report');
+    XLSX.writeFile(wb, `NnlGharPro_Monthly_${filterLabel}_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+// COMPLETE REPORT (All-in-One)
+async function downloadCompleteReport(bookings, filterLabel) {
+    await loadProviderBankDetails();
+    const wb = XLSX.utils.book_new();
+    
+    // Sheet 1: Customer
+    const custData = [];
+    bookings.forEach(d => {
+        const itemsAmount = getBookingItemsTotal(d);
+        custData.push({
+            'Date': d.bookingDate || '', 'Order ID': d.id.slice(0, 8),
+            'Customer': d.customerName || '', 'Mobile': d.customerMobile || '',
+            'Provider': d.providerName || '', 'Service': d.service || '',
+            'Order Type': d.orderType || '', 'Items Total': itemsAmount,
+            'Delivery': d.deliveryCharge || 0, 'Total': d.totalAmount || 0,
+            'Admin Income': d.adminCommission || 0, 'Payment': d.paymentStatus || ''
+        });
+    });
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(custData), 'Customers');
+    
+    // Sheet 2: Provider
+    const providerMap = {};
+    bookings.forEach(d => {
+        if (d.paymentStatus !== 'paid') return;
+        const itemsAmount = getBookingItemsTotal(d);
+        const pName = d.providerName || 'Unknown';
+        if (!providerMap[pName]) providerMap[pName] = { name: pName, orders: 0, payable: 0 };
+        providerMap[pName].orders++;
+        providerMap[pName].payable += Math.round(itemsAmount * 0.95);
+    });
+    const provData = Object.values(providerMap).map(p => {
+        const bank = allProviderBankDetails[p.name] || {};
+        return {
+            'Provider': p.name, 'Mobile': bank.mobile || '', 'Bank A/C': bank.bankAccount || '',
+            'IFSC': bank.ifscCode || '', 'Orders': p.orders, 'Net Payable': p.payable
+        };
+    });
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(provData), 'Providers');
+    
+    // Sheet 3: Delivery
+    const delMap = {};
+    bookings.forEach(d => {
+        if (!d.deliveryPartner) return;
+        const key = d.deliveryPartner;
+        if (!delMap[key]) delMap[key] = { name: key, orders: 0, total: 0 };
+        delMap[key].orders++;
+        delMap[key].total += (d.deliveryCharge || 0);
+    });
+    const delData = Object.values(delMap).map(p => ({ 'Delivery Partner': p.name, 'Orders': p.orders, 'Net Payable': p.total }));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(delData), 'Delivery');
+    
+    // Sheet 4: Income
+    let totalAmount = 0, totalCommission = 0, totalProvider = 0, totalDelivery = 0;
+    bookings.forEach(d => {
+        if (d.paymentStatus !== 'paid') return;
+        const amount = d.totalAmount || 0;
+        const itemsAmount = getBookingItemsTotal(d);
+        totalAmount += amount;
+        totalCommission += (d.adminCommission || Math.round(amount * 0.03));
+        totalProvider += Math.round(itemsAmount * 0.95);
+        totalDelivery += (d.deliveryCharge || 0);
+    });
+    const incomeData = [
+        { 'Item': 'Total Revenue', 'Amount': totalAmount },
+        { 'Item': 'Admin Income (3%)', 'Amount': totalCommission },
+        { 'Item': 'Provider Payout', 'Amount': totalProvider },
+        { 'Item': 'Delivery Payout', 'Amount': totalDelivery },
+        { 'Item': 'NET INCOME', 'Amount': totalCommission }
+    ];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(incomeData), 'Income');
+    
+    XLSX.writeFile(wb, `NnlGharPro_Complete_${filterLabel}_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+// ═══════════════════════════════════════════════════════════
+// SUBSCRIPTION EXCEL
+// ═══════════════════════════════════════════════════════════
 window.downloadSubscriptionExcel = async function() {
     showLoading(true);
     try {
@@ -799,14 +1268,12 @@ window.downloadSubscriptionExcel = async function() {
         providersSnap.forEach(doc => {
             const p = doc.data();
             const subActive = p.subscriptionActive === true;
-            const subEnd = p.subscriptionExpiry ? (
-                p.subscriptionExpiry.toMillis ? new Date(p.subscriptionExpiry.toMillis()) : new Date(p.subscriptionExpiry)
-            ) : null;
+            const subEnd = p.subscriptionExpiry ? (p.subscriptionExpiry.toMillis ? new Date(p.subscriptionExpiry.toMillis()) : new Date(p.subscriptionExpiry)) : null;
             const trialEnd = p.freeTrialEndsAt ? new Date(p.freeTrialEndsAt) : null;
             let status = 'Not Subscribed';
-            if (subActive && subEnd && subEnd > now) { status = 'Active'; }
-            else if (subEnd && subEnd <= now) { status = 'Expired'; }
-            else if (trialEnd && trialEnd > now) { status = 'Free Trial'; }
+            if (subActive && subEnd && subEnd > now) status = 'Active';
+            else if (subEnd && subEnd <= now) status = 'Expired';
+            else if (trialEnd && trialEnd > now) status = 'Free Trial';
             data.push({
                 'Provider Name': p.name || '', 'Email': p.email || '', 'Mobile': p.mobile || '',
                 'Subscription Status': status, 'Expiry Date': subEnd ? subEnd.toLocaleDateString('en-IN') : '-',
@@ -822,6 +1289,9 @@ window.downloadSubscriptionExcel = async function() {
     showLoading(false);
 };
 
+// ═══════════════════════════════════════════════════════════
+// ONBOARDING EXCEL
+// ═══════════════════════════════════════════════════════════
 window.downloadOnboardingExcel = async function() {
     showLoading(true);
     try {
@@ -838,16 +1308,19 @@ window.downloadOnboardingExcel = async function() {
                 'Branch': bank.branch || '', 'PAN': bank.pan || ''
             });
         });
-        if (data.length === 0) { showToast('⚠️ No bank details found!', true); showLoading(false); return; }
+        if (data.length === 0) { showToast('⚠️ No bank details!', true); showLoading(false); return; }
         const ws = XLSX.utils.json_to_sheet(data);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Bank Details');
-        XLSX.writeFile(wb, `NnlGharPro_Bank_Details_${new Date().toISOString().slice(0,10)}.xlsx`);
-        showToast(`✅ ${data.length} providers ka bank data downloaded`);
+        XLSX.writeFile(wb, `NnlGharPro_Bank_${new Date().toISOString().slice(0,10)}.xlsx`);
+        showToast(`✅ ${data.length} records downloaded`);
     } catch (e) { showToast('❌ ' + e.message, true); }
     showLoading(false);
 };
 
+// ═══════════════════════════════════════════════════════════
+// DELIVERY EXCEL
+// ═══════════════════════════════════════════════════════════
 window.downloadDeliveryExcel = async function() {
     showLoading(true);
     try {
@@ -870,7 +1343,9 @@ window.downloadDeliveryExcel = async function() {
     showLoading(false);
 };
 
+// ═══════════════════════════════════════════════════════════
 // PAYMENTS
+// ═══════════════════════════════════════════════════════════
 async function loadPayments() {
     const container = document.getElementById('paymentList');
     container.innerHTML = '<div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
@@ -915,7 +1390,9 @@ window.markPaymentPaid = async function(id) {
     showLoading(false);
 };
 
+// ═══════════════════════════════════════════════════════════
 // PROVIDERS
+// ═══════════════════════════════════════════════════════════
 window.toggleServiceSelection = function(serviceId) {
     const card = document.getElementById('svc_' + serviceId.replace(/[^a-zA-Z0-9]/g, '_'));
     if (!card) return;
@@ -930,47 +1407,42 @@ window.showAddProvider = async function() {
     selectedServices = [];
     const servicesGridHtml = SERVICES_LIST.map(svc => {
         const safeId = svc.id.replace(/[^a-zA-Z0-9]/g, '_');
-        return `<div id="svc_${safeId}" onclick="toggleServiceSelection('${svc.id}')" style="background:linear-gradient(135deg,#1a237e,#283593);padding:16px 8px;border-radius:14px;text-align:center;cursor:pointer;border:2px solid transparent;transition:.3s;color:#fff">
-            <span style="font-size:24px;display:block;margin-bottom:6px">${svc.icon}</span>
-            <span style="font-size:11px;font-weight:700">${svc.name}</span>
-        </div>`;
+        return `<div id="svc_${safeId}" onclick="toggleServiceSelection('${svc.id}')" style="background:linear-gradient(135deg,#1a237e,#283593);padding:16px 8px;border-radius:14px;text-align:center;cursor:pointer;border:2px solid transparent;transition:.3s;color:#fff"><span style="font-size:24px;display:block;margin-bottom:6px">${svc.icon}</span><span style="font-size:11px;font-weight:700">${svc.name}</span></div>`;
     }).join('');
 
     openModal('Add Provider', `
         <div style="background:rgba(78,205,196,.08);border-radius:10px;padding:12px;margin-bottom:14px;font-size:12px;color:rgba(255,255,255,.7)">
-            <strong style="color:#4ECDC4">📌 2 Type Ke Providers:</strong><br>
+            <strong style="color:#4ECDC4">📌 2 Type:</strong><br>
             🟡 <strong>Lead DB</strong> — Sirf database<br>
             🟢 <strong>Active</strong> — Portal use karega
         </div>
         <div class="form-group">
-            <label><i class="fas fa-tag"></i> Provider Type *</label>
+            <label>Provider Type *</label>
             <select id="fProviderType" onchange="toggleProviderType()" style="font-weight:700">
-                <option value="lead_db">🟡 Lead DB Only (No Login)</option>
-                <option value="active">🟢 Active Provider (With Login)</option>
+                <option value="lead_db">🟡 Lead DB Only</option>
+                <option value="active">🟢 Active Provider</option>
             </select>
         </div>
-        <div class="form-group"><label><i class="fas fa-user"></i> Provider Name *</label><input id="fProviderName" placeholder="e.g. XYZ Plumbing"></div>
-        <div class="form-group"><label><i class="fab fa-whatsapp"></i> Mobile Number *</label><input id="fProviderMobile" placeholder="10-digit mobile" maxlength="10" inputmode="numeric"></div>
-        <div class="form-group"><label><i class="fas fa-envelope"></i> Email Address *</label><input id="fProviderEmail" placeholder="provider@example.com" type="email"></div>
-        <div class="form-group"><label><i class="fas fa-map-pin"></i> Pincodes (comma separated) *</label><input id="fProviderPincodes" placeholder="e.g. 110001, 110002"></div>
-        <div class="form-group"><label><i class="fas fa-map-marked-alt"></i> Address (Optional)</label><textarea id="fProviderAddress" rows="2"></textarea></div>
-        <div class="form-group"><label><i class="fas fa-globe"></i> Website (Optional)</label><input id="fProviderWebsite" placeholder="https://"></div>
-        <div class="form-group"><label><i class="fas fa-credit-card"></i> UPI ID (Optional)</label><input id="fProviderUPI"></div>
-        <div class="form-group"><label><i class="fas fa-tools"></i> Select Services *</label>
+        <div class="form-group"><label>Provider Name *</label><input id="fProviderName"></div>
+        <div class="form-group"><label>Mobile *</label><input id="fProviderMobile" maxlength="10" inputmode="numeric"></div>
+        <div class="form-group"><label>Email *</label><input id="fProviderEmail" type="email"></div>
+        <div class="form-group"><label>Pincodes *</label><input id="fProviderPincodes" placeholder="110001, 110002"></div>
+        <div class="form-group"><label>Address</label><textarea id="fProviderAddress" rows="2"></textarea></div>
+        <div class="form-group"><label>Website</label><input id="fProviderWebsite"></div>
+        <div class="form-group"><label>UPI ID</label><input id="fProviderUPI"></div>
+        <div class="form-group"><label>Services *</label>
             <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0">${servicesGridHtml}</div>
-            <div id="selectedCount" style="font-size:11px;color:rgba(255,255,255,.4);text-align:center;margin-top:6px">0 services selected</div>
+            <div id="selectedCount" style="font-size:11px;color:rgba(255,255,255,.4);text-align:center;margin-top:6px">0 selected</div>
         </div>
         <div id="activeFields" style="display:none;background:rgba(0,200,83,.05);border-radius:10px;padding:12px;margin:12px 0;border:1px solid rgba(0,200,83,.15)">
-            <div style="font-size:12px;font-weight:700;color:#00C853;margin-bottom:10px">🟢 Active Provider Password</div>
-            <div class="form-group"><label><i class="fas fa-lock"></i> Password * (min 6 chars)</label><input id="fProviderPassword" type="password"></div>
+            <div class="form-group"><label>Password * (min 6)</label><input id="fProviderPassword" type="password"></div>
         </div>
         <button class="btn-primary" onclick="addProvider()"><i class="fas fa-plus"></i> Save Provider</button>
     `);
 };
 
 window.toggleProviderType = function() {
-    const type = document.getElementById('fProviderType').value;
-    document.getElementById('activeFields').style.display = (type === 'active') ? 'block' : 'none';
+    document.getElementById('activeFields').style.display = (document.getElementById('fProviderType').value === 'active') ? 'block' : 'none';
 };
 
 window.addProvider = async function() {
@@ -983,10 +1455,10 @@ window.addProvider = async function() {
     const website = document.getElementById('fProviderWebsite').value.trim();
     const upiId = document.getElementById('fProviderUPI').value.trim();
 
-    if (!name || !mobile || !email || !pincodesRaw) { showToast('❌ Name, Mobile, Email, Pincodes zaroori!', true); return; }
+    if (!name || !mobile || !email || !pincodesRaw) { showToast('❌ All fields required!', true); return; }
     if (mobile.length !== 10) { showToast('❌ Valid 10-digit mobile!', true); return; }
     if (!email.includes('@')) { showToast('❌ Valid email!', true); return; }
-    if (selectedServices.length === 0) { showToast('❌ Kam se kam ek service!', true); return; }
+    if (selectedServices.length === 0) { showToast('❌ Select service!', true); return; }
 
     const pincodes = pincodesRaw.split(',').map(p => p.trim()).filter(p => p.length === 6);
 
@@ -1021,7 +1493,7 @@ window.addProvider = async function() {
             userCredential = await secondaryAuth.createUserWithEmailAndPassword(email, password);
         } catch(authError) {
             if (authError.code === 'auth/email-already-in-use') {
-                showToast('⚠️ Ye email already registered!', true);
+                showToast('⚠️ Email already registered!', true);
                 showLoading(false); return;
             }
             throw authError;
@@ -1041,39 +1513,26 @@ window.addProvider = async function() {
             createdAt: new Date().toISOString(), createdBy: 'admin', updatedAt: new Date().toISOString()
         });
 
-        const credentialsMsg = 
-            `🎉 *Welcome to NnlGharPro!*\n\n` +
-            `Aapka provider account ban gaya hai.\n\n` +
-            `📧 *Email:* ${email}\n` +
-            `🔑 *Password:* ${password}\n` +
-            `🔗 *Portal:* ${PROVIDER_PORTAL_URL}\n\n` +
-            `⏳ *Free Trial:* 3 Months\n\n` +
-            `📞 Support: 9588562553\n` +
-            `_NnlGharPro - Randhawa Enterprises_`;
-
+        const credentialsMsg = `🎉 *Welcome to NnlGharPro!*\n\n📧 *Email:* ${email}\n🔑 *Password:* ${password}\n🔗 *Portal:* ${PROVIDER_PORTAL_URL}\n\n⏳ *Free Trial:* 3 Months\n\n📞 Support: 9588562553\n_NnlGharPro_`;
         window.open(`https://wa.me/91${mobile}?text=${encodeURIComponent(credentialsMsg)}`, '_blank');
         await secondaryAuth.signOut();
 
         showToast(`✅ Active Provider added!`);
         closeModal(); loadProviders(); updateStats();
     } catch(e) {
-        console.error(e);
         showToast('❌ ' + (e.message || e.code), true);
     }
     showLoading(false);
 };
 
 window.editProvider = function(id, data) {
-    selectedServices = Array.isArray(data.services) ? [...data.services] : ['all'];
+    selectedServices = Array.isArray(data.services) ? [...data.services] : [];
     const servicesGridHtml = SERVICES_LIST.map(svc => {
         const safeId = svc.id.replace(/[^a-zA-Z0-9]/g, '_');
         const isSelected = selectedServices.includes(svc.id);
         const bg = isSelected ? 'linear-gradient(135deg,#00C853,#00E676)' : 'linear-gradient(135deg,#1a237e,#283593)';
         const border = isSelected ? '2px solid #fff' : '2px solid transparent';
-        return `<div id="svc_${safeId}" onclick="toggleServiceSelection('${svc.id}')" style="background:${bg};border:${border};padding:16px 8px;border-radius:14px;text-align:center;cursor:pointer;transition:.3s;color:#fff">
-            <span style="font-size:24px;display:block;margin-bottom:6px">${svc.icon}</span>
-            <span style="font-size:11px;font-weight:700">${svc.name}</span>
-        </div>`;
+        return `<div id="svc_${safeId}" onclick="toggleServiceSelection('${svc.id}')" style="background:${bg};border:${border};padding:16px 8px;border-radius:14px;text-align:center;cursor:pointer;color:#fff"><span style="font-size:24px;display:block;margin-bottom:6px">${svc.icon}</span><span style="font-size:11px;font-weight:700">${svc.name}</span></div>`;
     }).join('');
     
     const pincodesStr = (data.pincodes || []).join(', ');
@@ -1082,18 +1541,16 @@ window.editProvider = function(id, data) {
 
     openModal('Edit Provider', `
         <div style="background:rgba(78,205,196,.08);border-radius:10px;padding:10px;margin-bottom:12px;font-size:12px;color:rgba(255,255,255,.6)">
-            ${hasLogin ? '🟢 <strong>Active Provider</strong>' : '🟡 <strong>Lead DB Provider</strong>'}
+            ${hasLogin ? '🟢 Active Provider' : '🟡 Lead DB Provider'}
         </div>
         <div class="form-group"><label>Name</label><input id="eProviderName" value="${data.name || ''}"></div>
         <div class="form-group"><label>Mobile</label><input id="eProviderMobile" value="${data.mobile || ''}" maxlength="10"></div>
-        <div class="form-group"><label>Email</label><input id="eProviderEmail" value="${data.email || ''}" type="email"></div>
+        <div class="form-group"><label>Email</label><input id="eProviderEmail" value="${data.email || ''}"></div>
         <div class="form-group"><label>Pincodes</label><input id="eProviderPincodes" value="${pincodesStr}"></div>
         <div class="form-group"><label>Address</label><textarea id="eProviderAddress" rows="2">${data.address || ''}</textarea></div>
         <div class="form-group"><label>Website</label><input id="eProviderWebsite" value="${data.website || ''}"></div>
         <div class="form-group"><label>UPI ID</label><input id="eProviderUPI" value="${data.upiId || ''}"></div>
-        <div class="form-group"><label>Services</label>
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0">${servicesGridHtml}</div>
-        </div>
+        <div class="form-group"><label>Services</label><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0">${servicesGridHtml}</div></div>
         <div class="form-group"><label>Status</label>
             <select id="eProviderStatus">
                 <option value="active" ${isActive ? 'selected' : ''}>✅ Active</option>
@@ -1119,8 +1576,8 @@ window.saveProvider = async function(id) {
     const upiId = document.getElementById('eProviderUPI').value.trim();
     const status = document.getElementById('eProviderStatus').value;
 
-    if (!name || !mobile) { showToast('❌ Name & Mobile required!', true); return; }
-    if (selectedServices.length === 0) { showToast('❌ Select at least one service!', true); return; }
+    if (!name || !mobile) { showToast('❌ Name & Mobile!', true); return; }
+    if (selectedServices.length === 0) { showToast('❌ Select service!', true); return; }
 
     const pincodes = pincodesRaw.split(',').map(p => p.trim()).filter(p => p.length === 6);
 
@@ -1139,18 +1596,15 @@ window.saveProvider = async function(id) {
 };
 
 window.resetProviderPassword = function(id, email) {
-    if (!email || !email.includes('@')) { showToast('❌ Valid email required!', true); return; }
-    if (!confirm('Send password reset link to ' + email + '?')) return;
+    if (!email || !email.includes('@')) { showToast('❌ Valid email!', true); return; }
+    if (!confirm('Send password reset to ' + email + '?')) return;
     showLoading(true);
-    auth.sendPasswordResetEmail(email)
-        .then(() => showToast('✅ Reset link sent'))
-        .catch(e => showToast('❌ ' + e.message, true))
-        .finally(() => showLoading(false));
+    auth.sendPasswordResetEmail(email).then(() => showToast('✅ Reset link sent')).catch(e => showToast('❌ ' + e.message, true)).finally(() => showLoading(false));
 };
 
 window.deleteProvider = async function(id) {
     if (!confirm('⚠️ DELETE Provider?')) return;
-    if (!confirm('⚠️ Confirm: Undo nahi hoga. Continue?')) return;
+    if (!confirm('⚠️ Undo nahi hoga!')) return;
     showLoading(true);
     try {
         const doc = await db.collection('providers').doc(id).get();
@@ -1160,22 +1614,12 @@ window.deleteProvider = async function(id) {
             await db.collection('bookings').doc(bDoc.id).update({ assignedTo: '', status: 'pending' });
         }
         const items = await db.collection('items').where('providerId', '==', id).get();
-        for (let iDoc of items.docs) {
-            await db.collection('items').doc(iDoc.id).delete();
-        }
+        for (let iDoc of items.docs) await db.collection('items').doc(iDoc.id).delete();
         const delPartners = await db.collection('deliveryPartners').where('providerId', '==', id).get();
-        for (let dDoc of delPartners.docs) {
-            await db.collection('deliveryPartners').doc(dDoc.id).delete();
-        }
+        for (let dDoc of delPartners.docs) await db.collection('deliveryPartners').doc(dDoc.id).delete();
         await db.collection('providers').doc(id).delete();
-        
-        if (d && d.hasLogin && d.email) {
-            showToast('🗑️ Deleted! Firebase Auth se bhi manually delete karein.', true);
-        } else {
-            showToast('🗑️ Provider deleted!');
-        }
-        closeModal();
-        loadProviders(); updateStats();
+        showToast('🗑️ Deleted! Firebase Auth se bhi delete karein', true);
+        closeModal(); loadProviders(); updateStats();
     } catch (e) { showToast('❌ ' + e.message, true); }
     showLoading(false);
 };
@@ -1205,16 +1649,14 @@ async function loadProviders() {
             const typeLabel = hasLogin ? '🟢 Active' : '🟡 Lead DB';
             const typeColor = hasLogin ? '#00C853' : '#FFD93D';
             let servicesArray = d.services || [];
-            if (typeof servicesArray === 'string') servicesArray = [servicesArray];
             const servicesDisplay = servicesArray.slice(0, 3).map(s => `<span class="service-tag">${s}</span>`).join('') + (servicesArray.length > 3 ? `<span class="service-tag">+${servicesArray.length - 3}</span>` : '');
-            const pincodesStr = (d.pincodes || []).slice(0, 3).join(', ') || d.pincode || 'N/A';
-            const morePins = (d.pincodes || []).length > 3 ? ` +${d.pincodes.length - 3}` : '';
+            const pincodesStr = (d.pincodes || []).slice(0, 3).join(', ') || 'N/A';
             html += `
                 <div class="list-item" style="border-left-color:${isActive ? '#4ECDC4' : '#FF4757'}">
                     <div class="info">
                         <div class="name">${d.name || 'N/A'} <span style="font-size:10px;color:${typeColor};font-weight:700">${typeLabel}</span></div>
                         <div class="detail">📞 ${d.mobile || 'N/A'} ${d.email ? '• ✉️ ' + d.email : ''}</div>
-                        <div class="detail">📍 ${pincodesStr}${morePins}</div>
+                        <div class="detail">📍 ${pincodesStr}</div>
                         <div class="detail">${servicesDisplay}</div>
                     </div>
                     <div class="actions">
@@ -1231,7 +1673,7 @@ async function loadProviders() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// 🔥 FIXED SUBSCRIPTIONS — Uses 'providers' collection
+// SUBSCRIPTIONS
 // ═══════════════════════════════════════════════════════════
 async function loadSubscriptions() {
     const container = document.getElementById('adminSubscriptionList');
@@ -1244,40 +1686,19 @@ async function loadSubscriptions() {
         
         snapshot.forEach(doc => {
             const p = doc.data();
-            
-            // ✅ Directly from providers collection
             const trialEnd = p.freeTrialEndsAt ? new Date(p.freeTrialEndsAt) : null;
             const subActive = p.subscriptionActive === true;
-            const subEnd = p.subscriptionExpiry ? (
-                p.subscriptionExpiry.toMillis ? new Date(p.subscriptionExpiry.toMillis()) : new Date(p.subscriptionExpiry)
-            ) : null;
+            const subEnd = p.subscriptionExpiry ? (p.subscriptionExpiry.toMillis ? new Date(p.subscriptionExpiry.toMillis()) : new Date(p.subscriptionExpiry)) : null;
             
             let statusLabel = '', statusClass = '';
             
             if (subActive && subEnd && subEnd > now) {
                 const dLeft = Math.ceil((subEnd - now) / 86400000);
-                if (dLeft <= 7) {
-                    statusLabel = '⏰ ' + dLeft + 'd left';
-                    statusClass = 'pending';
-                    expiring++;
-                } else {
-                    statusLabel = '✅ Active';
-                    statusClass = 'active';
-                    active++;
-                }
-            } else if (subEnd && subEnd <= now) {
-                statusLabel = '❌ Expired';
-                statusClass = 'inactive';
-                expired++;
-            } else if (trialEnd && trialEnd > now) {
-                statusLabel = '🆓 Free Trial';
-                statusClass = 'pending';
-                freeTrial++;
-            } else {
-                statusLabel = '❌ Expired';
-                statusClass = 'inactive';
-                expired++;
-            }
+                if (dLeft <= 7) { statusLabel = '⏰ ' + dLeft + 'd left'; statusClass = 'pending'; expiring++; }
+                else { statusLabel = '✅ Active'; statusClass = 'active'; active++; }
+            } else if (subEnd && subEnd <= now) { statusLabel = '❌ Expired'; statusClass = 'inactive'; expired++; }
+            else if (trialEnd && trialEnd > now) { statusLabel = '🆓 Free Trial'; statusClass = 'pending'; freeTrial++; }
+            else { statusLabel = '❌ Expired'; statusClass = 'inactive'; expired++; }
             
             const expiryDisplay = subEnd ? subEnd.toLocaleDateString('en-IN') : (trialEnd ? trialEnd.toLocaleDateString('en-IN') : '-');
             
@@ -1299,13 +1720,11 @@ async function loadSubscriptions() {
         document.getElementById('subExpiring').textContent = expiring;
         document.getElementById('subExpired').textContent = expired;
         container.innerHTML = html || '<div class="empty-msg">No subscriptions</div>';
-    } catch (e) { 
-        container.innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`; 
-    }
+    } catch (e) { container.innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`; }
 }
 
 // ═══════════════════════════════════════════════════════════
-// 🔥 FIXED ONBOARDING — Uses providers.bankDetails
+// ONBOARDING
 // ═══════════════════════════════════════════════════════════
 async function loadOnboarding() {
     const container = document.getElementById('adminOnboardingList');
@@ -1318,14 +1737,9 @@ async function loadOnboarding() {
         snapshot.forEach(doc => {
             const p = doc.data();
             const bank = p.bankDetails;
-            
             if (!bank) return;
-            
             count++;
-            const submittedAt = bank.submittedAt ? 
-                (bank.submittedAt.toMillis ? new Date(bank.submittedAt.toMillis()).toLocaleDateString('en-IN') : 'N/A') 
-                : 'N/A';
-            
+            const submittedAt = bank.submittedAt ? (bank.submittedAt.toMillis ? new Date(bank.submittedAt.toMillis()).toLocaleDateString('en-IN') : 'N/A') : 'N/A';
             html += `
                 <div class="list-item" style="border-left-color:#00C853">
                     <div class="info">
@@ -1343,41 +1757,25 @@ async function loadOnboarding() {
             `;
         });
         
-        if (count === 0) {
-            container.innerHTML = '<div class="empty-msg">No bank details submitted yet</div>';
-            return;
-        }
-        
+        if (count === 0) { container.innerHTML = '<div class="empty-msg">No bank details submitted</div>'; return; }
         container.innerHTML = html;
-    } catch (e) { 
-        container.innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`; 
-    }
+    } catch (e) { container.innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`; }
 }
 
 window.viewBankDetails = function(id, bank) {
     openModal('🏦 Bank Details', `
-        <div style="background:rgba(78,205,196,.08);border-radius:10px;padding:12px;margin-bottom:14px">
-            <div style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:4px">Account Holder</div>
-            <div style="font-size:16px;font-weight:700;color:#fff">${bank.holder || 'N/A'}</div>
-        </div>
-        <div style="background:rgba(255,255,255,.03);border-radius:10px;padding:12px;margin-bottom:10px">
-            <div style="font-size:11px;color:rgba(255,255,255,.4)">Bank Account Number</div>
-            <div style="font-size:14px;font-weight:700;color:#4ECDC4;font-family:monospace">${bank.account || 'N/A'}</div>
-        </div>
-        <div style="background:rgba(255,255,255,.03);border-radius:10px;padding:12px;margin-bottom:10px">
-            <div style="font-size:11px;color:rgba(255,255,255,.4)">IFSC Code</div>
-            <div style="font-size:14px;font-weight:700;color:#4ECDC4;font-family:monospace">${bank.ifsc || 'N/A'}</div>
-        </div>
-        <div style="background:rgba(255,255,255,.03);border-radius:10px;padding:12px;margin-bottom:10px">
-            <div style="font-size:11px;color:rgba(255,255,255,.4)">Bank Name</div>
-            <div style="font-size:14px;font-weight:700;color:#fff">${bank.bankName || 'N/A'}</div>
-        </div>
+        <div style="background:rgba(78,205,196,.08);border-radius:10px;padding:12px;margin-bottom:14px"><div style="font-size:12px;color:rgba(255,255,255,.6)">Account Holder</div><div style="font-size:16px;font-weight:700;color:#fff">${bank.holder || 'N/A'}</div></div>
+        <div style="background:rgba(255,255,255,.03);border-radius:10px;padding:12px;margin-bottom:10px"><div style="font-size:11px;color:rgba(255,255,255,.4)">Bank Account</div><div style="font-size:14px;font-weight:700;color:#4ECDC4;font-family:monospace">${bank.account || 'N/A'}</div></div>
+        <div style="background:rgba(255,255,255,.03);border-radius:10px;padding:12px;margin-bottom:10px"><div style="font-size:11px;color:rgba(255,255,255,.4)">IFSC</div><div style="font-size:14px;font-weight:700;color:#4ECDC4;font-family:monospace">${bank.ifsc || 'N/A'}</div></div>
+        <div style="background:rgba(255,255,255,.03);border-radius:10px;padding:12px;margin-bottom:10px"><div style="font-size:11px;color:rgba(255,255,255,.4)">Bank Name</div><div style="font-size:14px;font-weight:700;color:#fff">${bank.bankName || 'N/A'}</div></div>
         ${bank.branch ? `<div style="background:rgba(255,255,255,.03);border-radius:10px;padding:12px;margin-bottom:10px"><div style="font-size:11px;color:rgba(255,255,255,.4)">Branch</div><div style="font-size:14px;font-weight:700;color:#fff">${bank.branch}</div></div>` : ''}
-        ${bank.pan ? `<div style="background:rgba(255,255,255,.03);border-radius:10px;padding:12px;margin-bottom:10px"><div style="font-size:11px;color:rgba(255,255,255,.4)">PAN Card</div><div style="font-size:14px;font-weight:700;color:#fff;font-family:monospace">${bank.pan}</div></div>` : ''}
+        ${bank.pan ? `<div style="background:rgba(255,255,255,.03);border-radius:10px;padding:12px"><div style="font-size:11px;color:rgba(255,255,255,.4)">PAN</div><div style="font-size:14px;font-weight:700;color:#fff;font-family:monospace">${bank.pan}</div></div>` : ''}
     `);
 };
 
+// ═══════════════════════════════════════════════════════════
 // DELIVERY PARTNERS
+// ═══════════════════════════════════════════════════════════
 async function loadAllDeliveryPartners() {
     const container = document.getElementById('adminDeliveryList');
     container.innerHTML = '<div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
@@ -1404,7 +1802,9 @@ async function loadAllDeliveryPartners() {
     } catch (e) { container.innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`; }
 }
 
+// ═══════════════════════════════════════════════════════════
 // BROADCAST
+// ═══════════════════════════════════════════════════════════
 window.publishBroadcast = async function() {
     const message = document.getElementById('broadcastMessageInput').value.trim();
     if (!message) { showToast('⚠️ Enter a message!', true); return; }
@@ -1447,17 +1847,16 @@ window.loadBroadcastData = async function() {
     } catch (e) { console.error(e); }
 };
 
-// STORES (WITH LOGO)
+// ═══════════════════════════════════════════════════════════
+// STORES
+// ═══════════════════════════════════════════════════════════
 window.showAddStore = function() {
     currentLogoFile = null;
-    currentLogoUrl = '';
     openModal('Add Partner Store', `
         <div class="form-group"><label>Store Name *</label><input id="fStoreName"></div>
         <div class="form-group"><label>Category *</label><input id="fStoreCategory"></div>
         <div class="form-group"><label>Store Link *</label><input id="fStoreLink" placeholder="https://..."></div>
-        
-        <div class="form-group">
-            <label>Store Logo</label>
+        <div class="form-group"><label>Store Logo</label>
             <div class="logo-upload-box" onclick="document.getElementById('logoInput').click()">
                 <input type="file" id="logoInput" accept="image/png,image/jpeg,image/jpg" style="display:none" onchange="handleLogoUpload(this)">
                 <div id="logoPreviewContainer">
@@ -1467,32 +1866,28 @@ window.showAddStore = function() {
                 </div>
             </div>
             <div style="margin-top:8px">
-                <label style="font-size:11px;color:rgba(255,255,255,.5)">Or choose emoji:</label>
+                <label style="font-size:11px;color:rgba(255,255,255,.5)">Or emoji:</label>
                 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
-                    ${['🏪','🛒','🍔','🏥','🎬','🏨','🏫','💊','🎁','🛍️','☕','🍕','🚕','⛽','💈','🧺'].map(e => `
-                        <button onclick="selectEmoji('${e}')" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:6px 10px;font-size:20px;cursor:pointer">${e}</button>
-                    `).join('')}
+                    ${['🏪','🛒','🍔','🏥','🎬','🏨','🏫','💊','🎁','🛍️','☕','🍕','🚕','⛽','💈','🧺'].map(e => `<button onclick="selectEmoji('${e}')" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:6px 10px;font-size:20px;cursor:pointer">${e}</button>`).join('')}
                 </div>
             </div>
             <input type="hidden" id="fStoreIcon" value="🏪">
         </div>
-        
-        <button class="btn-primary" onclick="addStore()"><i class="fas fa-plus"></i> Save Store</button>
+        <button class="btn-primary" onclick="addStore()"><i class="fas fa-plus"></i> Save</button>
     `);
 };
 
 window.selectEmoji = function(emoji) {
     document.getElementById('fStoreIcon').value = emoji;
     currentLogoFile = null;
-    currentLogoUrl = '';
-    document.getElementById('logoPreviewContainer').innerHTML = `<div style="font-size:48px;margin-bottom:8px">${emoji}</div><div style="font-size:12px;color:#4ECDC4">Emoji selected</div>`;
+    document.getElementById('logoPreviewContainer').innerHTML = `<div style="font-size:48px;margin-bottom:8px">${emoji}</div><div style="font-size:12px;color:#4ECDC4">Selected</div>`;
 };
 
 window.handleLogoUpload = function(input) {
     const file = input.files[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) { showToast('❌ File too large! Max 2MB', true); return; }
-    if (!file.type.match('image.*')) { showToast('❌ Only images allowed!', true); return; }
+    if (file.size > 2 * 1024 * 1024) { showToast('❌ File too large (max 2MB)', true); return; }
+    if (!file.type.match('image.*')) { showToast('❌ Only images!', true); return; }
     currentLogoFile = file;
     const reader = new FileReader();
     reader.onload = function(e) {
@@ -1519,21 +1914,16 @@ window.addStore = async function() {
                 const storageRef = storage.ref(fileName);
                 const snapshot = await storageRef.put(currentLogoFile);
                 logoUrl = await snapshot.ref.getDownloadURL();
-            } catch(err) {
-                console.log('Storage upload failed, using emoji only');
-            }
+            } catch(err) { console.log('Upload failed'); }
         }
         
         await db.collection('stores').add({ 
-            name, category, link, icon,
-            logoUrl: logoUrl,
-            status: 'active', 
-            createdAt: new Date().toISOString() 
+            name, category, link, icon, logoUrl,
+            status: 'active', createdAt: new Date().toISOString() 
         });
         
         showToast('✅ Store added!');
-        closeModal(); 
-        loadStores();
+        closeModal(); loadStores();
     } catch (e) { showToast('❌ ' + e.message, true); }
     showLoading(false);
 };
@@ -1578,7 +1968,9 @@ async function loadStores() {
     } catch (e) { container.innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`; }
 }
 
+// ═══════════════════════════════════════════════════════════
 // ACTIVITY LOGS
+// ═══════════════════════════════════════════════════════════
 async function loadActivityLogs() {
     const container = document.getElementById('adminActivityList');
     container.innerHTML = '<div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
@@ -1594,7 +1986,9 @@ async function loadActivityLogs() {
     } catch (e) { container.innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`; }
 }
 
+// ═══════════════════════════════════════════════════════════
 // BULK WHATSAPP
+// ═══════════════════════════════════════════════════════════
 window.collectNumbers = async function() {
     showToast('⏳ Collecting...');
     whatsappNumbers = [];
@@ -1624,13 +2018,13 @@ window.collectNumbers = async function() {
         document.getElementById('waProviders').textContent = providerCount;
         document.getElementById('waDuplicates').textContent = duplicatesRemoved;
         renderWhatsAppList();
-        showToast(`✅ ${whatsappNumbers.length} unique numbers`);
+        showToast(`✅ ${whatsappNumbers.length} unique`);
     } catch(e) { showToast('❌ ' + e.message, true); }
 };
 
 function renderWhatsAppList() {
     const container = document.getElementById('waList');
-    if (whatsappNumbers.length === 0) { container.innerHTML = '<div class="empty-msg">No numbers found</div>'; return; }
+    if (whatsappNumbers.length === 0) { container.innerHTML = '<div class="empty-msg">No numbers</div>'; return; }
     const msg = encodeURIComponent(document.getElementById('waMessage').value || 'Hello!');
     let html = '';
     whatsappNumbers.forEach((n, i) => {
@@ -1649,7 +2043,7 @@ window.downloadWACsv = function() {
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = `WhatsApp_Numbers_${Date.now()}.csv`; a.click();
+    a.href = url; a.download = `WhatsApp_${Date.now()}.csv`; a.click();
     showToast('✅ CSV downloaded');
 };
 
@@ -1660,13 +2054,36 @@ window.clearNumbers = function() {
     document.getElementById('waList').innerHTML = '<div class="empty-msg">Click "Refresh Numbers"</div>';
 };
 
+// LOAD PROVIDER BANK DETAILS
+async function loadProviderBankDetails() {
+    try {
+        const snapshot = await db.collection('providers').get();
+        allProviderBankDetails = {};
+        snapshot.forEach(doc => {
+            const d = doc.data();
+            allProviderBankDetails[d.name] = {
+                bankAccount: (d.bankDetails && d.bankDetails.account) || d.bankAccount || '',
+                ifscCode: (d.bankDetails && d.bankDetails.ifsc) || d.ifscCode || '',
+                accountHolder: (d.bankDetails && d.bankDetails.holder) || d.accountHolder || '',
+                bankName: (d.bankDetails && d.bankDetails.bankName) || d.bankName || '',
+                mobile: d.mobile || '', email: d.email || ''
+            };
+        });
+    } catch(e) { console.error(e); }
+}
+
+// INIT
 checkAdminSession();
-console.log('✅ NnlGharPro Admin Panel v11.0 — Fixed Subscriptions + Onboarding');
-console.log('📋 Fixes:');
-console.log('  ✅ Subs tab → reads from providers collection');
-console.log('  ✅ Onboard tab → reads from providers.bankDetails');
-console.log('  ✅ Provider delete (full cascade)');
-console.log('  ✅ All Excel downloads working');
+console.log('✅ NnlGharPro Admin Panel v12.0');
+console.log('📋 Features:');
+console.log('  ✅ Date Filter (Today/Yesterday/7D/30D/This Month/Last Month/Custom/All)');
+console.log('  ✅ Weekly Report');
+console.log('  ✅ Monthly Report');
+console.log('  ✅ Complete Report (All-in-One)');
+console.log('  ✅ Provider Settlement');
+console.log('  ✅ Income Summary');
+console.log('  ✅ Delivery Report');
+console.log('  ✅ Items Total Fix (purane bookings bhi count)');
 </script>
 </body>
 </html>
