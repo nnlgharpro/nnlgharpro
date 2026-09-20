@@ -132,17 +132,29 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
 .booking-form { display: none; margin-top: 5px; }
 .booking-form .form-group { margin-bottom: 12px; }
 .booking-form .form-group label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.4); display: block; margin-bottom: 4px; }
-.booking-form input, .booking-form textarea, .booking-form select { width: 100%; padding: 12px 14px; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; background: rgba(255,255,255,0.03); color: #fff; font-size: 14px; font-family: 'Inter', sans-serif; }
-.booking-form input:focus, .booking-form textarea:focus, .booking-form select:focus { outline: none; border-color: #FF6B35; }
-.booking-form select option { background: #1a1a2e; color: #fff; }
+.booking-form input, .booking-form textarea { width: 100%; padding: 12px 14px; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; background: rgba(255,255,255,0.03); color: #fff; font-size: 14px; font-family: 'Inter', sans-serif; }
+.booking-form input:focus, .booking-form textarea:focus { outline: none; border-color: #FF6B35; }
 .booking-form .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-/* DELIVERY DISTANCE SECTION */
-.delivery-distance-section { background: linear-gradient(135deg, rgba(255,107,53,0.08), rgba(255,217,61,0.05)); border: 1px solid rgba(255,107,53,0.2); border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; }
+/* 🎯 ORDER TYPE SELECTOR */
+.order-type-section { background: linear-gradient(135deg, rgba(255,107,53,0.08), rgba(255,217,61,0.05)); border: 2px solid rgba(255,107,53,0.2); border-radius: 16px; padding: 16px; margin-bottom: 14px; }
+.order-type-section .ot-title { font-size: 14px; font-weight: 800; color: #FFD93D; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.order-type-section .ot-title i { color: #FF6B35; }
+.order-type-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.order-type-btn { background: rgba(255,255,255,0.03); border: 2px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 16px 8px; text-align: center; cursor: pointer; transition: all 0.3s; color: #fff; }
+.order-type-btn:hover { background: rgba(255,255,255,0.06); }
+.order-type-btn.selected { border-color: #00C853; background: linear-gradient(135deg, rgba(0,200,83,0.15), rgba(0,230,118,0.08)); box-shadow: 0 0 20px rgba(0,200,83,0.2); }
+.order-type-btn .ot-icon { font-size: 32px; display: block; margin-bottom: 8px; }
+.order-type-btn .ot-label { font-size: 13px; font-weight: 700; display: block; margin-bottom: 4px; }
+.order-type-btn .ot-desc { font-size: 10px; color: rgba(255,255,255,0.5); line-height: 1.3; }
+.order-type-btn.selected .ot-desc { color: #00C853; font-weight: 600; }
+
+/* DELIVERY DISTANCE */
+.delivery-distance-section { background: linear-gradient(135deg, rgba(255,107,53,0.08), rgba(255,217,61,0.05)); border: 1px solid rgba(255,107,53,0.2); border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; display: none; }
+.delivery-distance-section.show { display: block; }
 .delivery-distance-section .dd-title { font-size: 13px; font-weight: 700; color: #FFD93D; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
 .delivery-distance-section .dd-title i { color: #FF6B35; }
 .delivery-distance-section .dd-select { width: 100%; padding: 12px 14px; border: 1px solid rgba(255,107,53,0.3); border-radius: 10px; background: rgba(255,107,53,0.05); color: #fff; font-size: 14px; font-weight: 700; outline: none; cursor: pointer; }
-.delivery-distance-section .dd-select:focus { border-color: #FF6B35; }
 .delivery-distance-section .dd-select option { background: #1a1a2e; color: #fff; }
 .delivery-distance-section .dd-info { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 8px; line-height: 1.5; }
 .delivery-distance-section .dd-info strong { color: #FFD93D; }
@@ -165,6 +177,7 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
 .breakdown-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding: 6px 0; }
 .breakdown-row.items { color: rgba(255,255,255,0.7); }
 .breakdown-row.delivery { color: #FFD93D; }
+.breakdown-row.delivery.free { color: #00C853; }
 .breakdown-row.total { font-size: 18px; font-weight: 800; color: #FFD93D; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px; margin-top: 8px; }
 .breakdown-row .label { display: flex; align-items: center; gap: 8px; }
 .breakdown-row .label i { color: #4ECDC4; }
@@ -263,20 +276,10 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
         <p class="login-sub-text">Login to book trusted services</p>
         <input type="email" id="loginEmail" placeholder="Email Address">
         <input type="password" id="loginPassword" placeholder="Password (min 6 chars)">
-        <button class="btn-primary" id="loginBtn" onclick="loginUser()">
-            <i class="fas fa-lock"></i> Login
-        </button>
-        <span class="auth-toggle" id="authToggle" onclick="toggleAuthMode()">
-            Don't have an account? <strong style="color:#FF6B35;">Create Account</strong>
-        </span>
-        <span class="forgot-link" onclick="forgotPassword()">
-            <i class="fas fa-key"></i> Forgot Password?
-        </span>
-        <div style="margin-top:15px;">
-            <button class="btn-secondary" id="googleLoginBtn" onclick="googleLogin()">
-                <i class="fab fa-google" style="color:#EA4335;"></i> Continue with Google
-            </button>
-        </div>
+        <button class="btn-primary" id="loginBtn" onclick="loginUser()"><i class="fas fa-lock"></i> Login</button>
+        <span class="auth-toggle" id="authToggle" onclick="toggleAuthMode()">Don't have an account? <strong style="color:#FF6B35;">Create Account</strong></span>
+        <span class="forgot-link" onclick="forgotPassword()"><i class="fas fa-key"></i> Forgot Password?</span>
+        <div style="margin-top:15px;"><button class="btn-secondary" id="googleLoginBtn" onclick="googleLogin()"><i class="fab fa-google" style="color:#EA4335;"></i> Continue with Google</button></div>
         <div class="login-error" id="loginError">❌ Invalid credentials</div>
         <p style="font-size:10px; color:rgba(255,255,255,0.1); margin-top:12px;">🔒 Secure • Powered by NnlGharPro</p>
     </div>
@@ -287,9 +290,7 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
     <div class="header">
         <div class="logo-text">🏠 NnlGharPro</div>
         <div class="user-info" id="userInfo">
-            <a href="mailto:nnlgharpro@gmail.com" style="display:flex; align-items:center; gap:4px; text-decoration:none; color:#4ECDC4; font-size:12px; background:rgba(78,205,196,0.08); padding:4px 10px; border-radius:12px; border:1px solid rgba(78,205,196,0.15);">
-                <i class="fas fa-envelope"></i> <span style="font-size:10px; font-weight:600;">nnlgharpro@gmail.com</span>
-            </a>
+            <a href="mailto:nnlgharpro@gmail.com" style="display:flex; align-items:center; gap:4px; text-decoration:none; color:#4ECDC4; font-size:12px; background:rgba(78,205,196,0.08); padding:4px 10px; border-radius:12px; border:1px solid rgba(78,205,196,0.15);"><i class="fas fa-envelope"></i> <span style="font-size:10px; font-weight:600;">nnlgharpro@gmail.com</span></a>
             <button onclick="logoutUser()" style="background:#FF4757; border:none; color:#fff; padding:4px 12px; border-radius:12px; cursor:pointer; font-size:10px; font-weight:600;">Logout</button>
         </div>
     </div>
@@ -360,8 +361,7 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
             <a onclick="openInfoModal('support')"><i class="fas fa-headset"></i> Support</a>
         </div>
         <div class="contact-info">
-            📱 <a href="tel:+919588562553">+91 95885 62553</a> • 
-            📧 <a href="mailto:nnlgharpro@gmail.com">nnlgharpro@gmail.com</a><br>
+            📱 <a href="tel:+919588562553">+91 95885 62553</a> • 📧 <a href="mailto:nnlgharpro@gmail.com">nnlgharpro@gmail.com</a><br>
             🌐 <a href="https://www.nnlgharpro.in" target="_blank">www.nnlgharpro.in</a>
         </div>
     </div>
@@ -370,10 +370,7 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
 <!-- INFO MODAL -->
 <div class="modal-overlay" id="infoModal">
     <div class="modal-box">
-        <div class="modal-header">
-            <h3 id="infoModalTitle"><i class="fas fa-info-circle"></i> About</h3>
-            <button class="close-btn" onclick="closeInfoModal()">✕</button>
-        </div>
+        <div class="modal-header"><h3 id="infoModalTitle"><i class="fas fa-info-circle"></i> About</h3><button class="close-btn" onclick="closeInfoModal()">✕</button></div>
         <div id="infoModalContent" class="info-content"></div>
     </div>
 </div>
@@ -381,10 +378,7 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
 <!-- ECOMMERCE MODAL -->
 <div class="modal-overlay" id="ecommerceModal">
     <div class="modal-box">
-        <div class="modal-header">
-            <h3><i class="fas fa-store" style="color:#FFD93D;"></i> Partner Stores</h3>
-            <button class="close-btn" onclick="closeEcommerceModal()">✕</button>
-        </div>
+        <div class="modal-header"><h3><i class="fas fa-store" style="color:#FFD93D;"></i> Partner Stores</h3><button class="close-btn" onclick="closeEcommerceModal()">✕</button></div>
         <div id="ecommerceStoreList"><div style="text-align:center; padding:20px; color:rgba(255,255,255,0.2);"><i class="fas fa-spinner fa-spin"></i> Loading stores...</div></div>
     </div>
 </div>
@@ -406,9 +400,17 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
         <div class="booking-form" id="bookingForm">
             <div style="font-size:12px; color:#4ECDC4; margin-bottom:8px; font-weight:600;">✅ Selected: <span id="selectedProviderName">None</span></div>
 
-            <!-- 🚚 DELIVERY DISTANCE SELECTOR -->
-            <div class="delivery-distance-section">
-                <div class="dd-title"><i class="fas fa-truck"></i> Delivery Distance (Important!)</div>
+            <!-- 🎯 ORDER TYPE SELECTOR -->
+            <div class="order-type-section">
+                <div class="ot-title"><i class="fas fa-box"></i> Order Type Select Karein</div>
+                <div class="order-type-buttons" id="orderTypeButtons">
+                    <!-- Dynamic - JS fills -->
+                </div>
+            </div>
+
+            <!-- 🚚 DELIVERY DISTANCE (Sirf Delivery select karne par) -->
+            <div class="delivery-distance-section" id="deliveryDistanceSection">
+                <div class="dd-title"><i class="fas fa-truck"></i> Delivery Distance</div>
                 <select id="deliveryDistance" class="dd-select" onchange="updateDeliveryCharge()">
                     <option value="">-- Select distance --</option>
                     <option value="1">0-4 km (Base charge: ₹50)</option>
@@ -428,17 +430,8 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
                     <option value="18">18 km (₹260)</option>
                     <option value="19">19 km (₹275)</option>
                     <option value="20">20 km (₹290)</option>
-                    <option value="21">21 km (₹305)</option>
-                    <option value="22">22 km (₹320)</option>
-                    <option value="23">23 km (₹335)</option>
-                    <option value="24">24 km (₹350)</option>
-                    <option value="25">25 km (₹365)</option>
                 </select>
-                <div class="dd-info">
-                    📌 <strong>Base charge: ₹50</strong> (0-4 km)<br>
-                    📌 <strong>Extra: ₹15 per km</strong> after 4 km<br>
-                    📌 Example: 6 km = ₹50 + ₹30 = <strong>₹80</strong>
-                </div>
+                <div class="dd-info">📌 <strong>Base: ₹50</strong> (0-4 km) • <strong>Extra: ₹15/km</strong></div>
             </div>
 
             <div class="items-section" id="itemsSection">
@@ -451,16 +444,14 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
                 </div>
             </div>
 
-            <!-- PAYMENT BREAKDOWN -->
             <div class="payment-section" id="paymentSection">
                 <div class="payment-title"><i class="fas fa-credit-card"></i> 💳 Payment Breakdown</div>
-                
                 <div class="payment-breakdown">
                     <div class="breakdown-row items">
                         <div class="label"><i class="fas fa-shopping-cart"></i> Items Total</div>
                         <div class="amount" id="itemsTotalDisplay">₹0</div>
                     </div>
-                    <div class="breakdown-row delivery">
+                    <div class="breakdown-row delivery" id="deliveryRow">
                         <div class="label"><i class="fas fa-truck"></i> Delivery Charge <span id="distanceBadge"></span></div>
                         <div class="amount" id="deliveryChargeDisplay">₹0</div>
                     </div>
@@ -469,16 +460,15 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
                         <div class="amount" id="grandTotalDisplay">₹0</div>
                     </div>
                 </div>
-                
                 <button class="razorpay-pay-btn" id="payBtn" onclick="processRazorpayPayment()" disabled>
-                    <i class="fas fa-credit-card"></i> Pay ₹<span id="payAmount">0</span> via Razorpay
+                    <i class="fas fa-credit-card"></i> Pay ₹<span id="payAmount">0</span>
                 </button>
-                <div class="payment-note"><i class="fas fa-shield-alt"></i> Razorpay accepts UPI, Cards, Net Banking, Wallets</div>
+                <div class="payment-note"><i class="fas fa-shield-alt"></i> Razorpay accepts UPI, Cards, Net Banking</div>
             </div>
 
             <div class="form-group">
-                <label><i class="fas fa-pen"></i> Special Instructions / Notes <span style="color:#FF6B35;">(Provider ko dikhega)</span></label>
-                <textarea id="custNotes" rows="3" placeholder="Example: Ghar par 2 baje ke baad aayein, gate number 3, opposite temple..."></textarea>
+                <label><i class="fas fa-pen"></i> Special Instructions / Notes</label>
+                <textarea id="custNotes" rows="3" placeholder="Example: Ghar par 2 baje aayein, gate 3..."></textarea>
             </div>
 
             <div class="row-2">
@@ -486,7 +476,7 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
                 <div class="form-group"><label><i class="fas fa-clock"></i> Time</label><input type="time" id="bookingTime"></div>
             </div>
             <div class="form-group"><label><i class="fas fa-user"></i> Full Name</label><input type="text" id="custName" placeholder="Your full name"></div>
-            <div class="form-group"><label><i class="fas fa-phone"></i> WhatsApp / Mobile</label><input type="tel" id="custMobile" placeholder="10-digit mobile number"></div>
+            <div class="form-group"><label><i class="fas fa-phone"></i> WhatsApp / Mobile</label><input type="tel" id="custMobile" placeholder="10-digit mobile"></div>
             <div class="form-group"><label><i class="fas fa-map-marker-alt"></i> Service Address</label><input type="text" id="custAddress" placeholder="Your full address"></div>
         </div>
     </div>
@@ -495,13 +485,8 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
 <!-- ITEMS POPUP -->
 <div class="popup-overlay" id="itemsPopupOverlay">
     <div class="popup-box">
-        <div class="modal-header">
-            <h3><i class="fas fa-list"></i> <span id="popupProviderName">Select Items</span></h3>
-            <button class="close-btn" onclick="closeItemsPopup()">✕</button>
-        </div>
-        <div class="popup-items-list" id="popupItemsList">
-            <div style="text-align:center;padding:40px 20px;color:rgba(255,255,255,0.25);"><i class="fas fa-spinner fa-spin" style="font-size:32px;display:block;margin-bottom:12px;opacity:0.5;"></i><div style="font-size:16px;font-weight:600;color:rgba(255,255,255,0.4);">Loading Items...</div></div>
-        </div>
+        <div class="modal-header"><h3><i class="fas fa-list"></i> <span id="popupProviderName">Select Items</span></h3><button class="close-btn" onclick="closeItemsPopup()">✕</button></div>
+        <div class="popup-items-list" id="popupItemsList"></div>
         <div class="popup-footer">
             <div class="popup-total">Total: <span id="popupTotalAmount">₹0</span></div>
             <button class="btn-primary" id="confirmItemsBtn" onclick="confirmItemsSelection()" disabled>Confirm Items</button>
@@ -513,27 +498,12 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
 <div class="receipt-container" id="receiptContainer">
     <div class="receipt-wrapper">
         <button class="receipt-close-btn" onclick="closeReceipt()">✕</button>
-        <div class="receipt-header">
-            <h2>🏠 Nnl<span>GharPro</span></h2>
-            <p>Booking Receipt</p>
-        </div>
+        <div class="receipt-header"><h2>🏠 Nnl<span>GharPro</span></h2><p>Booking Receipt</p></div>
         <div id="receiptDetails"></div>
         <div class="receipt-divider">━━━━━━━━━━━━━━━━━━━</div>
-        <div class="receipt-total">
-            <span class="total-label">💰 Total Amount</span>
-            <span class="total-amount" id="receiptTotal">₹0</span>
-        </div>
-        <div class="payment-status-section" id="receiptPaymentSection">
-            <div class="status-row">
-                <span class="status-label">💳 Payment Status</span>
-                <span class="status-value" id="receiptPaymentStatus">⏳ Pending</span>
-            </div>
-        </div>
-        <div class="receipt-footer">
-            <p>Thank you for choosing NnlGharPro! 🙏</p>
-            <p style="margin-top:4px;">📧 nnlgharpro@gmail.com</p>
-            <button class="print-btn" onclick="window.print()">🖨️ Print Receipt</button>
-        </div>
+        <div class="receipt-total"><span class="total-label">💰 Total</span><span class="total-amount" id="receiptTotal">₹0</span></div>
+        <div class="payment-status-section"><div class="status-row"><span class="status-label">💳 Payment</span><span class="status-value" id="receiptPaymentStatus">⏳ Pending</span></div></div>
+        <div class="receipt-footer"><p>Thank you! 🙏</p><button class="print-btn" onclick="window.print()">🖨️ Print</button></div>
     </div>
 </div>
 
@@ -548,16 +518,14 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
 
 <script>
 // ════════════════════════════════════════════════════════════
-// 🔒 SECURITY
+// SECURITY
 // ════════════════════════════════════════════════════════════
 document.addEventListener('contextmenu', function(e) { e.preventDefault(); showToast('🔒 Right-click disabled', true); });
 document.addEventListener('keydown', function(e) {
-    if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) || (e.ctrlKey && e.key === 'u') || e.key === 'PrintScreen') {
-        e.preventDefault(); showToast('🔒 Disabled', true); return false;
+    if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) || (e.ctrlKey && e.key === 'u')) {
+        e.preventDefault(); return false;
     }
 });
-document.addEventListener('dragstart', function(e) { e.preventDefault(); });
-document.addEventListener('copy', function(e) { e.preventDefault(); showToast('🔒 Copy disabled', true); });
 
 // ════════════════════════════════════════════════════════════
 // FIREBASE
@@ -574,18 +542,11 @@ try { firebase.initializeApp(firebaseConfig); } catch(e) {}
 const db = firebase.firestore();
 const auth = firebase.auth();
 
-// ════════════════════════════════════════════════════════════
-// RAZORPAY
-// ════════════════════════════════════════════════════════════
-const RAZORPAY_CONFIG = {
-    KEY_ID: "rzp_live_TZVMRcs8uXxici"
-};
+const RAZORPAY_CONFIG = { KEY_ID: "rzp_live_TZVMRcs8uXxici" };
 
-// ════════════════════════════════════════════════════════════
-// 🚚 DELIVERY CHARGE CALCULATION
-// ════════════════════════════════════════════════════════════
-const BASE_DELIVERY_CHARGE = 50;       // 0-4 km
-const EXTRA_PER_KM = 15;               // After 4 km
+// 🚚 Delivery Charge Logic
+const BASE_DELIVERY_CHARGE = 50;
+const EXTRA_PER_KM = 15;
 const BASE_KM = 4;
 
 function calculateDeliveryCharge(distance) {
@@ -612,10 +573,8 @@ let currentBookingId = null;
 let currentPaymentStatus = '';
 let currentDeliveryDistance = 0;
 let currentDeliveryCharge = 0;
+let currentOrderType = ''; // 'takeaway' or 'delivery'
 
-// ════════════════════════════════════════════════════════════
-// HELPERS
-// ════════════════════════════════════════════════════════════
 function showToast(msg, err = false) {
     const t = document.getElementById('toast');
     t.textContent = msg;
@@ -623,127 +582,27 @@ function showToast(msg, err = false) {
     t.style.display = 'block';
     setTimeout(() => t.style.display = 'none', 4000);
 }
-
 function showLoading(show) {
     const el = document.getElementById('loading');
     if (el) el.style.display = show ? 'flex' : 'none';
 }
 
-// ════════════════════════════════════════════════════════════
-// 🚚 DELIVERY CHARGE UPDATE
-// ════════════════════════════════════════════════════════════
-window.updateDeliveryCharge = function() {
-    const distanceSelect = document.getElementById('deliveryDistance');
-    const distance = parseInt(distanceSelect.value) || 0;
-    
-    currentDeliveryDistance = distance;
-    currentDeliveryCharge = calculateDeliveryCharge(distance);
-    
-    // Update total
-    updateTotalAndPayment();
-};
-
-// ════════════════════════════════════════════════════════════
 // INFO MODALS
-// ════════════════════════════════════════════════════════════
 const INFO_CONTENT = {
-    about: { title: 'About NnlGharPro', icon: 'info-circle', html: `
-        <h4><i class="fas fa-home"></i> Who We Are</h4>
-        <p>NnlGharPro ek online service booking platform hai jo customers ko trusted local service providers se connect karta hai.</p>
-        <h4><i class="fas fa-bullseye"></i> Our Mission</h4>
-        <p>Har ghar tak quality services pahunchana, transparent pricing ke saath.</p>
-        <h4><i class="fas fa-star"></i> Why Choose Us?</h4>
-        <ul>
-            <li>✅ Verified Providers</li>
-            <li>✅ Secure Online Payment</li>
-            <li>✅ Transparent Pricing</li>
-            <li>✅ 24/7 Support</li>
-        </ul>
-        <h4><i class="fas fa-building"></i> Company Info</h4>
-        <p><strong>Managed By:</strong> Randhawa Enterprises<br>
-        <strong>Founded:</strong> 2024<br>
-        <strong>Location:</strong> Narnaul, Haryana - 123001<br>
-        <strong>Email:</strong> nnlgharpro@gmail.com</p>
-        <div class="highlight">⭐ <strong>Thousands of Customers Trust Us</strong></div>
-    `},
-    contact: { title: 'Contact Us', icon: 'phone', html: `
-        <h4><i class="fas fa-phone"></i> Get In Touch</h4>
-        <div class="highlight">
-            <strong>📱 Mobile:</strong> <a href="tel:+919588562553">+91 95885 62553</a><br>
-            <strong>📧 Email:</strong> <a href="mailto:nnlgharpro@gmail.com">nnlgharpro@gmail.com</a><br>
-            <strong>🌐 Website:</strong> <a href="https://www.nnlgharpro.in" target="_blank">www.nnlgharpro.in</a>
-        </div>
-        <h4><i class="fas fa-clock"></i> Office Hours</h4>
-        <ul>
-            <li><strong>Monday - Saturday:</strong> 9:00 AM - 9:00 PM</li>
-            <li><strong>Sunday:</strong> 10:00 AM - 6:00 PM</li>
-        </ul>
-        <h4><i class="fas fa-map-marker-alt"></i> Address</h4>
-        <p>Randhawa Enterprises<br>Narnaul, Haryana - 123001<br>India</p>
-    `},
-    privacy: { title: 'Privacy Policy', icon: 'lock', html: `
-        <h4><i class="fas fa-database"></i> Information We Collect</h4>
-        <ul>
-            <li>Name, Mobile, Email</li>
-            <li>Address, Pincode</li>
-            <li>Payment details (encrypted)</li>
-        </ul>
-        <h4><i class="fas fa-shield-alt"></i> Data Protection</h4>
-        <ul>
-            <li>256-bit SSL encryption</li>
-            <li>Firebase secure storage</li>
-            <li>No data selling</li>
-        </ul>
-        <div class="highlight">Questions? <a href="mailto:nnlgharpro@gmail.com">nnlgharpro@gmail.com</a></div>
-    `},
-    terms: { title: 'Terms & Conditions', icon: 'file-contract', html: `
-        <h4><i class="fas fa-credit-card"></i> Payment Terms</h4>
-        <ul>
-            <li>100% online payment via Razorpay</li>
-            <li>Secure UPI, Cards, Net Banking</li>
-            <li>No cash on delivery</li>
-        </ul>
-        <h4><i class="fas fa-truck"></i> Delivery Charges</h4>
-        <ul>
-            <li>Base charge: ₹50 (0-4 km)</li>
-            <li>Extra: ₹15 per km (after 4 km)</li>
-            <li>Customer selects distance at booking</li>
-        </ul>
-        <h4><i class="fas fa-undo"></i> Refund Policy</h4>
-        <ul>
-            <li>Refund only if service not delivered</li>
-            <li>Refund in 5-7 working days</li>
-        </ul>
-        <h4><i class="fas fa-balance-scale"></i> Governing Law</h4>
-        <p>Indian Law. Jurisdiction: Narnaul, Haryana</p>
-    `},
-    support: { title: 'Support Center', icon: 'headset', html: `
-        <h4><i class="fas fa-question-circle"></i> Need Help?</h4>
-        <div class="highlight">
-            <strong>📱 WhatsApp:</strong> <a href="https://wa.me/919588562553">+91 95885 62553</a><br>
-            <strong>📧 Email:</strong> <a href="mailto:nnlgharpro@gmail.com">nnlgharpro@gmail.com</a>
-        </div>
-        <h4><i class="fas fa-comments"></i> FAQ</h4>
-        <p><strong>❓ Payment kaise?</strong><br>✅ Razorpay se UPI/Card/Netbanking</p>
-        <p><strong>❓ Delivery charge kaise?</strong><br>✅ ₹50 base (0-4 km) + ₹15/km after 4 km</p>
-        <p><strong>❓ Payment fail?</strong><br>✅ Auto refund in 5-7 days</p>
-        <p><strong>❓ Provider nahi aaya?</strong><br>✅ Support se contact karein</p>
-    `}
+    about: { title: 'About NnlGharPro', icon: 'info-circle', html: `<h4>Who We Are</h4><p>NnlGharPro ek online service booking platform hai.</p><h4>Managed By</h4><p>Randhawa Enterprises<br>Narnaul, Haryana - 123001</p>`},
+    contact: { title: 'Contact Us', icon: 'phone', html: `<p>📱 <a href="tel:+919588562553">+91 95885 62553</a></p><p>📧 nnlgharpro@gmail.com</p>`},
+    privacy: { title: 'Privacy Policy', icon: 'lock', html: `<p>Hum aapka data securely store karte hain.</p>`},
+    terms: { title: 'Terms & Conditions', icon: 'file-contract', html: `<h4>Order Types</h4><ul><li><strong>Takeaway/Collect:</strong> Customer khud jaakar lega. ₹0 delivery charge.</li><li><strong>Delivery:</strong> ₹50 base + ₹15/km after 4 km.</li></ul>`},
+    support: { title: 'Support', icon: 'headset', html: `<p>📱 WhatsApp: <a href="https://wa.me/919588562553">+91 95885 62553</a></p>`}
 };
 
 window.openInfoModal = function(type) {
-    const content = INFO_CONTENT[type];
-    if (!content) return;
-    document.getElementById('infoModalTitle').innerHTML = `<i class="fas fa-${content.icon}"></i> ${content.title}`;
-    document.getElementById('infoModalContent').innerHTML = content.html;
+    const c = INFO_CONTENT[type]; if (!c) return;
+    document.getElementById('infoModalTitle').innerHTML = `<i class="fas fa-${c.icon}"></i> ${c.title}`;
+    document.getElementById('infoModalContent').innerHTML = c.html;
     document.getElementById('infoModal').classList.add('show');
-    document.body.style.overflow = 'hidden';
 };
-
-window.closeInfoModal = function() {
-    document.getElementById('infoModal').classList.remove('show');
-    document.body.style.overflow = 'auto';
-};
+window.closeInfoModal = function() { document.getElementById('infoModal').classList.remove('show'); };
 
 // ════════════════════════════════════════════════════════════
 // AUTH
@@ -752,25 +611,20 @@ window.toggleAuthMode = function() {
     isLoginMode = !isLoginMode;
     const btn = document.getElementById('loginBtn');
     const toggle = document.getElementById('authToggle');
-    const subText = document.querySelector('.login-sub-text');
     if (isLoginMode) {
         btn.innerHTML = '<i class="fas fa-lock"></i> Login';
         toggle.innerHTML = 'Don\'t have an account? <strong style="color:#FF6B35;">Create Account</strong>';
-        subText.textContent = 'Login to book trusted services';
     } else {
         btn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
         toggle.innerHTML = 'Already have an account? <strong style="color:#FF6B35;">Login</strong>';
-        subText.textContent = 'Create your account';
     }
     document.getElementById('loginError').style.display = 'none';
 };
 
 window.forgotPassword = function() {
     const email = document.getElementById('loginEmail').value.trim();
-    if (!email) { showToast('⚠️ Please enter your email first!', true); return; }
-    auth.sendPasswordResetEmail(email)
-        .then(() => { showToast('✅ Reset link sent to ' + email); })
-        .catch((e) => { showToast('❌ ' + e.message, true); });
+    if (!email) { showToast('⚠️ Enter email first!', true); return; }
+    auth.sendPasswordResetEmail(email).then(() => showToast('✅ Reset link sent')).catch(e => showToast('❌ ' + e.message, true));
 };
 
 window.loginUser = async function() {
@@ -778,69 +632,42 @@ window.loginUser = async function() {
     const pass = document.getElementById('loginPassword').value.trim();
     const errEl = document.getElementById('loginError');
     errEl.style.display = 'none';
-
     if (!email || !pass) { errEl.textContent = '❌ Enter email & password'; errEl.style.display = 'block'; return; }
-    if (pass.length < 6) { errEl.textContent = '❌ Password must be at least 6 characters'; errEl.style.display = 'block'; return; }
-
+    if (pass.length < 6) { errEl.textContent = '❌ Password min 6 chars'; errEl.style.display = 'block'; return; }
     document.getElementById('loginBtn').disabled = true;
-    document.getElementById('loginBtn').textContent = 'Processing...';
-
     try {
         let userCred;
-        if (isLoginMode) {
-            userCred = await auth.signInWithEmailAndPassword(email, pass);
-        } else {
-            userCred = await auth.createUserWithEmailAndPassword(email, pass);
-        }
+        if (isLoginMode) userCred = await auth.signInWithEmailAndPassword(email, pass);
+        else userCred = await auth.createUserWithEmailAndPassword(email, pass);
         currentUser = userCred.user;
         showMainApp();
     } catch (error) {
-        errEl.textContent = '❌ ' + error.message;
-        errEl.style.display = 'block';
+        errEl.textContent = '❌ ' + error.message; errEl.style.display = 'block';
     }
     document.getElementById('loginBtn').disabled = false;
-    document.getElementById('loginBtn').textContent = isLoginMode ? 'Login' : 'Create Account';
 };
 
 window.googleLogin = async function() {
-    const btn = document.getElementById('googleLoginBtn');
-    btn.disabled = true;
-    btn.textContent = 'Loading...';
     try {
         const provider = new firebase.auth.GoogleAuthProvider();
-        provider.setCustomParameters({ 'prompt': 'select_account' });
         const result = await auth.signInWithPopup(provider);
         currentUser = result.user;
         showMainApp();
-    } catch (error) {
-        if (error.code === 'auth/popup-closed-by-user') {
-            showToast('⚠️ Login cancelled', true);
-        } else {
-            showToast('❌ Google Login failed: ' + error.message, true);
-        }
-    }
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fab fa-google" style="color:#EA4335;"></i> Continue with Google';
+    } catch (error) { showToast('❌ ' + error.message, true); }
 };
 
 function checkSession() {
     auth.onAuthStateChanged(user => {
-        if (user) {
-            currentUser = user;
-            loadBroadcast();
-            showMainApp();
-        }
+        if (user) { currentUser = user; loadBroadcast(); showMainApp(); }
     });
 }
 
 function showMainApp() {
     document.getElementById('loginOverlay').classList.add('hidden');
     document.getElementById('mainApp').style.display = 'block';
-    updateDateTime();
-    updateWeather();
-    setInterval(updateDateTime, 30000);
-    setInterval(updateWeather, 300000);
-    showToast('✅ Welcome, ' + (currentUser.displayName || currentUser.email || 'User') + '!');
+    updateDateTime(); updateWeather();
+    setInterval(updateDateTime, 30000); setInterval(updateWeather, 300000);
+    showToast('✅ Welcome!');
 }
 
 window.logoutUser = function() {
@@ -851,213 +678,141 @@ window.logoutUser = function() {
     showToast('Logged out');
 };
 
-document.getElementById('loginEmail').addEventListener('keyup', function(e) {
-    if (e.key === 'Enter') document.getElementById('loginPassword').focus();
-});
-document.getElementById('loginPassword').addEventListener('keyup', function(e) {
-    if (e.key === 'Enter') loginUser();
-});
+document.getElementById('loginEmail').addEventListener('keyup', e => { if (e.key === 'Enter') document.getElementById('loginPassword').focus(); });
+document.getElementById('loginPassword').addEventListener('keyup', e => { if (e.key === 'Enter') loginUser(); });
 
-// ════════════════════════════════════════════════════════════
 // DATE/TIME/WEATHER
-// ════════════════════════════════════════════════════════════
 function updateDateTime() {
     const now = new Date();
-    const options = { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' };
-    document.getElementById('currentDate').textContent = now.toLocaleDateString('en-IN', options);
-    let hours = now.getHours();
-    const minutes = now.getMinutes().toString().padStart(2, '0');
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12 || 12;
-    document.getElementById('currentTime').textContent = hours + ':' + minutes + ' ' + ampm;
+    document.getElementById('currentDate').textContent = now.toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
+    let h = now.getHours();
+    const m = now.getMinutes().toString().padStart(2, '0');
+    const ap = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    document.getElementById('currentTime').textContent = h + ':' + m + ' ' + ap;
 }
-
 function updateWeather() {
-    const weatherData = [{ icon: '☀️', temp: 32 }, { icon: '⛅', temp: 28 }, { icon: '🌤️', temp: 30 }];
-    const w = weatherData[Math.floor(Math.random() * weatherData.length)];
+    const data = [{ icon: '☀️', temp: 32 }, { icon: '⛅', temp: 28 }, { icon: '🌤️', temp: 30 }];
+    const w = data[Math.floor(Math.random() * data.length)];
     document.getElementById('weatherIcon').textContent = w.icon;
     document.getElementById('weatherTemp').textContent = w.temp + '°C';
 }
 
-// ════════════════════════════════════════════════════════════
-// BROADCAST
-// ════════════════════════════════════════════════════════════
 async function loadBroadcast() {
     try {
         const doc = await db.collection('broadcast').doc('current').get();
         if (doc.exists && doc.data().message) {
-            let message = doc.data().message || '';
-            message = message.replace(/(https?:\/\/[^\s]+)/g, url => `<a href="${url}" target="_blank">${url}</a>`);
+            let message = doc.data().message.replace(/(https?:\/\/[^\s]+)/g, url => `<a href="${url}" target="_blank">${url}</a>`);
             document.getElementById('broadcastMessage').innerHTML = message;
             document.getElementById('broadcastBanner').classList.add('show');
         }
     } catch (e) {}
 }
-
 function closeBroadcast() { document.getElementById('broadcastBanner').classList.remove('show'); }
 
-// ════════════════════════════════════════════════════════════
 // ECOMMERCE
-// ════════════════════════════════════════════════════════════
 window.openEcommerceModal = async function() {
     if (!currentUser) { showToast('Please login first!', true); return; }
     document.getElementById('ecommerceModal').classList.add('show');
     await loadEcommerceStores();
 };
-
 window.closeEcommerceModal = function() { document.getElementById('ecommerceModal').classList.remove('show'); };
 
 async function loadEcommerceStores() {
     const container = document.getElementById('ecommerceStoreList');
-    container.innerHTML = '<div style="text-align:center; padding:20px; color:rgba(255,255,255,0.2);"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+    container.innerHTML = '<div style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin"></i></div>';
     try {
         const snapshot = await db.collection('stores').where('status', '==', 'active').get();
-        if (snapshot.empty) {
-            container.innerHTML = '<div style="text-align:center; padding:30px; color:rgba(255,255,255,0.2);">No stores available</div>';
-            return;
-        }
+        if (snapshot.empty) { container.innerHTML = '<div style="text-align:center;padding:30px;color:rgba(255,255,255,0.2)">No stores</div>'; return; }
         let html = '';
         snapshot.forEach(doc => {
             const data = doc.data();
-            const link = data.link || '';
-            const hasLink = link && link.startsWith('http');
-            html += `
-                <div onclick="${hasLink ? `window.open('${link}', '_blank')` : `showToast('⚠️ Link not configured!', true)`}" style="cursor:${hasLink ? 'pointer' : 'default'}; background:rgba(255,255,255,0.03); padding:14px; border-radius:12px; margin-bottom:8px; display:flex; align-items:center; gap:12px; border:1px solid rgba(255,255,255,0.05);">
-                    <div style="font-size:28px;">${data.icon || '🏪'}</div>
-                    <div style="flex:1;">
-                        <div style="font-size:14px; font-weight:600;">${data.name || 'Store'}</div>
-                        <div style="font-size:11px; color:rgba(255,255,255,0.4);">${data.category || ''}</div>
-                    </div>
-                    <div style="color:${hasLink ? '#4ECDC4' : 'rgba(255,255,255,0.2)'}; font-size:12px;">${hasLink ? 'Visit ➜' : 'No Link'}</div>
-                </div>
-            `;
+            const logoDisplay = data.logoUrl 
+                ? `<img src="${data.logoUrl}" style="width:40px;height:40px;object-fit:cover;border-radius:10px">`
+                : `<div style="font-size:28px;">${data.icon || '🏪'}</div>`;
+            html += `<div onclick="window.open('${data.link}', '_blank')" style="cursor:pointer;background:rgba(255,255,255,0.03);padding:14px;border-radius:12px;margin-bottom:8px;display:flex;align-items:center;gap:12px;border:1px solid rgba(255,255,255,0.05);">
+                ${logoDisplay}
+                <div style="flex:1;"><div style="font-size:14px;font-weight:600;">${data.name}</div><div style="font-size:11px;color:rgba(255,255,255,0.4);">${data.category}</div></div>
+                <div style="color:#4ECDC4;font-size:12px;">Visit ➜</div>
+            </div>`;
         });
         container.innerHTML = html;
-    } catch (e) {
-        container.innerHTML = '<div style="text-align:center; padding:30px; color:#FF4757;">Error loading</div>';
-    }
+    } catch (e) { container.innerHTML = '<div style="text-align:center;color:#FF4757;">Error</div>'; }
 }
 
-// ════════════════════════════════════════════════════════════
 // SERVICE SELECTION
-// ════════════════════════════════════════════════════════════
 window.selectService = function(service) {
     if (!currentUser) { showToast('Please login first!', true); return; }
     if (service === 'E-Commerce') { openEcommerceModal(); return; }
-
     selectedService = service;
     selectedProviderId = null;
-
     document.querySelectorAll('.service-btn').forEach(b => b.classList.remove('active'));
     const btns = document.querySelectorAll(`.service-btn[onclick*="${service}"]`);
     if (btns.length > 0) btns[0].classList.add('active');
-
-    showToast('✅ Selected: ' + service);
-
+    showToast('✅ ' + service);
     const pincode = document.getElementById('pincode').value.trim();
-    if (pincode && pincode.length === 6) {
-        searchServices();
-    } else {
-        showToast('⚠️ Please enter pincode!', true);
-    }
+    if (pincode && pincode.length === 6) searchServices();
+    else showToast('⚠️ Enter pincode!', true);
 };
 
-// ════════════════════════════════════════════════════════════
 // SEARCH SERVICES
-// ════════════════════════════════════════════════════════════
 window.searchServices = async function() {
-    if (!selectedService) { showToast('Please select service first!', true); return; }
+    if (!selectedService) { showToast('Select service first!', true); return; }
     const pincode = document.getElementById('pincode').value.trim();
-    if (!pincode || pincode.length !== 6) { showToast('Enter valid pincode!', true); return; }
+    if (!pincode || pincode.length !== 6) { showToast('Valid pincode!', true); return; }
 
     document.getElementById('bookingModal').classList.add('show');
-    document.getElementById('providerList').innerHTML = '<div style="text-align:center; padding:20px; color:rgba(255,255,255,0.2);"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
+    document.getElementById('providerList').innerHTML = '<div style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
     document.getElementById('modalServiceName').textContent = selectedService;
     document.getElementById('modalPincode').textContent = pincode;
     document.getElementById('bookingForm').style.display = 'none';
     document.getElementById('providerListContainer').style.display = 'block';
-
-    providerItems = [];
-    cart = {};
-    popupCart = {};
-    currentDeliveryDistance = 0;
-    currentDeliveryCharge = 0;
-    document.getElementById('deliveryDistance').value = '';
-    document.getElementById('paymentSection').style.display = 'none';
 
     try {
         const snapshot = await db.collection('providers').where('status', '==', 'active').get();
         allProviders = [];
         snapshot.forEach(doc => allProviders.push({ id: doc.id, ...doc.data() }));
 
-        if (allProviders.length === 0) {
-            document.getElementById('providerList').innerHTML = '<div style="padding:30px; text-align:center; color:rgba(255,255,255,0.4);"><i class="fas fa-search" style="font-size:28px; display:block; margin-bottom:12px; color:#FF6B35;"></i><div style="font-size:14px; font-weight:600; color:#fff;">No providers available</div></div>';
-            return;
-        }
-
-        const pincodeMatched = allProviders.filter(p => {
-            return (p.pincode && p.pincode === pincode) ||
-                (p.pincodes && Array.isArray(p.pincodes) && p.pincodes.includes(pincode)) ||
-                (p.servicePincodes && Array.isArray(p.servicePincodes) && p.servicePincodes.includes(pincode));
-        });
+        const pincodeMatched = allProviders.filter(p => 
+            (p.pincode && p.pincode === pincode) ||
+            (p.pincodes && Array.isArray(p.pincodes) && p.pincodes.includes(pincode))
+        );
 
         const serviceLower = selectedService.toLowerCase().trim();
         const filtered = pincodeMatched.filter(p => {
             if (!p.services) return true;
-            if (p.services === 'all') return true;
-            if (Array.isArray(p.services)) {
-                return p.services.some(s => s.toLowerCase().includes(serviceLower)) || p.services.includes('all');
-            }
+            if (Array.isArray(p.services)) return p.services.some(s => s.toLowerCase().includes(serviceLower));
             return (p.services || "").toString().toLowerCase().includes(serviceLower);
         });
 
         if (filtered.length === 0) {
-            document.getElementById('providerList').innerHTML = `<div style="padding:30px; text-align:center; color:rgba(255,255,255,0.4);"><i class="fas fa-search" style="font-size:28px; display:block; margin-bottom:12px; color:#FF6B35;"></i><div style="font-size:14px; font-weight:600; color:#fff;">No providers found</div><div style="font-size:12px; color:rgba(255,255,255,0.3);">For "${selectedService}" in ${pincode}</div></div>`;
+            document.getElementById('providerList').innerHTML = `<div style="padding:30px; text-align:center; color:rgba(255,255,255,0.4);"><i class="fas fa-search" style="font-size:28px;display:block;margin-bottom:12px;color:#FF6B35;"></i>No providers found</div>`;
             return;
         }
 
         let html = '';
         filtered.forEach(p => {
-            const rating = p.rating || '4.5';
-            const websiteDisplay = p.website ? `<a href="${p.website}" target="_blank" style="font-size:11px; color:#4ECDC4; text-decoration:none;" onclick="event.stopPropagation();"><i class="fas fa-globe"></i> ${p.website.replace(/^https?:\/\//, '')}</a>` : '';
-            html += `
-                <div class="provider-item" onclick="selectProvider('${p.id}')">
-                    <div>
-                        <div class="p-name">${p.name}</div>
-                        <div class="p-detail"><i class="fas fa-phone" style="font-size:10px;"></i> ${p.mobile || 'N/A'} • <i class="fas fa-star" style="color:#FFD93D; font-size:10px;"></i> ${rating}</div>
-                        ${websiteDisplay ? `<div class="p-detail" style="margin-top:2px;">${websiteDisplay}</div>` : ''}
-                    </div>
-                    <div class="p-select-icon"><i class="fas fa-chevron-right"></i></div>
-                </div>
-            `;
+            html += `<div class="provider-item" onclick="selectProvider('${p.id}')"><div><div class="p-name">${p.name}</div><div class="p-detail">📞 ${p.mobile || 'N/A'} • ⭐ ${p.rating || '4.5'}</div></div><div class="p-select-icon"><i class="fas fa-chevron-right"></i></div></div>`;
         });
         document.getElementById('providerList').innerHTML = html;
         showToast(`✅ ${filtered.length} providers found!`);
-    } catch (e) {
-        console.error('Search error:', e);
-        showToast('Error loading', true);
-        document.getElementById('providerList').innerHTML = '<div style="padding:30px; text-align:center; color:#FF4757;">Error loading</div>';
-    }
+    } catch (e) { showToast('Error', true); }
 };
 
-// ════════════════════════════════════════════════════════════
 // SELECT PROVIDER
-// ════════════════════════════════════════════════════════════
 window.selectProvider = async function(id) {
     selectedProviderId = id;
     selectedProviderData = allProviders.find(p => p.id === id);
-
     document.querySelectorAll('.provider-item').forEach(el => el.classList.remove('selected'));
     const el = document.querySelector(`.provider-item[onclick*="'${id}'"]`);
     if (el) el.classList.add('selected');
-
     document.getElementById('selectedProviderName').textContent = selectedProviderData ? selectedProviderData.name : 'Unknown';
 
-    providerItems = [];
-    cart = {};
-    popupCart = {};
+    providerItems = []; cart = {}; popupCart = {};
+    currentOrderType = ''; currentDeliveryDistance = 0; currentDeliveryCharge = 0;
 
     await loadProviderItems(id);
+    renderOrderTypeButtons();
 
     document.getElementById('providerListContainer').style.display = 'none';
     document.getElementById('bookingForm').style.display = 'block';
@@ -1066,152 +821,138 @@ window.selectProvider = async function(id) {
     tomorrow.setDate(tomorrow.getDate() + 1);
     document.getElementById('bookingDate').value = tomorrow.toISOString().split('T')[0];
     document.getElementById('bookingTime').value = '10:00';
-
     document.getElementById('custName').value = '';
     document.getElementById('custMobile').value = '';
     document.getElementById('custAddress').value = '';
     document.getElementById('custNotes').value = '';
-
     document.getElementById('popupProviderName').textContent = selectedProviderData ? selectedProviderData.name : 'Items';
 
     updateTotalAndPayment();
     updateSelectedItemsSummary();
 };
 
-// ════════════════════════════════════════════════════════════
+// 🎯 RENDER ORDER TYPE BUTTONS
+function renderOrderTypeButtons() {
+    const container = document.getElementById('orderTypeButtons');
+    const isFood = selectedService === 'Food & Restaurant';
+    const collectLabel = isFood ? '🍔 Takeaway' : '🏪 Collect from Store';
+    const collectDesc = isFood ? 'Khud jaakar lena hai' : 'Khud collect karein';
+
+    container.innerHTML = `
+        <div class="order-type-btn" id="otTakeaway" onclick="selectOrderType('takeaway')">
+            <span class="ot-icon">${isFood ? '🍔' : '🏪'}</span>
+            <span class="ot-label">${collectLabel}</span>
+            <span class="ot-desc">${collectDesc}<br>(₹0 delivery)</span>
+        </div>
+        <div class="order-type-btn" id="otDelivery" onclick="selectOrderType('delivery')">
+            <span class="ot-icon">🚚</span>
+            <span class="ot-label">Home Delivery</span>
+            <span class="ot-desc">Ghar tak mangwayein<br>(₹50 + extra km)</span>
+        </div>
+    `;
+}
+
+// 🎯 SELECT ORDER TYPE
+window.selectOrderType = function(type) {
+    currentOrderType = type;
+    document.getElementById('otTakeaway').classList.toggle('selected', type === 'takeaway');
+    document.getElementById('otDelivery').classList.toggle('selected', type === 'delivery');
+
+    if (type === 'takeaway') {
+        currentDeliveryDistance = 0;
+        currentDeliveryCharge = 0;
+        document.getElementById('deliveryDistanceSection').classList.remove('show');
+        showToast('🏪 ' + (selectedService === 'Food & Restaurant' ? 'Takeaway' : 'Collect from Store') + ' selected');
+    } else {
+        document.getElementById('deliveryDistanceSection').classList.add('show');
+        showToast('🚚 Home Delivery selected - distance chunein');
+    }
+    updateTotalAndPayment();
+};
+
+// 🚚 UPDATE DELIVERY CHARGE
+window.updateDeliveryCharge = function() {
+    const distance = parseInt(document.getElementById('deliveryDistance').value) || 0;
+    currentDeliveryDistance = distance;
+    currentDeliveryCharge = calculateDeliveryCharge(distance);
+    updateTotalAndPayment();
+};
+
 // LOAD PROVIDER ITEMS
-// ════════════════════════════════════════════════════════════
 async function loadProviderItems(providerId) {
     try {
-        let rawItems = [];
-        console.log('🔍 Loading items for provider:', providerId);
         const snap = await db.collection('items').where('providerId', '==', providerId).get();
-        console.log('📦 Items found:', snap.size);
-
+        let rawItems = [];
         snap.forEach(doc => {
             const data = doc.data();
-            if (data && data.name && data.name !== 'undefined' && data.name.trim() !== '') {
-                if (data.hidden === true) return;
-                rawItems.push({ id: doc.id, ...data });
-            }
+            if (data && data.name && data.hidden !== true) rawItems.push({ id: doc.id, ...data });
         });
 
         if (rawItems.length === 0) {
             providerItems = [];
-            document.getElementById('popupItemsList').innerHTML = `<div style="text-align:center;padding:40px 20px;color:rgba(255,255,255,0.25);"><i class="fas fa-box-open" style="font-size:48px;display:block;margin-bottom:12px;opacity:0.3;"></i><div style="font-size:16px;font-weight:600;color:rgba(255,255,255,0.4);">No Items Available</div><div style="font-size:12px;color:rgba(255,255,255,0.25);margin-top:6px;">Provider ne abhi tak koi item add nahi kiya</div></div>`;
-            document.getElementById('selectedItemsSummary').innerHTML = '<div style="color:rgba(255,255,255,0.2); font-size:12px; padding:6px 0;"><i class="fas fa-info-circle"></i> No items available</div>';
-            document.getElementById('paymentSection').style.display = 'none';
+            document.getElementById('popupItemsList').innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.3);"><i class="fas fa-box-open" style="font-size:48px;display:block;margin-bottom:12px;"></i>No items available</div>';
+            document.getElementById('selectedItemsSummary').innerHTML = '<div style="color:rgba(255,255,255,0.2);font-size:12px;padding:6px 0;">No items</div>';
             return;
         }
 
         providerItems = rawItems.map(item => ({ ...item, isMain: true, subItems: item.subItems || [] }));
-
-        cart = {};
-        popupCart = {};
-
+        cart = {}; popupCart = {};
         providerItems.forEach(item => {
-            const subItems = item.subItems || [];
-            if (subItems.length > 0) {
-                subItems.forEach(sub => {
-                    if (!sub.id) sub.id = 'sub_auto_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
-                    if (sub.hidden !== true) { cart[sub.id] = 0; popupCart[sub.id] = 0; }
+            const subs = (item.subItems || []).filter(s => s && s.name && s.hidden !== true);
+            if (subs.length > 0) {
+                subs.forEach(sub => {
+                    if (!sub.id) sub.id = 'sub_auto_' + Math.random().toString(36).substring(2, 10);
+                    cart[sub.id] = 0; popupCart[sub.id] = 0;
                 });
-            } else {
-                if (item.id) { cart[item.id] = 0; popupCart[item.id] = 0; }
-            }
+            } else if (item.id) { cart[item.id] = 0; popupCart[item.id] = 0; }
         });
-
         renderPopupItems();
-        updateSelectedItemsSummary();
-        updateTotalAndPayment();
-
-    } catch (error) {
-        console.error("❌ Error loading items:", error);
-        providerItems = [];
-        document.getElementById('popupItemsList').innerHTML = `<div style="text-align:center;padding:40px 20px;color:#FF4757;"><i class="fas fa-exclamation-triangle" style="font-size:48px;display:block;margin-bottom:12px;"></i><div style="font-size:14px;">Error loading items</div></div>`;
-    }
+    } catch (e) { console.error(e); }
 }
 
-// ════════════════════════════════════════════════════════════
-// ITEMS POPUP
-// ════════════════════════════════════════════════════════════
 function renderPopupItems() {
     const container = document.getElementById('popupItemsList');
-    if (!providerItems || providerItems.length === 0) {
-        container.innerHTML = '<div style="text-align:center;padding:40px 20px;color:rgba(255,255,255,0.25);"><i class="fas fa-box-open" style="font-size:48px;display:block;margin-bottom:12px;opacity:0.3;"></i><div style="font-size:16px;font-weight:600;color:rgba(255,255,255,0.4);">No Items Available</div></div>';
-        return;
-    }
-
+    if (!providerItems || providerItems.length === 0) { container.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.3);">No items</div>'; return; }
     let html = '';
-    providerItems.forEach((item) => {
-        const subItems = (item.subItems || []).filter(s => s && s.name && s.hidden !== true);
-        html += `<div class="popup-main-item">
-            <div class="main-item-header" style="cursor:default;">
-                <span class="main-name">📦 ${item.name} <span class="main-count">(${subItems.length} items)</span></span>
-            </div>
-            <div class="sub-items">`;
-
-        if (subItems.length > 0) {
-            subItems.forEach(sub => {
+    providerItems.forEach(item => {
+        const subs = (item.subItems || []).filter(s => s && s.name && s.hidden !== true);
+        html += `<div class="popup-main-item"><div class="main-item-header"><span class="main-name">📦 ${item.name} <span class="main-count">(${subs.length})</span></span></div><div class="sub-items">`;
+        if (subs.length > 0) {
+            subs.forEach(sub => {
                 const qty = popupCart[sub.id] || 0;
-                html += `<div class="sub-item-row">
-                    <span class="sub-name">${sub.name}</span>
-                    ${sub.category ? `<span class="sub-category">${sub.category}</span>` : ''}
-                    <span class="sub-price">₹${sub.price || 0}</span>
-                    <div class="qty-control">
-                        <button class="btn-minus" onclick="updatePopupQty('${sub.id}', -1)">−</button>
-                        <span class="qty-num" id="popup-qty-${sub.id}">${qty}</span>
-                        <button class="btn-plus" onclick="updatePopupQty('${sub.id}', 1)">+</button>
-                    </div>
-                </div>`;
+                html += `<div class="sub-item-row"><span class="sub-name">${sub.name}</span><span class="sub-price">₹${sub.price || 0}</span><div class="qty-control"><button class="btn-minus" onclick="updatePopupQty('${sub.id}', -1)">−</button><span class="qty-num" id="popup-qty-${sub.id}">${qty}</span><button class="btn-plus" onclick="updatePopupQty('${sub.id}', 1)">+</button></div></div>`;
             });
         } else {
             const qty = popupCart[item.id] || 0;
-            html += `<div class="sub-item-row">
-                <span class="sub-name">${item.name}</span>
-                <span class="sub-price">₹${item.price || 0}</span>
-                <div class="qty-control">
-                    <button class="btn-minus" onclick="updatePopupQty('${item.id}', -1)">−</button>
-                    <span class="qty-num" id="popup-qty-${item.id}">${qty}</span>
-                    <button class="btn-plus" onclick="updatePopupQty('${item.id}', 1)">+</button>
-                </div>
-            </div>`;
+            html += `<div class="sub-item-row"><span class="sub-name">${item.name}</span><span class="sub-price">₹${item.price || 0}</span><div class="qty-control"><button class="btn-minus" onclick="updatePopupQty('${item.id}', -1)">−</button><span class="qty-num" id="popup-qty-${item.id}">${qty}</span><button class="btn-plus" onclick="updatePopupQty('${item.id}', 1)">+</button></div></div>`;
         }
         html += `</div></div>`;
     });
-
     container.innerHTML = html;
     updatePopupTotal();
 }
 
-window.updatePopupQty = function(itemId, delta) {
-    if (!popupCart.hasOwnProperty(itemId)) return;
-    popupCart[itemId] = Math.max(0, (popupCart[itemId] || 0) + delta);
-    const qtyEl = document.getElementById('popup-qty-' + itemId);
-    if (qtyEl) qtyEl.textContent = popupCart[itemId];
+window.updatePopupQty = function(id, delta) {
+    if (!popupCart.hasOwnProperty(id)) return;
+    popupCart[id] = Math.max(0, (popupCart[id] || 0) + delta);
+    const el = document.getElementById('popup-qty-' + id);
+    if (el) el.textContent = popupCart[id];
     updatePopupTotal();
 };
 
 function updatePopupTotal() {
     let total = 0;
     for (const [id, qty] of Object.entries(popupCart)) {
-        if (qty > 0) {
-            let item = findItemById(id);
-            if (item) total += (item.price || 0) * qty;
-        }
+        if (qty > 0) { const item = findItemById(id); if (item) total += (item.price || 0) * qty; }
     }
     document.getElementById('popupTotalAmount').textContent = '₹' + total;
     document.getElementById('confirmItemsBtn').disabled = total <= 0;
 }
 
 function findItemById(id) {
-    if (!Array.isArray(providerItems)) return null;
     for (const main of providerItems) {
         if (main.id === id) return main;
-        if (main.subItems && Array.isArray(main.subItems)) {
-            const found = main.subItems.find(s => s.id === id);
-            if (found) return found;
-        }
+        if (main.subItems) { const found = main.subItems.find(s => s.id === id); if (found) return found; }
     }
     return null;
 }
@@ -1220,22 +961,17 @@ window.openItemsPopup = function() {
     for (const [id, qty] of Object.entries(cart)) popupCart[id] = qty || 0;
     renderPopupItems();
     document.getElementById('itemsPopupOverlay').classList.add('show');
-    document.body.style.overflow = 'hidden';
 };
-
-window.closeItemsPopup = function() {
-    document.getElementById('itemsPopupOverlay').classList.remove('show');
-    document.body.style.overflow = 'auto';
-};
+window.closeItemsPopup = function() { document.getElementById('itemsPopupOverlay').classList.remove('show'); };
 
 window.confirmItemsSelection = function() {
     let total = 0;
     for (const [id, qty] of Object.entries(popupCart)) {
         cart[id] = qty || 0;
-        let item = findItemById(id);
+        const item = findItemById(id);
         if (item) total += (item.price || 0) * (qty || 0);
     }
-    if (total <= 0) { showToast('⚠️ Select at least one item!', true); return; }
+    if (total <= 0) { showToast('Select at least one item!', true); return; }
     closeItemsPopup();
     updateSelectedItemsSummary();
     updateTotalAndPayment();
@@ -1247,56 +983,61 @@ function updateSelectedItemsSummary() {
     let hasItems = false, html = '';
     for (const [id, qty] of Object.entries(cart)) {
         if (qty > 0) {
-            let item = findItemById(id);
-            if (item) {
-                hasItems = true;
-                html += `<div class="summary-item"><span class="s-name">${item.name}</span><span class="s-qty">x${qty}</span><span class="s-price">₹${(item.price||0) * qty}</span></div>`;
-            }
+            const item = findItemById(id);
+            if (item) { hasItems = true; html += `<div class="summary-item"><span class="s-name">${item.name}</span><span class="s-qty">x${qty}</span><span class="s-price">₹${(item.price||0) * qty}</span></div>`; }
         }
     }
-    container.innerHTML = hasItems ? html : '<div style="color:rgba(255,255,255,0.2); font-size:12px; padding:6px 0;"><i class="fas fa-info-circle"></i> Click "Select Items"</div>';
+    container.innerHTML = hasItems ? html : '<div style="color:rgba(255,255,255,0.2);font-size:12px;padding:6px 0;"><i class="fas fa-info-circle"></i> Click "Select Items"</div>';
     updateTotalAndPayment();
 }
 
 function updateTotalAndPayment() {
-    let itemsTotal = 0, hasItems = false;
+    let itemsTotal = 0;
     for (const [id, qty] of Object.entries(cart)) {
-        if (qty > 0) {
-            let item = findItemById(id);
-            if (item) { hasItems = true; itemsTotal += (item.price || 0) * qty; }
-        }
+        if (qty > 0) { const item = findItemById(id); if (item) itemsTotal += (item.price || 0) * qty; }
     }
-    
     const deliveryCharge = currentDeliveryCharge;
     const grandTotal = itemsTotal + deliveryCharge;
-    
-    // Update displays
+
     document.getElementById('itemsTotalDisplay').textContent = '₹' + itemsTotal;
     document.getElementById('deliveryChargeDisplay').textContent = '₹' + deliveryCharge;
     document.getElementById('grandTotalDisplay').textContent = '₹' + grandTotal;
     document.getElementById('payAmount').textContent = grandTotal;
-    
-    // Distance badge
+
+    // Delivery row styling
+    const deliveryRow = document.getElementById('deliveryRow');
+    if (deliveryCharge === 0 && currentOrderType) {
+        deliveryRow.classList.add('free');
+    } else {
+        deliveryRow.classList.remove('free');
+    }
+
     const distanceBadge = document.getElementById('distanceBadge');
     if (currentDeliveryDistance > 0) {
         distanceBadge.textContent = `(${currentDeliveryDistance === 1 ? '0-4' : currentDeliveryDistance} km)`;
         distanceBadge.style.color = '#FFD93D';
         distanceBadge.style.fontSize = '11px';
+    } else if (currentOrderType === 'takeaway') {
+        distanceBadge.textContent = '(Takeaway)';
+        distanceBadge.style.color = '#00C853';
+        distanceBadge.style.fontSize = '11px';
     } else {
         distanceBadge.textContent = '';
     }
-    
+
     const section = document.getElementById('paymentSection');
     const payBtn = document.getElementById('payBtn');
-    
-    if (hasItems && itemsTotal > 0 && currentDeliveryDistance > 0) {
-        section.style.display = 'block';
-        payBtn.innerHTML = `<i class="fas fa-credit-card"></i> Pay ₹${grandTotal} via Razorpay`;
-        payBtn.disabled = false;
-    } else if (hasItems && itemsTotal > 0 && currentDeliveryDistance === 0) {
-        section.style.display = 'block';
-        payBtn.innerHTML = `<i class="fas fa-truck"></i> Select Distance First`;
-        payBtn.disabled = true;
+
+    if (itemsTotal > 0 && currentOrderType) {
+        if (currentOrderType === 'takeaway' || (currentOrderType === 'delivery' && currentDeliveryDistance > 0)) {
+            section.style.display = 'block';
+            payBtn.innerHTML = `<i class="fas fa-credit-card"></i> Pay ₹${grandTotal}`;
+            payBtn.disabled = false;
+        } else {
+            section.style.display = 'block';
+            payBtn.innerHTML = `<i class="fas fa-truck"></i> Select Distance`;
+            payBtn.disabled = true;
+        }
     } else {
         section.style.display = 'none';
         payBtn.disabled = true;
@@ -1306,10 +1047,7 @@ function updateTotalAndPayment() {
 function getItemsTotal() {
     let total = 0;
     for (const [id, qty] of Object.entries(cart)) {
-        if (qty > 0) {
-            let item = findItemById(id);
-            if (item) total += (item.price || 0) * qty;
-        }
+        if (qty > 0) { const item = findItemById(id); if (item) total += (item.price || 0) * qty; }
     }
     return total;
 }
@@ -1318,24 +1056,20 @@ function getItemsSummary() {
     let summary = '';
     for (const [id, qty] of Object.entries(cart)) {
         if (qty > 0) {
-            let item = findItemById(id);
+            const item = findItemById(id);
             if (item) summary += `${item.name} x${qty} = ₹${(item.price||0)*qty}, `;
         }
     }
-    return summary.slice(0, -2) || 'No items selected';
+    return summary.slice(0, -2) || 'No items';
 }
 
-// ════════════════════════════════════════════════════════════
-// 🔥 RAZORPAY PAYMENT
-// ════════════════════════════════════════════════════════════
+// RAZORPAY PAYMENT
 window.processRazorpayPayment = function() {
-    if (currentDeliveryDistance === 0) {
-        showToast('⚠️ Pehle delivery distance select karein!', true);
-        return;
-    }
+    if (!currentOrderType) { showToast('⚠️ Order type select karein!', true); return; }
+    if (currentOrderType === 'delivery' && currentDeliveryDistance === 0) { showToast('⚠️ Distance select karein!', true); return; }
     
     const itemsTotal = getItemsTotal();
-    if (itemsTotal <= 0) { showToast('⚠️ Select at least one item!', true); return; }
+    if (itemsTotal <= 0) { showToast('⚠️ Select items!', true); return; }
     
     const name = document.getElementById('custName').value.trim();
     const mobile = document.getElementById('custMobile').value.trim();
@@ -1343,12 +1077,9 @@ window.processRazorpayPayment = function() {
     const date = document.getElementById('bookingDate').value;
     const time = document.getElementById('bookingTime').value;
     
-    if (!name || !mobile || !address) { showToast('⚠️ Fill Name, Mobile & Address!', true); return; }
-    if (mobile.length < 10) { showToast('⚠️ Valid 10-digit mobile!', true); return; }
-    if (!date) { showToast('⚠️ Select date!', true); return; }
-    if (!time) { showToast('⚠️ Select time!', true); return; }
-    const selectedDate = new Date(date + 'T' + (time || '10:00'));
-    if (selectedDate < new Date()) { showToast('⚠️ Select future date!', true); return; }
+    if (!name || !mobile || !address) { showToast('⚠️ Fill Name, Mobile, Address!', true); return; }
+    if (mobile.length < 10) { showToast('⚠️ Valid mobile!', true); return; }
+    if (!date || !time) { showToast('⚠️ Select date & time!', true); return; }
     
     createRazorpayPayment();
 };
@@ -1373,43 +1104,43 @@ function createRazorpayPayment() {
 
     const gatewayFee = Math.round(grandTotal * 0.02);
     const adminCommission = Math.round(grandTotal * 0.03);
-    const providerAmount = Math.round(itemsTotal * 0.95);           // 95% of items
-    const deliveryPartnerAmount = deliveryCharge;                    // Full delivery to partner
+    const providerAmount = Math.round(itemsTotal * 0.95);
+    const deliveryPartnerAmount = deliveryCharge;
 
     try {
         const bookingData = {
             service: selectedService || '',
             providerId: selectedProviderId || '',
-            providerName: provider.name || 'Unknown',
+            providerName: provider.name || '',
             providerMobile: provider.mobile || '',
             providerWebsite: provider.website || '',
+            orderType: currentOrderType,                        // 🎯 takeaway / delivery
             bookingDate: date || '',
             bookingTime: time || '',
             customerName: name || '',
             customerMobile: mobile || '',
             customerAddress: address || '',
-            customerNotes: notes || '',                                   // ✅ Notes save
+            customerNotes: notes || '',
             customerPincode: document.getElementById('pincode').value.trim() || '',
             customerEmail: currentUser ? currentUser.email : '',
             customerUid: currentUser ? currentUser.uid : '',
             items: itemsSummary || '',
-            itemsTotal: itemsTotal,                                        // ✅ Items total
-            deliveryDistance: currentDeliveryDistance,                     // ✅ Distance selected
-            deliveryCharge: deliveryCharge,                                // ✅ Calculated delivery charge
-            totalAmount: grandTotal,                                       // ✅ Grand total
+            itemsTotal: itemsTotal,
+            deliveryDistance: currentDeliveryDistance,
+            deliveryCharge: deliveryCharge,
+            totalAmount: grandTotal,
             gatewayFee: gatewayFee,
             adminCommission: adminCommission,
             providerAmount: providerAmount,
-            deliveryPartnerAmount: deliveryPartnerAmount,                  // ✅ Delivery partner ko
+            deliveryPartnerAmount: deliveryPartnerAmount,
             paymentMethod: 'Razorpay',
             paymentStatus: 'pending',
             paymentConfirmed: false,
             status: 'pending',
             assignedTo: selectedProviderId || '',
-            // 🚚 Delivery fields
             deliveryPartner: '',
             deliveryPartnerMobile: '',
-            deliveryStatus: 'pending',
+            deliveryStatus: currentOrderType === 'takeaway' ? 'not_applicable' : 'pending',
             deliveryAssignedAt: '',
             deliveryPickedAt: '',
             deliveryDeliveredAt: '',
@@ -1429,27 +1160,12 @@ function createRazorpayPayment() {
                     name: "NnlGharPro - Randhawa Enterprises",
                     description: `NnlGharPro - ${provider.name} - ${bookingId.slice(0,8)}`,
                     image: "https://nnlgharpro.in/logo.png",
-                    prefill: {
-                        name: name,
-                        contact: mobile,
-                        email: currentUser ? currentUser.email : ''
-                    },
+                    prefill: { name, contact: mobile, email: currentUser ? currentUser.email : '' },
                     notes: {
-                        providerId: provider.id,
-                        providerName: provider.name,
-                        providerMobile: provider.mobile || '',
-                        bookingId: bookingId,
-                        service: selectedService || '',
-                        customerName: name,
-                        customerMobile: mobile,
-                        itemsTotal: itemsTotal,
-                        deliveryDistance: currentDeliveryDistance + ' km',
-                        deliveryCharge: deliveryCharge,
-                        totalAmount: grandTotal,
-                        gatewayFee: gatewayFee,
-                        adminCommission: adminCommission,
-                        providerAmount: providerAmount,
-                        deliveryPartnerAmount: deliveryPartnerAmount
+                        providerId: provider.id, providerName: provider.name,
+                        bookingId, service: selectedService, orderType: currentOrderType,
+                        customerName: name, customerMobile: mobile,
+                        itemsTotal, deliveryCharge, totalAmount: grandTotal
                     },
                     theme: { color: "#FF6B35" },
                     modal: {
@@ -1461,7 +1177,6 @@ function createRazorpayPayment() {
                         }
                     },
                     handler: function(response) {
-                        console.log('✅ Payment Success:', response);
                         verifyRazorpayPayment(bookingId, response);
                     }
                 };
@@ -1472,14 +1187,12 @@ function createRazorpayPayment() {
                 isBookingSubmitting = false;
             })
             .catch((error) => {
-                console.error('Booking error:', error);
-                showToast('❌ Error: ' + error.message, true);
+                showToast('❌ ' + error.message, true);
                 isBookingSubmitting = false;
                 showLoading(false);
             });
     } catch (error) {
-        console.error('Payment error:', error);
-        showToast('❌ Error: ' + error.message, true);
+        showToast('❌ ' + error.message, true);
         isBookingSubmitting = false;
         showLoading(false);
     }
@@ -1494,12 +1207,9 @@ async function verifyRazorpayPayment(bookingId, response) {
             transactionId: response.razorpay_payment_id || '',
             status: 'assigned',
             paidAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            deliveryStatus: 'pending'
+            updatedAt: new Date().toISOString()
         };
         if (response.razorpay_order_id) updateData.razorpayOrderId = response.razorpay_order_id;
-        if (response.razorpay_signature) updateData.razorpaySignature = response.razorpay_signature;
-
         await db.collection('bookings').doc(bookingId).update(updateData);
         showToast('✅ Payment successful!');
         showReceipt(bookingId, 'paid');
@@ -1507,97 +1217,70 @@ async function verifyRazorpayPayment(bookingId, response) {
         document.querySelectorAll('.service-btn').forEach(b => b.classList.remove('active'));
         selectedService = null;
     } catch (error) {
-        console.error('Verification error:', error);
-        showToast('❌ Verification failed: ' + error.message, true);
+        showToast('❌ ' + error.message, true);
     }
     showLoading(false);
 }
 
-// ════════════════════════════════════════════════════════════
 // RECEIPT
-// ════════════════════════════════════════════════════════════
 function showReceipt(bookingId, paymentStatus) {
-    const receipt = document.getElementById('receiptContainer');
-    const details = document.getElementById('receiptDetails');
-
     db.collection('bookings').doc(bookingId).get().then((doc) => {
-        if (!doc.exists) { showToast('❌ Booking not found!', true); return; }
+        if (!doc.exists) return;
         const data = doc.data();
-        let statusLabel = '', statusColor = '', statusBg = '';
-        if (data.paymentStatus === 'paid' && data.paymentConfirmed === true) {
-            statusLabel = '✅ PAID'; statusColor = '#00C853'; statusBg = 'rgba(0,200,83,0.1)';
-        } else {
-            statusLabel = '⏳ Pending'; statusColor = '#FFD93D'; statusBg = 'rgba(255,217,61,0.1)';
-        }
-        details.innerHTML = `
+        const isPaid = data.paymentStatus === 'paid' && data.paymentConfirmed === true;
+        const orderTypeLabel = data.orderType === 'takeaway' 
+            ? (data.service === 'Food & Restaurant' ? '🍔 Takeaway' : '🏪 Collect from Store') 
+            : '🚚 Home Delivery';
+
+        document.getElementById('receiptDetails').innerHTML = `
             <div class="receipt-row"><span class="label">Booking ID</span><span class="value">#${bookingId.substring(0,8).toUpperCase()}</span></div>
-            <div class="receipt-row"><span class="label">Date</span><span class="value">${data.bookingDate || ''}</span></div>
-            <div class="receipt-row"><span class="label">Time</span><span class="value">${data.bookingTime || ''}</span></div>
+            <div class="receipt-row"><span class="label">Date</span><span class="value">${data.bookingDate || ''} ${data.bookingTime || ''}</span></div>
             <div class="receipt-row"><span class="label">Customer</span><span class="value">${data.customerName || ''}</span></div>
-            <div class="receipt-row"><span class="label">Mobile</span><span class="value">${data.customerMobile || ''}</span></div>
             <div class="receipt-row"><span class="label">Service</span><span class="value">${data.service || ''}</span></div>
             <div class="receipt-row"><span class="label">Provider</span><span class="value">${data.providerName || ''}</span></div>
+            <div class="receipt-row"><span class="label">Order Type</span><span class="value">${orderTypeLabel}</span></div>
             <div class="receipt-row"><span class="label">Items</span><span class="value">${data.items || ''}</span></div>
             <div class="receipt-row"><span class="label">Items Total</span><span class="value">₹${data.itemsTotal || 0}</span></div>
-            <div class="receipt-row"><span class="label">Delivery (${data.deliveryDistance || 0} km)</span><span class="value">₹${data.deliveryCharge || 0}</span></div>
-            <div class="receipt-row"><span class="label">Payment</span><span class="value">Razorpay</span></div>
-            ${data.customerNotes ? `<div class="receipt-row" style="margin-top:6px;border-top:1px dashed #ccc;padding-top:6px"><span class="label">Notes</span><span class="value" style="font-size:10px">${data.customerNotes}</span></div>` : ''}
+            ${data.deliveryCharge > 0 ? `<div class="receipt-row"><span class="label">Delivery (${data.deliveryDistance === 1 ? '0-4' : data.deliveryDistance} km)</span><span class="value">₹${data.deliveryCharge}</span></div>` : '<div class="receipt-row"><span class="label">Delivery</span><span class="value" style="color:#00C853">FREE</span></div>'}
         `;
         document.getElementById('receiptTotal').textContent = '₹' + (data.totalAmount || 0);
         const statusEl = document.getElementById('receiptPaymentStatus');
-        statusEl.textContent = statusLabel;
-        statusEl.style.color = statusColor;
-        statusEl.style.background = statusBg;
-        receipt.classList.add('show');
-        document.body.style.overflow = 'hidden';
+        statusEl.textContent = isPaid ? '✅ PAID' : '⏳ Pending';
+        statusEl.style.color = isPaid ? '#00C853' : '#FFD93D';
+        statusEl.style.background = isPaid ? 'rgba(0,200,83,0.1)' : 'rgba(255,217,61,0.1)';
+        document.getElementById('receiptContainer').classList.add('show');
         currentBookingId = bookingId;
-        currentPaymentStatus = paymentStatus;
-    }).catch((error) => {
-        console.error('Error:', error);
-        showToast('❌ Error loading receipt', true);
     });
 }
 
-window.closeReceipt = function() {
-    document.getElementById('receiptContainer').classList.remove('show');
-    document.body.style.overflow = 'auto';
-    currentBookingId = null;
-};
+window.closeReceipt = function() { document.getElementById('receiptContainer').classList.remove('show'); };
 
 window.closeBookingModal = function() {
     document.getElementById('bookingModal').classList.remove('show');
     document.getElementById('providerListContainer').style.display = 'block';
     document.getElementById('bookingForm').style.display = 'none';
     document.getElementById('paymentSection').style.display = 'none';
-    selectedProviderId = null;
-    selectedProviderData = null;
-    providerItems = [];
-    cart = {};
-    popupCart = {};
-    currentDeliveryDistance = 0;
-    currentDeliveryCharge = 0;
+    selectedProviderId = null; selectedProviderData = null;
+    providerItems = []; cart = {}; popupCart = {};
+    currentDeliveryDistance = 0; currentDeliveryCharge = 0; currentOrderType = '';
     document.getElementById('deliveryDistance').value = '';
-    document.body.style.overflow = 'auto';
+    document.getElementById('deliveryDistanceSection').classList.remove('show');
 };
 
-document.getElementById('pincode').addEventListener('keyup', function(e) { if (e.key === 'Enter') searchServices(); });
+document.getElementById('pincode').addEventListener('keyup', e => { if (e.key === 'Enter') searchServices(); });
 
-// ════════════════════════════════════════════════════════════
 // INIT
-// ════════════════════════════════════════════════════════════
 checkSession();
 updateDateTime();
 updateWeather();
 
-console.log('✅ NnlGharPro Customer Portal v7.0');
+console.log('✅ NnlGharPro Customer Portal v8.0');
 console.log('📋 Features:');
-console.log('  ✅ Distance-based delivery charge (₹50 + ₹15/km after 4km)');
-console.log('  ✅ Customer manually selects distance');
-console.log('  ✅ Payment breakdown (Items + Delivery = Grand Total)');
-console.log('  ✅ Special notes saved (provider ko dikhega)');
-console.log('  ✅ Delivery charge → Delivery Partner');
-console.log('  ✅ 95% of items → Provider');
-console.log('  ✅ 3% admin commission');
+console.log('  ✅ Order Type: Takeaway/Collect (₹0) + Delivery (₹50+)');
+console.log('  ✅ Food → "Takeaway" label');
+console.log('  ✅ Other services → "Collect from Store" label');
+console.log('  ✅ Distance based delivery charge');
+console.log('  ✅ Notes + Receipt + Razorpay');
 </script>
 </body>
 </html>
