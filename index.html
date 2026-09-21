@@ -792,7 +792,8 @@ window.searchServices = async function() {
 
         let html = '';
         filtered.forEach(p => {
-            html += `<div class="provider-item" onclick="selectProvider('${p.id}')"><div><div class="p-name">${p.name}</div><div class="p-detail">📞 ${p.mobile || 'N/A'} • ⭐ ${p.rating || '4.5'}</div></div><div class="p-select-icon"><i class="fas fa-chevron-right"></i></div></div>`;
+           const websiteDisplay = p.website ? `<a href="${p.website}" target="_blank" onclick="event.stopPropagation();" style="color:#4ECDC4;text-decoration:none;font-size:11px;">🌐 ${p.website.replace(/^https?:\/\//, '')}</a>` : '';
+html += `<div class="provider-item" onclick="selectProvider('${p.id}')"><div style="flex:1;"><div class="p-name">${p.name}</div><div class="p-detail">⭐ ${p.rating || '4.5'} • 📍 ${(p.pincodes && p.pincodes[0]) || p.pincode || 'N/A'}</div>${websiteDisplay ? `<div class="p-detail" style="margin-top:4px;">${websiteDisplay}</div>` : ''}</div><div class="p-select-icon"><i class="fas fa-chevron-right"></i></div></div>`; 
         });
         document.getElementById('providerList').innerHTML = html;
         showToast(`✅ ${filtered.length} providers found!`);
