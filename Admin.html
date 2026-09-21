@@ -148,6 +148,16 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
 .logo-upload-box:hover{border-color:#4ECDC4;background:rgba(78,205,196,.05)}
 .logo-preview{width:80px;height:80px;object-fit:cover;border-radius:10px;border:2px solid #4ECDC4;margin:8px auto;display:block}
 
+/* 🔍 PROVIDER SEARCH BOX */
+.search-box{background:rgba(78,205,196,.04);border:1px solid rgba(78,205,196,.15);border-radius:14px;padding:14px;margin-bottom:14px}
+.search-box .search-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.search-box input{flex:1;min-width:200px;padding:12px 16px;border:1px solid rgba(255,255,255,.06);border-radius:10px;background:rgba(255,255,255,.03);color:#fff;font-size:14px;outline:none;transition:.3s}
+.search-box input:focus{border-color:#4ECDC4}
+.search-box input::placeholder{color:rgba(255,255,255,.3)}
+.search-box .clear-btn{padding:10px 16px;background:rgba(255,71,87,.15);color:#FF4757;border:1px solid rgba(255,71,87,.2);border-radius:10px;font-weight:700;font-size:12px;cursor:pointer;transition:.3s}
+.search-box .clear-btn:hover{background:rgba(255,71,87,.25)}
+.search-box .search-count{font-size:11px;color:#4ECDC4;margin-top:8px;font-weight:600}
+
 /* 📅 DATE FILTER SECTION */
 .date-filter-section{background:linear-gradient(135deg,rgba(139,92,246,.08),rgba(109,40,217,.04));border:2px solid rgba(139,92,246,.2);border-radius:16px;padding:16px;margin-bottom:16px}
 .date-filter-section .df-title{font-size:14px;font-weight:800;color:#8B5CF6;margin-bottom:12px;display:flex;align-items:center;gap:8px}
@@ -160,7 +170,7 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
 .custom-date-range input{padding:10px 14px;border:1px solid rgba(255,255,255,.1);border-radius:10px;background:rgba(255,255,255,.03);color:#fff;font-size:14px;flex:1;min-width:120px}
 .date-info-badge{background:rgba(78,205,196,.1);color:#4ECDC4;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;display:inline-block;margin-top:8px}
 
-/* 📊 REPORTS SECTION */
+/* 📊 REPORTS GRID */
 .reports-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:16px}
 .report-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:16px;padding:18px;transition:.3s}
 .report-card:hover{background:rgba(255,255,255,.05);transform:translateY(-2px)}
@@ -275,12 +285,29 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
         </div>
     </div>
 
-    <!-- PROVIDERS TAB -->
+    <!-- 🆕 PROVIDERS TAB (WITH SEARCH) -->
     <div id="tab-providers" class="admin-tab-content">
         <div class="card">
             <div class="card-title"><span><i class="fas fa-users"></i> All Providers</span>
                 <button class="btn-primary" style="width:auto;padding:8px 20px;font-size:13px" onclick="showAddProvider()"><i class="fas fa-plus"></i> Add Provider</button>
             </div>
+            
+            <!-- 🆕 SEARCH BOX -->
+            <div class="search-box">
+                <div class="search-row">
+                    <input 
+                        type="text" 
+                        id="providerSearchInput" 
+                        placeholder="🔍 Search by name, mobile, email, service, pincode..." 
+                        oninput="searchProviders()"
+                    >
+                    <button class="clear-btn" onclick="clearProviderSearch()">
+                        <i class="fas fa-times"></i> Clear
+                    </button>
+                </div>
+                <div id="providerSearchCount" class="search-count"></div>
+            </div>
+            
             <div id="adminProviderList"><div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading providers...</div></div>
         </div>
     </div>
@@ -356,12 +383,11 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
         </div>
     </div>
 
-    <!-- 🆕 REPORTS TAB -->
+    <!-- REPORTS TAB -->
     <div id="tab-reports" class="admin-tab-content">
         <div class="card">
             <div class="card-title"><span><i class="fas fa-file-excel"></i> Reports & Excel Downloads</span><span class="badge">📊 Advanced</span></div>
 
-            <!-- DATE FILTER -->
             <div class="date-filter-section">
                 <div class="df-title"><i class="fas fa-calendar-alt"></i> Date Range Select Karein</div>
                 <div class="date-filter-row">
@@ -383,57 +409,43 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
                 <div id="dateRangeInfo" class="date-info-badge">📅 Aaj ka data</div>
             </div>
 
-            <!-- REPORTS GRID -->
             <div class="reports-grid">
-                <!-- Customer Report -->
                 <div class="report-card daily">
                     <span class="rc-icon">📋</span>
                     <div class="rc-title">Customer Report</div>
                     <div class="rc-desc">Har booking ka full breakdown — items, delivery, admin commission, provider payout</div>
                     <button class="rc-btn" onclick="downloadReport('customer')"><i class="fas fa-file-excel"></i> Download</button>
                 </div>
-
-                <!-- Provider Settlement -->
                 <div class="report-card provider">
                     <span class="rc-icon">👤</span>
                     <div class="rc-title">Provider Settlement</div>
                     <div class="rc-desc">Provider-wise 95% payout with bank details</div>
                     <button class="rc-btn" onclick="downloadReport('provider')"><i class="fas fa-file-excel"></i> Download</button>
                 </div>
-
-                <!-- Delivery Report -->
                 <div class="report-card delivery">
                     <span class="rc-icon">🚚</span>
                     <div class="rc-title">Delivery Report</div>
                     <div class="rc-desc">Delivery partner-wise payout details</div>
                     <button class="rc-btn" onclick="downloadReport('delivery')"><i class="fas fa-file-excel"></i> Download</button>
                 </div>
-
-                <!-- Income Summary -->
                 <div class="report-card monthly">
                     <span class="rc-icon">💰</span>
                     <div class="rc-title">Income Summary</div>
                     <div class="rc-desc">Aapki total income — admin commission + Razorpay fee</div>
                     <button class="rc-btn" onclick="downloadReport('income')"><i class="fas fa-file-excel"></i> Download</button>
                 </div>
-
-                <!-- Weekly Report -->
                 <div class="report-card weekly">
                     <span class="rc-icon">📊</span>
                     <div class="rc-title">Weekly Summary</div>
                     <div class="rc-desc">Hafte ka summary — day-wise breakdown</div>
                     <button class="rc-btn" onclick="downloadReport('weekly')"><i class="fas fa-file-excel"></i> Download</button>
                 </div>
-
-                <!-- Monthly Report -->
                 <div class="report-card monthly">
                     <span class="rc-icon">📈</span>
                     <div class="rc-title">Monthly Summary</div>
                     <div class="rc-desc">Mahine ka summary — daily breakdown</div>
                     <button class="rc-btn" onclick="downloadReport('monthly')"><i class="fas fa-file-excel"></i> Download</button>
                 </div>
-
-                <!-- All-in-One Report -->
                 <div class="report-card alltime">
                     <span class="rc-icon">🎯</span>
                     <div class="rc-title">Complete Report (All-in-One)</div>
@@ -494,7 +506,8 @@ Book now: https://nnlgharpro.in</textarea>
     <div class="footer"><p><i class="fas fa-crown"></i> Managed by <span class="brand-highlight">Randhawa Enterprises</span> <i class="fas fa-crown"></i></p></div>
 </div>
 
-<script>
+<!-- ============================================== -->
+<!-- <script>
 // ═══════════════════════════════════════════════════════════
 // SERVICES LIST
 // ═══════════════════════════════════════════════════════════
@@ -568,6 +581,7 @@ try { storage = firebase.storage(); } catch(e) { console.log('Storage not availa
 // ═══════════════════════════════════════════════════════════
 let allBookings = [];
 let allProviders = [];
+let allProvidersList = [];
 let allProviderBankDetails = {};
 let selectedBookings = [];
 let whatsappNumbers = [];
@@ -794,7 +808,6 @@ window.switchTab = function(tab) {
     else if (tab === 'ecommerce') loadStores();
     else if (tab === 'activity') loadActivityLogs();
     else if (tab === 'bulkwa') { if (whatsappNumbers.length === 0) collectNumbers(); }
-    else if (tab === 'reports') { /* Already loaded */ }
 };
 
 async function loadAllData() {
@@ -936,7 +949,7 @@ function getBookingItemsTotal(d) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// CUSTOMER EXCEL (From Bookings Tab)
+// CUSTOMER EXCEL
 // ═══════════════════════════════════════════════════════════
 window.downloadCustomerExcel = async function() {
     showLoading(true);
@@ -979,7 +992,7 @@ window.downloadCustomerExcel = async function() {
 };
 
 // ═══════════════════════════════════════════════════════════
-// REPORTS TAB — DOWNLOAD WITH DATE FILTER
+// REPORTS
 // ═══════════════════════════════════════════════════════════
 window.downloadReport = async function(reportType) {
     showLoading(true);
@@ -1012,7 +1025,6 @@ window.downloadReport = async function(reportType) {
     showLoading(false);
 };
 
-// CUSTOMER REPORT
 function downloadCustomerReport(bookings, filterLabel) {
     const data = [];
     bookings.forEach(d => {
@@ -1045,7 +1057,6 @@ function downloadCustomerReport(bookings, filterLabel) {
     XLSX.writeFile(wb, `NnlGharPro_Customer_${filterLabel}_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
-// PROVIDER REPORT
 async function downloadProviderReport(bookings, filterLabel) {
     await loadProviderBankDetails();
     const providerMap = {};
@@ -1074,7 +1085,6 @@ async function downloadProviderReport(bookings, filterLabel) {
     XLSX.writeFile(wb, `NnlGharPro_Provider_${filterLabel}_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
-// DELIVERY REPORT
 function downloadDeliveryReport(bookings, filterLabel) {
     const deliveryMap = {};
     bookings.forEach(d => {
@@ -1099,7 +1109,6 @@ function downloadDeliveryReport(bookings, filterLabel) {
     XLSX.writeFile(wb, `NnlGharPro_Delivery_${filterLabel}_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
-// INCOME REPORT
 function downloadIncomeReport(bookings, filterLabel) {
     let totalOrders = 0, totalItems = 0, totalDelivery = 0, totalAmount = 0, totalGatewayFee = 0, totalCommission = 0, totalProviderPay = 0, totalDeliveryPay = 0;
     bookings.forEach(d => {
@@ -1133,7 +1142,6 @@ function downloadIncomeReport(bookings, filterLabel) {
     XLSX.writeFile(wb, `NnlGharPro_Income_${filterLabel}_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
-// WEEKLY REPORT
 function downloadWeeklyReport(bookings, filterLabel) {
     const dayMap = {};
     bookings.forEach(d => {
@@ -1157,7 +1165,6 @@ function downloadWeeklyReport(bookings, filterLabel) {
     XLSX.writeFile(wb, `NnlGharPro_Weekly_${filterLabel}_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
-// MONTHLY REPORT
 function downloadMonthlyReport(bookings, filterLabel) {
     const dayMap = {};
     bookings.forEach(d => {
@@ -1181,12 +1188,10 @@ function downloadMonthlyReport(bookings, filterLabel) {
     XLSX.writeFile(wb, `NnlGharPro_Monthly_${filterLabel}_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
-// COMPLETE REPORT (All-in-One)
 async function downloadCompleteReport(bookings, filterLabel) {
     await loadProviderBankDetails();
     const wb = XLSX.utils.book_new();
     
-    // Sheet 1: Customer
     const custData = [];
     bookings.forEach(d => {
         const itemsAmount = getBookingItemsTotal(d);
@@ -1201,7 +1206,6 @@ async function downloadCompleteReport(bookings, filterLabel) {
     });
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(custData), 'Customers');
     
-    // Sheet 2: Provider
     const providerMap = {};
     bookings.forEach(d => {
         if (d.paymentStatus !== 'paid') return;
@@ -1220,7 +1224,6 @@ async function downloadCompleteReport(bookings, filterLabel) {
     });
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(provData), 'Providers');
     
-    // Sheet 3: Delivery
     const delMap = {};
     bookings.forEach(d => {
         if (!d.deliveryPartner) return;
@@ -1232,7 +1235,6 @@ async function downloadCompleteReport(bookings, filterLabel) {
     const delData = Object.values(delMap).map(p => ({ 'Delivery Partner': p.name, 'Orders': p.orders, 'Net Payable': p.total }));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(delData), 'Delivery');
     
-    // Sheet 4: Income
     let totalAmount = 0, totalCommission = 0, totalProvider = 0, totalDelivery = 0;
     bookings.forEach(d => {
         if (d.paymentStatus !== 'paid') return;
@@ -1391,7 +1393,7 @@ window.markPaymentPaid = async function(id) {
 };
 
 // ═══════════════════════════════════════════════════════════
-// PROVIDERS
+// PROVIDERS — FIXED VERSION WITH SEARCH
 // ═══════════════════════════════════════════════════════════
 window.toggleServiceSelection = function(serviceId) {
     const card = document.getElementById('svc_' + serviceId.replace(/[^a-zA-Z0-9]/g, '_'));
@@ -1526,7 +1528,12 @@ window.addProvider = async function() {
 };
 
 window.editProvider = function(id, data) {
-    selectedServices = Array.isArray(data.services) ? [...data.services] : [];
+    // ✅ FIX: Services safely array banao
+    let servicesArray = data.services || [];
+    if (typeof servicesArray === 'string') servicesArray = [servicesArray];
+    if (!Array.isArray(servicesArray)) servicesArray = [];
+    selectedServices = [...servicesArray];
+    
     const servicesGridHtml = SERVICES_LIST.map(svc => {
         const safeId = svc.id.replace(/[^a-zA-Z0-9]/g, '_');
         const isSelected = selectedServices.includes(svc.id);
@@ -1535,7 +1542,12 @@ window.editProvider = function(id, data) {
         return `<div id="svc_${safeId}" onclick="toggleServiceSelection('${svc.id}')" style="background:${bg};border:${border};padding:16px 8px;border-radius:14px;text-align:center;cursor:pointer;color:#fff"><span style="font-size:24px;display:block;margin-bottom:6px">${svc.icon}</span><span style="font-size:11px;font-weight:700">${svc.name}</span></div>`;
     }).join('');
     
-    const pincodesStr = (data.pincodes || []).join(', ');
+    // ✅ FIX: Pincodes safely array banao
+    let pincodesArray = data.pincodes || [];
+    if (typeof pincodesArray === 'string') pincodesArray = [pincodesArray];
+    if (!Array.isArray(pincodesArray)) pincodesArray = [];
+    const pincodesStr = pincodesArray.join(', ');
+    
     const isActive = data.status === 'active';
     const hasLogin = data.hasLogin !== false;
 
@@ -1635,42 +1647,124 @@ window.toggleProviderStatus = async function(id, currentStatus) {
     showLoading(false);
 };
 
+// ✅ FIXED: loadProviders with array safety
 async function loadProviders() {
     const container = document.getElementById('adminProviderList');
     container.innerHTML = '<div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
     try {
         const snapshot = await db.collection('providers').get();
-        if (snapshot.empty) { container.innerHTML = '<div class="empty-msg">No providers</div>'; return; }
-        let html = '';
+        if (snapshot.empty) { 
+            allProvidersList = [];
+            container.innerHTML = '<div class="empty-msg">No providers</div>'; 
+            return; 
+        }
+        
+        allProvidersList = [];
         snapshot.forEach(doc => {
-            const d = doc.data();
-            const isActive = d.status === 'active';
-            const hasLogin = d.hasLogin !== false;
-            const typeLabel = hasLogin ? '🟢 Active' : '🟡 Lead DB';
-            const typeColor = hasLogin ? '#00C853' : '#FFD93D';
-            let servicesArray = d.services || [];
-            const servicesDisplay = servicesArray.slice(0, 3).map(s => `<span class="service-tag">${s}</span>`).join('') + (servicesArray.length > 3 ? `<span class="service-tag">+${servicesArray.length - 3}</span>` : '');
-            const pincodesStr = (d.pincodes || []).slice(0, 3).join(', ') || 'N/A';
-            html += `
-                <div class="list-item" style="border-left-color:${isActive ? '#4ECDC4' : '#FF4757'}">
-                    <div class="info">
-                        <div class="name">${d.name || 'N/A'} <span style="font-size:10px;color:${typeColor};font-weight:700">${typeLabel}</span></div>
-                        <div class="detail">📞 ${d.mobile || 'N/A'} ${d.email ? '• ✉️ ' + d.email : ''}</div>
-                        <div class="detail">📍 ${pincodesStr}</div>
-                        <div class="detail">${servicesDisplay}</div>
-                    </div>
-                    <div class="actions">
-                        <span class="status-badge ${isActive ? 'active' : 'inactive'}">${isActive ? '✅ Active' : '⛔ Blocked'}</span>
-                        <button class="btn-sm ${isActive ? 'btn-block' : 'btn-unblock'}" onclick="toggleProviderStatus('${doc.id}','${d.status || 'active'}')">${isActive ? '⏸️' : '▶️'}</button>
-                        <button class="btn-sm btn-edit" onclick='editProvider("${doc.id}", ${JSON.stringify(d).replace(/'/g, "\\'")})'><i class="fas fa-edit"></i></button>
-                        <button class="btn-sm btn-delete" onclick="deleteProvider('${doc.id}')"><i class="fas fa-trash"></i></button>
-                    </div>
-                </div>
-            `;
+            allProvidersList.push({ id: doc.id, ...doc.data() });
         });
-        container.innerHTML = html;
-    } catch (e) { container.innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`; }
+        
+        renderProvidersList(allProvidersList);
+    } catch (e) { 
+        container.innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`; 
+    }
 }
+
+// 🎯 RENDER PROVIDERS LIST
+function renderProvidersList(providers) {
+    const container = document.getElementById('adminProviderList');
+    
+    if (!providers || providers.length === 0) {
+        container.innerHTML = '<div class="empty-msg">No providers found</div>';
+        return;
+    }
+    
+    let html = '';
+    providers.forEach(p => {
+        const isActive = p.status === 'active';
+        const hasLogin = p.hasLogin !== false;
+        const typeLabel = hasLogin ? '🟢 Active' : '🟡 Lead DB';
+        const typeColor = hasLogin ? '#00C853' : '#FFD93D';
+        
+        // ✅ FIX: Services safely array banao
+        let servicesArray = p.services || [];
+        if (typeof servicesArray === 'string') servicesArray = [servicesArray];
+        if (!Array.isArray(servicesArray)) servicesArray = [];
+        
+        // ✅ FIX: Pincodes safely array banao
+        let pincodesArray = p.pincodes || [];
+        if (typeof pincodesArray === 'string') pincodesArray = [pincodesArray];
+        if (!Array.isArray(pincodesArray)) pincodesArray = [];
+        
+        const servicesDisplay = servicesArray.slice(0, 3).map(s => `<span class="service-tag">${s}</span>`).join('') + (servicesArray.length > 3 ? `<span class="service-tag">+${servicesArray.length - 3}</span>` : '');
+        const pincodesStr = pincodesArray.slice(0, 3).join(', ') || p.pincode || 'N/A';
+        const morePins = pincodesArray.length > 3 ? ` +${pincodesArray.length - 3}` : '';
+        
+        html += `
+            <div class="list-item" style="border-left-color:${isActive ? '#4ECDC4' : '#FF4757'}">
+                <div class="info">
+                    <div class="name">${p.name || 'N/A'} <span style="font-size:10px;color:${typeColor};font-weight:700">${typeLabel}</span></div>
+                    <div class="detail">📞 ${p.mobile || 'N/A'} ${p.email ? '• ✉️ ' + p.email : ''}</div>
+                    <div class="detail">📍 ${pincodesStr}${morePins}</div>
+                    <div class="detail">${servicesDisplay}</div>
+                </div>
+                <div class="actions">
+                    <span class="status-badge ${isActive ? 'active' : 'inactive'}">${isActive ? '✅ Active' : '⛔ Blocked'}</span>
+                    <button class="btn-sm ${isActive ? 'btn-block' : 'btn-unblock'}" onclick="toggleProviderStatus('${p.id}','${p.status || 'active'}')">${isActive ? '⏸️' : '▶️'}</button>
+                    <button class="btn-sm btn-edit" onclick='editProvider("${p.id}", ${JSON.stringify(p).replace(/'/g, "\\'")})'><i class="fas fa-edit"></i></button>
+                    <button class="btn-sm btn-delete" onclick="deleteProvider('${p.id}')"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>
+        `;
+    });
+    container.innerHTML = html;
+}
+
+// 🔍 SEARCH PROVIDERS
+window.searchProviders = function() {
+    const searchTerm = (document.getElementById('providerSearchInput')?.value || '').toLowerCase().trim();
+    
+    if (!searchTerm) {
+        renderProvidersList(allProvidersList);
+        document.getElementById('providerSearchCount').textContent = '';
+        return;
+    }
+    
+    const filtered = allProvidersList.filter(p => {
+        const name = (p.name || '').toLowerCase();
+        const mobile = (p.mobile || '').toLowerCase();
+        const email = (p.email || '').toLowerCase();
+        
+        // Services check
+        let servicesArray = p.services || [];
+        if (typeof servicesArray === 'string') servicesArray = [servicesArray];
+        if (!Array.isArray(servicesArray)) servicesArray = [];
+        const servicesMatch = servicesArray.some(s => (s || '').toLowerCase().includes(searchTerm));
+        
+        // Pincodes check
+        let pincodesArray = p.pincodes || [];
+        if (typeof pincodesArray === 'string') pincodesArray = [pincodesArray];
+        if (!Array.isArray(pincodesArray)) pincodesArray = [];
+        const pincodeMatch = pincodesArray.some(pc => (pc || '').toString().includes(searchTerm));
+        
+        return name.includes(searchTerm) || 
+               mobile.includes(searchTerm) || 
+               email.includes(searchTerm) || 
+               servicesMatch || 
+               pincodeMatch;
+    });
+    
+    renderProvidersList(filtered);
+    document.getElementById('providerSearchCount').textContent = filtered.length + ' providers found';
+};
+
+// 🔄 CLEAR SEARCH
+window.clearProviderSearch = function() {
+    const input = document.getElementById('providerSearchInput');
+    if (input) input.value = '';
+    renderProvidersList(allProvidersList);
+    document.getElementById('providerSearchCount').textContent = '';
+};
 
 // ═══════════════════════════════════════════════════════════
 // SUBSCRIPTIONS
@@ -1739,7 +1833,21 @@ async function loadOnboarding() {
             const bank = p.bankDetails;
             if (!bank) return;
             count++;
-            const submittedAt = bank.submittedAt ? (bank.submittedAt.toMillis ? new Date(bank.submittedAt.toMillis()).toLocaleDateString('en-IN') : 'N/A') : 'N/A';
+            
+            // ✅ FIX: submittedAt safely handle karo
+            let submittedAt = 'N/A';
+            if (bank.submittedAt) {
+                if (typeof bank.submittedAt === 'string') {
+                    submittedAt = new Date(bank.submittedAt).toLocaleDateString('en-IN');
+                } else if (bank.submittedAt.toMillis) {
+                    submittedAt = new Date(bank.submittedAt.toMillis()).toLocaleDateString('en-IN');
+                } else if (bank.submittedAt.seconds) {
+                    submittedAt = new Date(bank.submittedAt.seconds * 1000).toLocaleDateString('en-IN');
+                } else {
+                    submittedAt = new Date(bank.submittedAt).toLocaleDateString('en-IN');
+                }
+            }
+            
             html += `
                 <div class="list-item" style="border-left-color:#00C853">
                     <div class="info">
@@ -2054,7 +2162,9 @@ window.clearNumbers = function() {
     document.getElementById('waList').innerHTML = '<div class="empty-msg">Click "Refresh Numbers"</div>';
 };
 
+// ═══════════════════════════════════════════════════════════
 // LOAD PROVIDER BANK DETAILS
+// ═══════════════════════════════════════════════════════════
 async function loadProviderBankDetails() {
     try {
         const snapshot = await db.collection('providers').get();
@@ -2074,16 +2184,15 @@ async function loadProviderBankDetails() {
 
 // INIT
 checkAdminSession();
-console.log('✅ NnlGharPro Admin Panel v12.0');
+console.log('✅ NnlGharPro Admin Panel v13.0 — FINAL with Search');
 console.log('📋 Features:');
-console.log('  ✅ Date Filter (Today/Yesterday/7D/30D/This Month/Last Month/Custom/All)');
-console.log('  ✅ Weekly Report');
-console.log('  ✅ Monthly Report');
-console.log('  ✅ Complete Report (All-in-One)');
-console.log('  ✅ Provider Settlement');
-console.log('  ✅ Income Summary');
-console.log('  ✅ Delivery Report');
-console.log('  ✅ Items Total Fix (purane bookings bhi count)');
+console.log('  ✅ Provider Search (name, mobile, email, service, pincode)');
+console.log('  ✅ Services Array Fix (string/array safe)');
+console.log('  ✅ Pincodes Array Fix');
+console.log('  ✅ Date Filter Reports');
+console.log('  ✅ Weekly / Monthly / Complete Reports');
+console.log('  ✅ Provider Settlement + Income Summary');
 </script>
 </body>
 </html>
+<!-- ============================================== -->
