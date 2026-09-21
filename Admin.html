@@ -147,8 +147,6 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
 .logo-upload-box{background:rgba(255,255,255,.03);border:2px dashed rgba(78,205,196,.3);border-radius:12px;padding:16px;text-align:center;margin-bottom:10px;cursor:pointer;transition:.3s}
 .logo-upload-box:hover{border-color:#4ECDC4;background:rgba(78,205,196,.05)}
 .logo-preview{width:80px;height:80px;object-fit:cover;border-radius:10px;border:2px solid #4ECDC4;margin:8px auto;display:block}
-
-/* 🔍 PROVIDER SEARCH BOX */
 .search-box{background:rgba(78,205,196,.04);border:1px solid rgba(78,205,196,.15);border-radius:14px;padding:14px;margin-bottom:14px}
 .search-box .search-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .search-box input{flex:1;min-width:200px;padding:12px 16px;border:1px solid rgba(255,255,255,.06);border-radius:10px;background:rgba(255,255,255,.03);color:#fff;font-size:14px;outline:none;transition:.3s}
@@ -157,8 +155,6 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
 .search-box .clear-btn{padding:10px 16px;background:rgba(255,71,87,.15);color:#FF4757;border:1px solid rgba(255,71,87,.2);border-radius:10px;font-weight:700;font-size:12px;cursor:pointer;transition:.3s}
 .search-box .clear-btn:hover{background:rgba(255,71,87,.25)}
 .search-box .search-count{font-size:11px;color:#4ECDC4;margin-top:8px;font-weight:600}
-
-/* 📅 DATE FILTER SECTION */
 .date-filter-section{background:linear-gradient(135deg,rgba(139,92,246,.08),rgba(109,40,217,.04));border:2px solid rgba(139,92,246,.2);border-radius:16px;padding:16px;margin-bottom:16px}
 .date-filter-section .df-title{font-size:14px;font-weight:800;color:#8B5CF6;margin-bottom:12px;display:flex;align-items:center;gap:8px}
 .date-filter-section .df-title i{color:#8B5CF6}
@@ -169,8 +165,6 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
 .custom-date-range.show{display:flex}
 .custom-date-range input{padding:10px 14px;border:1px solid rgba(255,255,255,.1);border-radius:10px;background:rgba(255,255,255,.03);color:#fff;font-size:14px;flex:1;min-width:120px}
 .date-info-badge{background:rgba(78,205,196,.1);color:#4ECDC4;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;display:inline-block;margin-top:8px}
-
-/* 📊 REPORTS GRID */
 .reports-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:16px}
 .report-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:16px;padding:18px;transition:.3s}
 .report-card:hover{background:rgba(255,255,255,.05);transform:translateY(-2px)}
@@ -186,7 +180,6 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
 .report-card.alltime{border-left:4px solid #FF6B35}
 .report-card.provider{border-left:4px solid #3498db}
 .report-card.delivery{border-left:4px solid #F7931E}
-
 @media(max-width:600px){.dashboard-top{grid-template-columns:1fr}.admin-stats{grid-template-columns:repeat(2,1fr)}.list-item{flex-direction:column;align-items:stretch}.admin-tab{min-width:60px;font-size:9px;padding:8px 4px}.wa-stats{grid-template-columns:repeat(2,1fr)}.reports-grid{grid-template-columns:1fr}}
 </style>
 </head>
@@ -195,7 +188,6 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
 <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
 <div class="toast" id="toast"></div>
 
-<!-- MODAL -->
 <div class="modal-overlay" id="modalOverlay">
     <div class="modal-box">
         <button class="close-modal" onclick="closeModal()">✕</button>
@@ -204,7 +196,6 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
     </div>
 </div>
 
-<!-- LOGIN -->
 <div class="login-overlay" id="loginOverlay">
     <div class="login-box">
         <div class="login-logo">👑</div>
@@ -218,7 +209,6 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
     </div>
 </div>
 
-<!-- MAIN APP -->
 <div class="container" id="mainApp" style="display:none">
     <div class="header">
         <div class="header-left">
@@ -231,14 +221,12 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
         </div>
     </div>
 
-    <!-- DASHBOARD TOP -->
     <div class="dashboard-top">
         <div class="box"><div class="label"><i class="fas fa-calendar"></i> Date</div><div class="value" id="currentDate">Loading...</div></div>
         <div class="box"><div class="label"><i class="fas fa-clock"></i> Time</div><div class="value" id="currentTime">--:-- --</div></div>
         <div class="box"><div class="label"><i class="fas fa-cloud-sun"></i> Weather</div><div style="display:flex;align-items:center;gap:10px;margin-top:4px"><span class="weather-icon" id="weatherIcon">☀️</span><div><div class="weather-temp" id="weatherTemp">32°C</div><div class="weather-condition" id="weatherCondition">Sunny</div></div></div></div>
     </div>
 
-    <!-- STATS -->
     <div class="admin-stats">
         <div class="admin-stat stat-total"><span class="icon">📄</span><div class="number" id="statTotal">0</div><div class="label">Total Bookings</div></div>
         <div class="admin-stat stat-pending"><span class="icon">⏳</span><div class="number" id="statPending">0</div><div class="label">Pending</div></div>
@@ -246,7 +234,6 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
         <div class="admin-stat stat-allcustomers"><span class="icon">👥</span><div class="number" id="statAllCustomers">0</div><div class="label">All Users</div></div>
     </div>
 
-    <!-- TABS -->
     <div class="admin-tabs">
         <button class="admin-tab active" data-tab="dashboard" onclick="switchTab('dashboard')"><i class="fas fa-chart-pie"></i> Dashboard</button>
         <button class="admin-tab" data-tab="bookings" onclick="switchTab('bookings')"><i class="fas fa-calendar-check"></i> Bookings</button>
@@ -262,7 +249,6 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
         <button class="admin-tab" data-tab="activity" onclick="switchTab('activity')"><i class="fas fa-history"></i> Activity</button>
     </div>
 
-    <!-- DASHBOARD TAB -->
     <div id="tab-dashboard" class="admin-tab-content active">
         <div class="card">
             <div class="card-title"><span><i class="fas fa-chart-bar"></i> Analytics Dashboard</span><span class="badge">📊 Live</span></div>
@@ -270,7 +256,6 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
         </div>
     </div>
 
-    <!-- BOOKINGS TAB -->
     <div id="tab-bookings" class="admin-tab-content">
         <div class="card">
             <div class="card-title"><span><i class="fas fa-calendar-check"></i> All Bookings</span>
@@ -285,34 +270,22 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
         </div>
     </div>
 
-    <!-- 🆕 PROVIDERS TAB (WITH SEARCH) -->
     <div id="tab-providers" class="admin-tab-content">
         <div class="card">
             <div class="card-title"><span><i class="fas fa-users"></i> All Providers</span>
                 <button class="btn-primary" style="width:auto;padding:8px 20px;font-size:13px" onclick="showAddProvider()"><i class="fas fa-plus"></i> Add Provider</button>
             </div>
-            
-            <!-- 🆕 SEARCH BOX -->
             <div class="search-box">
                 <div class="search-row">
-                    <input 
-                        type="text" 
-                        id="providerSearchInput" 
-                        placeholder="🔍 Search by name, mobile, email, service, pincode..." 
-                        oninput="searchProviders()"
-                    >
-                    <button class="clear-btn" onclick="clearProviderSearch()">
-                        <i class="fas fa-times"></i> Clear
-                    </button>
+                    <input type="text" id="providerSearchInput" placeholder="🔍 Search by name, mobile, email, service, pincode..." oninput="searchProviders()">
+                    <button class="clear-btn" onclick="clearProviderSearch()"><i class="fas fa-times"></i> Clear</button>
                 </div>
                 <div id="providerSearchCount" class="search-count"></div>
             </div>
-            
             <div id="adminProviderList"><div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading providers...</div></div>
         </div>
     </div>
 
-    <!-- SUBSCRIPTIONS TAB -->
     <div id="tab-subscriptions" class="admin-tab-content">
         <div class="card">
             <div class="card-title"><span><i class="fas fa-crown"></i> Provider Subscriptions</span>
@@ -328,7 +301,6 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
         </div>
     </div>
 
-    <!-- ONBOARDING TAB -->
     <div id="tab-onboarding" class="admin-tab-content">
         <div class="card">
             <div class="card-title"><span><i class="fas fa-store"></i> Provider Bank Details</span>
@@ -338,7 +310,6 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
         </div>
     </div>
 
-    <!-- DELIVERY TAB -->
     <div id="tab-delivery" class="admin-tab-content">
         <div class="card">
             <div class="card-title"><span><i class="fas fa-truck"></i> All Delivery Partners</span>
@@ -348,7 +319,6 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
         </div>
     </div>
 
-    <!-- BROADCAST TAB -->
     <div id="tab-broadcast" class="admin-tab-content">
         <div class="card">
             <div class="card-title"><span><i class="fas fa-bullhorn"></i> 📢 Broadcast Announcement</span><span class="badge">📨 Live</span></div>
@@ -368,7 +338,6 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
         </div>
     </div>
 
-    <!-- PAYMENTS TAB -->
     <div id="tab-payments" class="admin-tab-content">
         <div class="card">
             <div class="card-title"><span><i class="fas fa-credit-card"></i> Payment Analytics</span></div>
@@ -383,11 +352,9 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
         </div>
     </div>
 
-    <!-- REPORTS TAB -->
     <div id="tab-reports" class="admin-tab-content">
         <div class="card">
             <div class="card-title"><span><i class="fas fa-file-excel"></i> Reports & Excel Downloads</span><span class="badge">📊 Advanced</span></div>
-
             <div class="date-filter-section">
                 <div class="df-title"><i class="fas fa-calendar-alt"></i> Date Range Select Karein</div>
                 <div class="date-filter-row">
@@ -408,7 +375,6 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
                 </div>
                 <div id="dateRangeInfo" class="date-info-badge">📅 Aaj ka data</div>
             </div>
-
             <div class="reports-grid">
                 <div class="report-card daily">
                     <span class="rc-icon">📋</span>
@@ -456,7 +422,6 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
         </div>
     </div>
 
-    <!-- BULK WHATSAPP TAB -->
     <div id="tab-bulkwa" class="admin-tab-content">
         <div class="card">
             <div class="card-title">
@@ -487,7 +452,6 @@ Book now: https://nnlgharpro.in</textarea>
         </div>
     </div>
 
-    <!-- STORES TAB -->
     <div id="tab-ecommerce" class="admin-tab-content">
         <div class="card">
             <div class="card-title"><span><i class="fas fa-shopping-bag"></i> Partner Stores</span><button class="btn-primary" style="width:auto;padding:8px 20px;font-size:13px" onclick="showAddStore()"><i class="fas fa-plus"></i> Add Store</button></div>
@@ -495,7 +459,6 @@ Book now: https://nnlgharpro.in</textarea>
         </div>
     </div>
 
-    <!-- ACTIVITY TAB -->
     <div id="tab-activity" class="admin-tab-content">
         <div class="card">
             <div class="card-title"><span><i class="fas fa-history"></i> Activity Logs</span><span class="badge">📜 Audit Trail</span></div>
@@ -506,11 +469,7 @@ Book now: https://nnlgharpro.in</textarea>
     <div class="footer"><p><i class="fas fa-crown"></i> Managed by <span class="brand-highlight">Randhawa Enterprises</span> <i class="fas fa-crown"></i></p></div>
 </div>
 
-<!-- ============================================== -->
-<!-- <script>
-// ═══════════════════════════════════════════════════════════
-// SERVICES LIST
-// ═══════════════════════════════════════════════════════════
+<script>
 const SERVICES_LIST = [
     { id: 'Plumbing',         name: 'Plumbing',         icon: '🔧' },
     { id: 'Electrician',      name: 'Electrician',      icon: '⚡' },
@@ -537,9 +496,6 @@ const SERVICES_LIST = [
 
 const PROVIDER_PORTAL_URL = "https://www.nnlgharpro.in/provider.html";
 
-// ═══════════════════════════════════════════════════════════
-// SIMPLE HASH
-// ═══════════════════════════════════════════════════════════
 function simpleHash(str) {
     if (!str) return '';
     let hash = 0;
@@ -551,7 +507,6 @@ function simpleHash(str) {
     return 'h_' + Math.abs(hash).toString(36);
 }
 
-// SECURITY
 document.addEventListener('contextmenu', e => { e.preventDefault(); showToast('🔒 Right-click disabled', true); });
 document.addEventListener('keydown', e => {
     if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) || (e.ctrlKey && e.key === 'u')) {
@@ -559,9 +514,6 @@ document.addEventListener('keydown', e => {
     }
 });
 
-// ═══════════════════════════════════════════════════════════
-// FIREBASE
-// ═══════════════════════════════════════════════════════════
 const firebaseConfig = {
     apiKey: "AIzaSyCBa8UmWUB-djAksNNvp14qoCY2y0HISoE",
     authDomain: "gharproindia.firebaseapp.com",
@@ -576,9 +528,6 @@ const auth = firebase.auth();
 let storage = null;
 try { storage = firebase.storage(); } catch(e) { console.log('Storage not available'); }
 
-// ═══════════════════════════════════════════════════════════
-// GLOBALS
-// ═══════════════════════════════════════════════════════════
 let allBookings = [];
 let allProviders = [];
 let allProvidersList = [];
@@ -588,12 +537,8 @@ let whatsappNumbers = [];
 let currentTab = 'dashboard';
 let selectedServices = [];
 let currentLogoFile = null;
-let currentLogoUrl = '';
 let currentDateFilter = 'today';
 
-// ═══════════════════════════════════════════════════════════
-// HELPERS
-// ═══════════════════════════════════════════════════════════
 function showToast(msg, err = false) {
     const t = document.getElementById('toast');
     t.textContent = msg;
@@ -610,72 +555,35 @@ function openModal(title, html) {
 }
 function closeModal() { document.getElementById('modalOverlay').classList.remove('show'); }
 
-// ═══════════════════════════════════════════════════════════
-// DATE FILTER LOGIC
-// ═══════════════════════════════════════════════════════════
 function getDateRange(filterType) {
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     let from, to;
-    
     switch(filterType) {
-        case 'today':
-            from = startOfToday;
-            to = new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000 - 1);
-            break;
-        case 'yesterday':
-            from = new Date(startOfToday.getTime() - 24 * 60 * 60 * 1000);
-            to = new Date(startOfToday.getTime() - 1);
-            break;
-        case 'last7days':
-            from = new Date(startOfToday.getTime() - 7 * 24 * 60 * 60 * 1000);
-            to = new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000 - 1);
-            break;
-        case 'last30days':
-            from = new Date(startOfToday.getTime() - 30 * 24 * 60 * 60 * 1000);
-            to = new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000 - 1);
-            break;
-        case 'thisMonth':
-            from = new Date(now.getFullYear(), now.getMonth(), 1);
-            to = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-            break;
-        case 'lastMonth':
-            from = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-            to = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
-            break;
+        case 'today': from = startOfToday; to = new Date(startOfToday.getTime() + 86400000 - 1); break;
+        case 'yesterday': from = new Date(startOfToday.getTime() - 86400000); to = new Date(startOfToday.getTime() - 1); break;
+        case 'last7days': from = new Date(startOfToday.getTime() - 7 * 86400000); to = new Date(startOfToday.getTime() + 86400000 - 1); break;
+        case 'last30days': from = new Date(startOfToday.getTime() - 30 * 86400000); to = new Date(startOfToday.getTime() + 86400000 - 1); break;
+        case 'thisMonth': from = new Date(now.getFullYear(), now.getMonth(), 1); to = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59); break;
+        case 'lastMonth': from = new Date(now.getFullYear(), now.getMonth() - 1, 1); to = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59); break;
         case 'custom':
-            const fromInput = document.getElementById('customFromDate').value;
-            const toInput = document.getElementById('customToDate').value;
-            if (fromInput && toInput) {
-                from = new Date(fromInput + 'T00:00:00');
-                to = new Date(toInput + 'T23:59:59');
-            } else {
-                from = startOfToday;
-                to = new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000 - 1);
-            }
+            const fi = document.getElementById('customFromDate').value;
+            const ti = document.getElementById('customToDate').value;
+            if (fi && ti) { from = new Date(fi + 'T00:00:00'); to = new Date(ti + 'T23:59:59'); }
+            else { from = startOfToday; to = new Date(startOfToday.getTime() + 86400000 - 1); }
             break;
-        case 'all':
-            from = new Date(2020, 0, 1);
-            to = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-            break;
-        default:
-            from = startOfToday;
-            to = new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000 - 1);
+        case 'all': from = new Date(2020, 0, 1); to = new Date(now.getTime() + 86400000); break;
+        default: from = startOfToday; to = new Date(startOfToday.getTime() + 86400000 - 1);
     }
-    
     return { from, to };
 }
 
 function getDateRangeLabel(filterType) {
     const labels = {
-        'today': '📅 Aaj ka data',
-        'yesterday': '📅 Kal ka data',
-        'last7days': '📅 Last 7 days ka data',
-        'last30days': '📅 Last 30 days ka data',
-        'thisMonth': '📅 Is mahine ka data',
-        'lastMonth': '📅 Pichle mahine ka data',
-        'custom': '📅 Custom date range',
-        'all': '📅 Saara data (All Time)'
+        'today': '📅 Aaj ka data', 'yesterday': '📅 Kal ka data',
+        'last7days': '📅 Last 7 days ka data', 'last30days': '📅 Last 30 days ka data',
+        'thisMonth': '📅 Is mahine ka data', 'lastMonth': '📅 Pichle mahine ka data',
+        'custom': '📅 Custom date range', 'all': '📅 Saara data (All Time)'
     };
     return labels[filterType] || '📅 Aaj ka data';
 }
@@ -685,15 +593,10 @@ function filterBookingsByDate(bookings, from, to) {
         const dateStr = b.bookingDate || b.createdAt;
         if (!dateStr) return false;
         let bookingDate;
-        if (typeof dateStr === 'string') {
-            bookingDate = new Date(dateStr);
-        } else if (dateStr.toMillis) {
-            bookingDate = new Date(dateStr.toMillis());
-        } else if (dateStr.seconds) {
-            bookingDate = new Date(dateStr.seconds * 1000);
-        } else {
-            bookingDate = new Date(dateStr);
-        }
+        if (typeof dateStr === 'string') bookingDate = new Date(dateStr);
+        else if (dateStr.toMillis) bookingDate = new Date(dateStr.toMillis());
+        else if (dateStr.seconds) bookingDate = new Date(dateStr.seconds * 1000);
+        else bookingDate = new Date(dateStr);
         return bookingDate >= from && bookingDate <= to;
     });
 }
@@ -701,17 +604,11 @@ function filterBookingsByDate(bookings, from, to) {
 window.handleDateFilterChange = function() {
     currentDateFilter = document.getElementById('reportDateFilter').value;
     const customRange = document.getElementById('customDateRange');
-    if (currentDateFilter === 'custom') {
-        customRange.classList.add('show');
-    } else {
-        customRange.classList.remove('show');
-    }
+    if (currentDateFilter === 'custom') customRange.classList.add('show');
+    else customRange.classList.remove('show');
     document.getElementById('dateRangeInfo').textContent = getDateRangeLabel(currentDateFilter);
 };
 
-// ═══════════════════════════════════════════════════════════
-// DATE / TIME / WEATHER
-// ═══════════════════════════════════════════════════════════
 function updateDateTime() {
     const now = new Date();
     document.getElementById('currentDate').textContent = now.toLocaleDateString('en-IN', { weekday: 'long', day: '2-digit', month: 'short', year: 'numeric' });
@@ -737,15 +634,12 @@ function updateWeather() {
 }
 updateWeather(); setInterval(updateWeather, 300000);
 
-// ═══════════════════════════════════════════════════════════
-// LOGIN
-// ═══════════════════════════════════════════════════════════
 window.adminLogin = async function() {
     let email = document.getElementById('adminEmail').value.trim();
     const password = document.getElementById('adminPassword').value.trim();
     const errEl = document.getElementById('loginError');
     errEl.classList.remove('show');
-    if (email === 'admin' || email === '') { email = 'nnlgharpro@gmail.com'; }
+    if (email === 'admin' || email === '') email = 'nnlgharpro@gmail.com';
     if (email !== 'nnlgharpro@gmail.com') { errEl.textContent = '❌ Invalid Admin'; errEl.classList.add('show'); return; }
     if (!password) { errEl.textContent = '❌ Enter password'; errEl.classList.add('show'); return; }
     showLoading(true);
@@ -836,16 +730,13 @@ async function updateStats() {
     } catch (e) { console.error(e); }
 }
 
-// ═══════════════════════════════════════════════════════════
-// DASHBOARD
-// ═══════════════════════════════════════════════════════════
 async function loadDashboard() {
     const container = document.getElementById('dashboardContent');
     try {
         const bookings = await db.collection('bookings').limit(10).get();
         const providers = await db.collection('providers').get();
         let recentHtml = '';
-        if (bookings.empty) { recentHtml = '<div style="color:rgba(255,255,255,.2);padding:10px;text-align:center">No recent bookings</div>'; }
+        if (bookings.empty) recentHtml = '<div style="color:rgba(255,255,255,.2);padding:10px;text-align:center">No recent bookings</div>';
         else {
             bookings.forEach(doc => {
                 const d = doc.data();
@@ -870,9 +761,6 @@ async function loadDashboard() {
     } catch (e) { container.innerHTML = `<div class="empty-msg">Error loading dashboard</div>`; }
 }
 
-// ═══════════════════════════════════════════════════════════
-// BOOKINGS
-// ═══════════════════════════════════════════════════════════
 async function loadBookings() {
     const container = document.getElementById('adminBookingList');
     container.innerHTML = '<div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
@@ -912,7 +800,7 @@ async function loadBookings() {
 
 window.toggleBookingSelection = function(id, checked) {
     if (checked) { if (!selectedBookings.includes(id)) selectedBookings.push(id); }
-    else { selectedBookings = selectedBookings.filter(bid => bid !== id); }
+    else selectedBookings = selectedBookings.filter(bid => bid !== id);
     document.getElementById('deleteSelectedBtn').style.display = selectedBookings.length > 0 ? 'inline-block' : 'none';
     document.getElementById('deleteSelectedBtn').textContent = `🗑️ Delete Selected (${selectedBookings.length})`;
 };
@@ -939,18 +827,12 @@ window.deleteAllBookings = async function() {
     showLoading(false);
 };
 
-// ═══════════════════════════════════════════════════════════
-// EXCEL HELPERS
-// ═══════════════════════════════════════════════════════════
 function getBookingItemsTotal(d) {
     if (d.itemsTotal) return d.itemsTotal;
     if (d.totalAmount && d.deliveryCharge) return d.totalAmount - d.deliveryCharge;
     return d.totalAmount || 0;
 }
 
-// ═══════════════════════════════════════════════════════════
-// CUSTOMER EXCEL
-// ═══════════════════════════════════════════════════════════
 window.downloadCustomerExcel = async function() {
     showLoading(true);
     try {
@@ -970,16 +852,11 @@ window.downloadCustomerExcel = async function() {
                 'Customer': d.customerName || '', 'Mobile': d.customerMobile || '',
                 'Provider': d.providerName || '', 'Service': d.service || '',
                 'Order Type': d.orderType || 'N/A', 'Items': d.items || '',
-                'Items Total': itemsAmount,
-                'Distance (km)': d.deliveryDistance || 0,
-                'Delivery Charge': deliveryCharge,
-                'Grand Total': amount,
-                'Razorpay (2%)': gatewayFee,
-                'Admin Commission (3%)': commission,
-                'Provider Amount (95%)': providerAmount,
-                'Delivery Partner Amt': deliveryCharge,
-                'Payment': d.paymentStatus || '',
-                'Status': d.status || ''
+                'Items Total': itemsAmount, 'Distance (km)': d.deliveryDistance || 0,
+                'Delivery Charge': deliveryCharge, 'Grand Total': amount,
+                'Razorpay (2%)': gatewayFee, 'Admin Commission (3%)': commission,
+                'Provider Amount (95%)': providerAmount, 'Delivery Partner Amt': deliveryCharge,
+                'Payment': d.paymentStatus || '', 'Status': d.status || ''
             });
         });
         const ws = XLSX.utils.json_to_sheet(data);
@@ -991,27 +868,16 @@ window.downloadCustomerExcel = async function() {
     showLoading(false);
 };
 
-// ═══════════════════════════════════════════════════════════
-// REPORTS
-// ═══════════════════════════════════════════════════════════
 window.downloadReport = async function(reportType) {
     showLoading(true);
     try {
         const { from, to } = getDateRange(currentDateFilter);
         const dateLabel = currentDateFilter.charAt(0).toUpperCase() + currentDateFilter.slice(1);
-        
         const snapshot = await db.collection('bookings').get();
-        let allBookings = [];
-        snapshot.forEach(doc => allBookings.push({ id: doc.id, ...doc.data() }));
-        
-        const filtered = filterBookingsByDate(allBookings, from, to);
-        
-        if (filtered.length === 0) {
-            showToast(`⚠️ ${dateLabel} mein koi booking nahi hai!`, true);
-            showLoading(false);
-            return;
-        }
-        
+        let allB = [];
+        snapshot.forEach(doc => allB.push({ id: doc.id, ...doc.data() }));
+        const filtered = filterBookingsByDate(allB, from, to);
+        if (filtered.length === 0) { showToast(`⚠️ ${dateLabel} mein koi booking nahi hai!`, true); showLoading(false); return; }
         if (reportType === 'customer') downloadCustomerReport(filtered, currentDateFilter);
         else if (reportType === 'provider') await downloadProviderReport(filtered, currentDateFilter);
         else if (reportType === 'delivery') downloadDeliveryReport(filtered, currentDateFilter);
@@ -1019,7 +885,6 @@ window.downloadReport = async function(reportType) {
         else if (reportType === 'weekly') downloadWeeklyReport(filtered, currentDateFilter);
         else if (reportType === 'monthly') downloadMonthlyReport(filtered, currentDateFilter);
         else if (reportType === 'complete') await downloadCompleteReport(filtered, currentDateFilter);
-        
         showToast(`✅ ${dateLabel} report downloaded (${filtered.length} records)`);
     } catch (e) { showToast('❌ ' + e.message, true); }
     showLoading(false);
@@ -1039,16 +904,11 @@ function downloadCustomerReport(bookings, filterLabel) {
             'Customer': d.customerName || '', 'Mobile': d.customerMobile || '',
             'Provider': d.providerName || '', 'Service': d.service || '',
             'Order Type': d.orderType || 'N/A', 'Items': d.items || '',
-            'Items Total': itemsAmount,
-            'Distance (km)': d.deliveryDistance || 0,
-            'Delivery Charge': deliveryCharge,
-            'Grand Total': amount,
-            'Razorpay (2%)': gatewayFee,
-            'Admin Commission (3%)': commission,
-            'Provider Amount (95%)': providerAmount,
-            'Delivery Partner Amt': deliveryCharge,
-            'Payment': d.paymentStatus || '',
-            'Status': d.status || ''
+            'Items Total': itemsAmount, 'Distance (km)': d.deliveryDistance || 0,
+            'Delivery Charge': deliveryCharge, 'Grand Total': amount,
+            'Razorpay (2%)': gatewayFee, 'Admin Commission (3%)': commission,
+            'Provider Amount (95%)': providerAmount, 'Delivery Partner Amt': deliveryCharge,
+            'Payment': d.paymentStatus || '', 'Status': d.status || ''
         });
     });
     const ws = XLSX.utils.json_to_sheet(data);
@@ -1099,10 +959,7 @@ function downloadDeliveryReport(bookings, filterLabel) {
     const data = Object.values(deliveryMap).map(p => ({
         'Delivery Partner': p.name, 'Mobile': p.mobile, 'Orders': p.orders, 'Net Payable': p.totalDelivery, 'Status': 'Pending'
     }));
-    if (data.length === 0) {
-        showToast('⚠️ Koi delivery partner assignment nahi hai', true);
-        return;
-    }
+    if (data.length === 0) { showToast('⚠️ Koi delivery partner assignment nahi hai', true); return; }
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Delivery Report');
@@ -1116,10 +973,7 @@ function downloadIncomeReport(bookings, filterLabel) {
         const itemsAmount = getBookingItemsTotal(d);
         const deliveryCharge = d.deliveryCharge || 0;
         const amount = d.totalAmount || 0;
-        totalOrders++;
-        totalItems += itemsAmount;
-        totalDelivery += deliveryCharge;
-        totalAmount += amount;
+        totalOrders++; totalItems += itemsAmount; totalDelivery += deliveryCharge; totalAmount += amount;
         totalGatewayFee += (d.gatewayFee || Math.round(amount * 0.02));
         totalCommission += (d.adminCommission || Math.round(amount * 0.03));
         totalProviderPay += Math.round(itemsAmount * 0.95);
@@ -1150,8 +1004,7 @@ function downloadWeeklyReport(bookings, filterLabel) {
         if (!dayMap[day]) dayMap[day] = { date: day, orders: 0, items: 0, delivery: 0, revenue: 0, commission: 0 };
         const itemsAmount = getBookingItemsTotal(d);
         const amount = d.totalAmount || 0;
-        dayMap[day].orders++;
-        dayMap[day].items += itemsAmount;
+        dayMap[day].orders++; dayMap[day].items += itemsAmount;
         dayMap[day].delivery += (d.deliveryCharge || 0);
         dayMap[day].revenue += amount;
         dayMap[day].commission += (d.adminCommission || Math.round(amount * 0.03));
@@ -1173,8 +1026,7 @@ function downloadMonthlyReport(bookings, filterLabel) {
         if (!dayMap[day]) dayMap[day] = { date: day, orders: 0, items: 0, delivery: 0, revenue: 0, commission: 0 };
         const itemsAmount = getBookingItemsTotal(d);
         const amount = d.totalAmount || 0;
-        dayMap[day].orders++;
-        dayMap[day].items += itemsAmount;
+        dayMap[day].orders++; dayMap[day].items += itemsAmount;
         dayMap[day].delivery += (d.deliveryCharge || 0);
         dayMap[day].revenue += amount;
         dayMap[day].commission += (d.adminCommission || Math.round(amount * 0.03));
@@ -1191,7 +1043,6 @@ function downloadMonthlyReport(bookings, filterLabel) {
 async function downloadCompleteReport(bookings, filterLabel) {
     await loadProviderBankDetails();
     const wb = XLSX.utils.book_new();
-    
     const custData = [];
     bookings.forEach(d => {
         const itemsAmount = getBookingItemsTotal(d);
@@ -1205,7 +1056,6 @@ async function downloadCompleteReport(bookings, filterLabel) {
         });
     });
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(custData), 'Customers');
-    
     const providerMap = {};
     bookings.forEach(d => {
         if (d.paymentStatus !== 'paid') return;
@@ -1223,7 +1073,6 @@ async function downloadCompleteReport(bookings, filterLabel) {
         };
     });
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(provData), 'Providers');
-    
     const delMap = {};
     bookings.forEach(d => {
         if (!d.deliveryPartner) return;
@@ -1234,7 +1083,6 @@ async function downloadCompleteReport(bookings, filterLabel) {
     });
     const delData = Object.values(delMap).map(p => ({ 'Delivery Partner': p.name, 'Orders': p.orders, 'Net Payable': p.total }));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(delData), 'Delivery');
-    
     let totalAmount = 0, totalCommission = 0, totalProvider = 0, totalDelivery = 0;
     bookings.forEach(d => {
         if (d.paymentStatus !== 'paid') return;
@@ -1253,13 +1101,9 @@ async function downloadCompleteReport(bookings, filterLabel) {
         { 'Item': 'NET INCOME', 'Amount': totalCommission }
     ];
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(incomeData), 'Income');
-    
     XLSX.writeFile(wb, `NnlGharPro_Complete_${filterLabel}_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
-// ═══════════════════════════════════════════════════════════
-// SUBSCRIPTION EXCEL
-// ═══════════════════════════════════════════════════════════
 window.downloadSubscriptionExcel = async function() {
     showLoading(true);
     try {
@@ -1291,9 +1135,6 @@ window.downloadSubscriptionExcel = async function() {
     showLoading(false);
 };
 
-// ═══════════════════════════════════════════════════════════
-// ONBOARDING EXCEL
-// ═══════════════════════════════════════════════════════════
 window.downloadOnboardingExcel = async function() {
     showLoading(true);
     try {
@@ -1320,9 +1161,6 @@ window.downloadOnboardingExcel = async function() {
     showLoading(false);
 };
 
-// ═══════════════════════════════════════════════════════════
-// DELIVERY EXCEL
-// ═══════════════════════════════════════════════════════════
 window.downloadDeliveryExcel = async function() {
     showLoading(true);
     try {
@@ -1331,10 +1169,7 @@ window.downloadDeliveryExcel = async function() {
         const data = [];
         snapshot.forEach(doc => {
             const d = doc.data();
-            data.push({
-                'Partner Name': d.name || '', 'Mobile': d.mobile || '',
-                'Provider ID': d.providerId || '', 'Created': d.createdAt || ''
-            });
+            data.push({ 'Partner Name': d.name || '', 'Mobile': d.mobile || '', 'Provider ID': d.providerId || '', 'Created': d.createdAt || '' });
         });
         const ws = XLSX.utils.json_to_sheet(data);
         const wb = XLSX.utils.book_new();
@@ -1345,9 +1180,6 @@ window.downloadDeliveryExcel = async function() {
     showLoading(false);
 };
 
-// ═══════════════════════════════════════════════════════════
-// PAYMENTS
-// ═══════════════════════════════════════════════════════════
 async function loadPayments() {
     const container = document.getElementById('paymentList');
     container.innerHTML = '<div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
@@ -1392,9 +1224,6 @@ window.markPaymentPaid = async function(id) {
     showLoading(false);
 };
 
-// ═══════════════════════════════════════════════════════════
-// PROVIDERS — FIXED VERSION WITH SEARCH
-// ═══════════════════════════════════════════════════════════
 window.toggleServiceSelection = function(serviceId) {
     const card = document.getElementById('svc_' + serviceId.replace(/[^a-zA-Z0-9]/g, '_'));
     if (!card) return;
@@ -1411,21 +1240,17 @@ window.showAddProvider = async function() {
         const safeId = svc.id.replace(/[^a-zA-Z0-9]/g, '_');
         return `<div id="svc_${safeId}" onclick="toggleServiceSelection('${svc.id}')" style="background:linear-gradient(135deg,#1a237e,#283593);padding:16px 8px;border-radius:14px;text-align:center;cursor:pointer;border:2px solid transparent;transition:.3s;color:#fff"><span style="font-size:24px;display:block;margin-bottom:6px">${svc.icon}</span><span style="font-size:11px;font-weight:700">${svc.name}</span></div>`;
     }).join('');
-
     openModal('Add Provider', `
         <div style="background:rgba(78,205,196,.08);border-radius:10px;padding:12px;margin-bottom:14px;font-size:12px;color:rgba(255,255,255,.7)">
-            <strong style="color:#4ECDC4">📌 2 Type:</strong><br>
-            🟡 <strong>Lead DB</strong> — Sirf database<br>
-            🟢 <strong>Active</strong> — Portal use karega
+            <strong style="color:#4ECDC4">📌 2 Type:</strong><br>🟡 <strong>Lead DB</strong><br>🟢 <strong>Active</strong>
         </div>
-        <div class="form-group">
-            <label>Provider Type *</label>
+        <div class="form-group"><label>Provider Type *</label>
             <select id="fProviderType" onchange="toggleProviderType()" style="font-weight:700">
                 <option value="lead_db">🟡 Lead DB Only</option>
                 <option value="active">🟢 Active Provider</option>
             </select>
         </div>
-        <div class="form-group"><label>Provider Name *</label><input id="fProviderName"></div>
+        <div class="form-group"><label>Name *</label><input id="fProviderName"></div>
         <div class="form-group"><label>Mobile *</label><input id="fProviderMobile" maxlength="10" inputmode="numeric"></div>
         <div class="form-group"><label>Email *</label><input id="fProviderEmail" type="email"></div>
         <div class="form-group"><label>Pincodes *</label><input id="fProviderPincodes" placeholder="110001, 110002"></div>
@@ -1439,7 +1264,7 @@ window.showAddProvider = async function() {
         <div id="activeFields" style="display:none;background:rgba(0,200,83,.05);border-radius:10px;padding:12px;margin:12px 0;border:1px solid rgba(0,200,83,.15)">
             <div class="form-group"><label>Password * (min 6)</label><input id="fProviderPassword" type="password"></div>
         </div>
-        <button class="btn-primary" onclick="addProvider()"><i class="fas fa-plus"></i> Save Provider</button>
+        <button class="btn-primary" onclick="addProvider()"><i class="fas fa-plus"></i> Save</button>
     `);
 };
 
@@ -1456,84 +1281,61 @@ window.addProvider = async function() {
     const address = document.getElementById('fProviderAddress').value.trim();
     const website = document.getElementById('fProviderWebsite').value.trim();
     const upiId = document.getElementById('fProviderUPI').value.trim();
-
     if (!name || !mobile || !email || !pincodesRaw) { showToast('❌ All fields required!', true); return; }
     if (mobile.length !== 10) { showToast('❌ Valid 10-digit mobile!', true); return; }
     if (!email.includes('@')) { showToast('❌ Valid email!', true); return; }
     if (selectedServices.length === 0) { showToast('❌ Select service!', true); return; }
-
     const pincodes = pincodesRaw.split(',').map(p => p.trim()).filter(p => p.length === 6);
-
     if (type === 'lead_db') {
         showLoading(true);
         try {
             await db.collection('providers').add({
                 name, mobile, email, pincodes, pincode: pincodes[0] || '',
                 address: address || '', website: website || '', upiId: upiId || '',
-                services: selectedServices,
-                type: 'lead_db', status: 'active', hasLogin: false, rating: 5.0,
+                services: selectedServices, type: 'lead_db', status: 'active', hasLogin: false, rating: 5.0,
                 createdAt: new Date().toISOString(), createdBy: 'admin', updatedAt: new Date().toISOString()
             });
             showToast(`✅ Lead DB Provider added!`);
             closeModal(); loadProviders(); updateStats();
         } catch(e) { showToast('❌ ' + e.message, true); }
-        showLoading(false);
-        return;
+        showLoading(false); return;
     }
-
     const password = document.getElementById('fProviderPassword').value.trim();
     if (!password || password.length < 6) { showToast('❌ Password min 6 chars!', true); return; }
-
     showLoading(true);
     try {
-        const secondaryApp = firebase.apps.find(a => a.name === 'ProviderCreator') 
-            || firebase.initializeApp(firebaseConfig, 'ProviderCreator');
+        const secondaryApp = firebase.apps.find(a => a.name === 'ProviderCreator') || firebase.initializeApp(firebaseConfig, 'ProviderCreator');
         const secondaryAuth = secondaryApp.auth();
-
         let userCredential;
-        try {
-            userCredential = await secondaryAuth.createUserWithEmailAndPassword(email, password);
-        } catch(authError) {
-            if (authError.code === 'auth/email-already-in-use') {
-                showToast('⚠️ Email already registered!', true);
-                showLoading(false); return;
-            }
+        try { userCredential = await secondaryAuth.createUserWithEmailAndPassword(email, password); }
+        catch(authError) {
+            if (authError.code === 'auth/email-already-in-use') { showToast('⚠️ Email already registered!', true); showLoading(false); return; }
             throw authError;
         }
-
         const uid = userCredential.user.uid;
         const hashedPassword = simpleHash(password);
-
         await db.collection('providers').doc(uid).set({
             name, mobile, email, pincodes, pincode: pincodes[0] || '',
-            password: hashedPassword,
-            address: address || '', website: website || '', upiId: upiId || '',
-            services: selectedServices,
-            type: 'active', status: 'active', hasLogin: true, rating: 5.0,
+            password: hashedPassword, address: address || '', website: website || '', upiId: upiId || '',
+            services: selectedServices, type: 'active', status: 'active', hasLogin: true, rating: 5.0,
             freeTrialEndsAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
             subscriptionStatus: 'free_trial',
             createdAt: new Date().toISOString(), createdBy: 'admin', updatedAt: new Date().toISOString()
         });
-
         const credentialsMsg = `🎉 *Welcome to NnlGharPro!*\n\n📧 *Email:* ${email}\n🔑 *Password:* ${password}\n🔗 *Portal:* ${PROVIDER_PORTAL_URL}\n\n⏳ *Free Trial:* 3 Months\n\n📞 Support: 9588562553\n_NnlGharPro_`;
         window.open(`https://wa.me/91${mobile}?text=${encodeURIComponent(credentialsMsg)}`, '_blank');
         await secondaryAuth.signOut();
-
         showToast(`✅ Active Provider added!`);
         closeModal(); loadProviders(); updateStats();
-    } catch(e) {
-        showToast('❌ ' + (e.message || e.code), true);
-    }
+    } catch(e) { showToast('❌ ' + (e.message || e.code), true); }
     showLoading(false);
 };
 
 window.editProvider = function(id, data) {
-    // ✅ FIX: Services safely array banao
     let servicesArray = data.services || [];
     if (typeof servicesArray === 'string') servicesArray = [servicesArray];
     if (!Array.isArray(servicesArray)) servicesArray = [];
     selectedServices = [...servicesArray];
-    
     const servicesGridHtml = SERVICES_LIST.map(svc => {
         const safeId = svc.id.replace(/[^a-zA-Z0-9]/g, '_');
         const isSelected = selectedServices.includes(svc.id);
@@ -1541,16 +1343,12 @@ window.editProvider = function(id, data) {
         const border = isSelected ? '2px solid #fff' : '2px solid transparent';
         return `<div id="svc_${safeId}" onclick="toggleServiceSelection('${svc.id}')" style="background:${bg};border:${border};padding:16px 8px;border-radius:14px;text-align:center;cursor:pointer;color:#fff"><span style="font-size:24px;display:block;margin-bottom:6px">${svc.icon}</span><span style="font-size:11px;font-weight:700">${svc.name}</span></div>`;
     }).join('');
-    
-    // ✅ FIX: Pincodes safely array banao
     let pincodesArray = data.pincodes || [];
     if (typeof pincodesArray === 'string') pincodesArray = [pincodesArray];
     if (!Array.isArray(pincodesArray)) pincodesArray = [];
     const pincodesStr = pincodesArray.join(', ');
-    
     const isActive = data.status === 'active';
     const hasLogin = data.hasLogin !== false;
-
     openModal('Edit Provider', `
         <div style="background:rgba(78,205,196,.08);border-radius:10px;padding:10px;margin-bottom:12px;font-size:12px;color:rgba(255,255,255,.6)">
             ${hasLogin ? '🟢 Active Provider' : '🟡 Lead DB Provider'}
@@ -1587,19 +1385,15 @@ window.saveProvider = async function(id) {
     const website = document.getElementById('eProviderWebsite').value.trim();
     const upiId = document.getElementById('eProviderUPI').value.trim();
     const status = document.getElementById('eProviderStatus').value;
-
     if (!name || !mobile) { showToast('❌ Name & Mobile!', true); return; }
     if (selectedServices.length === 0) { showToast('❌ Select service!', true); return; }
-
     const pincodes = pincodesRaw.split(',').map(p => p.trim()).filter(p => p.length === 6);
-
     showLoading(true);
     try {
         await db.collection('providers').doc(id).update({
             name, mobile, email, pincodes, pincode: pincodes[0] || '',
             address: address || '', website: website || '', upiId: upiId || '',
-            status, services: selectedServices,
-            updatedAt: new Date().toISOString()
+            status, services: selectedServices, updatedAt: new Date().toISOString()
         });
         showToast('✅ Provider updated!');
         closeModal(); loadProviders(); updateStats();
@@ -1622,9 +1416,7 @@ window.deleteProvider = async function(id) {
         const doc = await db.collection('providers').doc(id).get();
         const d = doc.data();
         const bookings = await db.collection('bookings').where('assignedTo', '==', id).get();
-        for (let bDoc of bookings.docs) {
-            await db.collection('bookings').doc(bDoc.id).update({ assignedTo: '', status: 'pending' });
-        }
+        for (let bDoc of bookings.docs) await db.collection('bookings').doc(bDoc.id).update({ assignedTo: '', status: 'pending' });
         const items = await db.collection('items').where('providerId', '==', id).get();
         for (let iDoc of items.docs) await db.collection('items').doc(iDoc.id).delete();
         const delPartners = await db.collection('deliveryPartners').where('providerId', '==', id).get();
@@ -1647,59 +1439,36 @@ window.toggleProviderStatus = async function(id, currentStatus) {
     showLoading(false);
 };
 
-// ✅ FIXED: loadProviders with array safety
 async function loadProviders() {
     const container = document.getElementById('adminProviderList');
     container.innerHTML = '<div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
     try {
         const snapshot = await db.collection('providers').get();
-        if (snapshot.empty) { 
-            allProvidersList = [];
-            container.innerHTML = '<div class="empty-msg">No providers</div>'; 
-            return; 
-        }
-        
+        if (snapshot.empty) { allProvidersList = []; container.innerHTML = '<div class="empty-msg">No providers</div>'; return; }
         allProvidersList = [];
-        snapshot.forEach(doc => {
-            allProvidersList.push({ id: doc.id, ...doc.data() });
-        });
-        
+        snapshot.forEach(doc => { allProvidersList.push({ id: doc.id, ...doc.data() }); });
         renderProvidersList(allProvidersList);
-    } catch (e) { 
-        container.innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`; 
-    }
+    } catch (e) { container.innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`; }
 }
 
-// 🎯 RENDER PROVIDERS LIST
 function renderProvidersList(providers) {
     const container = document.getElementById('adminProviderList');
-    
-    if (!providers || providers.length === 0) {
-        container.innerHTML = '<div class="empty-msg">No providers found</div>';
-        return;
-    }
-    
+    if (!providers || providers.length === 0) { container.innerHTML = '<div class="empty-msg">No providers found</div>'; return; }
     let html = '';
     providers.forEach(p => {
         const isActive = p.status === 'active';
         const hasLogin = p.hasLogin !== false;
         const typeLabel = hasLogin ? '🟢 Active' : '🟡 Lead DB';
         const typeColor = hasLogin ? '#00C853' : '#FFD93D';
-        
-        // ✅ FIX: Services safely array banao
         let servicesArray = p.services || [];
         if (typeof servicesArray === 'string') servicesArray = [servicesArray];
         if (!Array.isArray(servicesArray)) servicesArray = [];
-        
-        // ✅ FIX: Pincodes safely array banao
         let pincodesArray = p.pincodes || [];
         if (typeof pincodesArray === 'string') pincodesArray = [pincodesArray];
         if (!Array.isArray(pincodesArray)) pincodesArray = [];
-        
         const servicesDisplay = servicesArray.slice(0, 3).map(s => `<span class="service-tag">${s}</span>`).join('') + (servicesArray.length > 3 ? `<span class="service-tag">+${servicesArray.length - 3}</span>` : '');
         const pincodesStr = pincodesArray.slice(0, 3).join(', ') || p.pincode || 'N/A';
         const morePins = pincodesArray.length > 3 ? ` +${pincodesArray.length - 3}` : '';
-        
         html += `
             <div class="list-item" style="border-left-color:${isActive ? '#4ECDC4' : '#FF4757'}">
                 <div class="info">
@@ -1720,45 +1489,27 @@ function renderProvidersList(providers) {
     container.innerHTML = html;
 }
 
-// 🔍 SEARCH PROVIDERS
 window.searchProviders = function() {
     const searchTerm = (document.getElementById('providerSearchInput')?.value || '').toLowerCase().trim();
-    
-    if (!searchTerm) {
-        renderProvidersList(allProvidersList);
-        document.getElementById('providerSearchCount').textContent = '';
-        return;
-    }
-    
+    if (!searchTerm) { renderProvidersList(allProvidersList); document.getElementById('providerSearchCount').textContent = ''; return; }
     const filtered = allProvidersList.filter(p => {
         const name = (p.name || '').toLowerCase();
         const mobile = (p.mobile || '').toLowerCase();
         const email = (p.email || '').toLowerCase();
-        
-        // Services check
         let servicesArray = p.services || [];
         if (typeof servicesArray === 'string') servicesArray = [servicesArray];
         if (!Array.isArray(servicesArray)) servicesArray = [];
         const servicesMatch = servicesArray.some(s => (s || '').toLowerCase().includes(searchTerm));
-        
-        // Pincodes check
         let pincodesArray = p.pincodes || [];
         if (typeof pincodesArray === 'string') pincodesArray = [pincodesArray];
         if (!Array.isArray(pincodesArray)) pincodesArray = [];
         const pincodeMatch = pincodesArray.some(pc => (pc || '').toString().includes(searchTerm));
-        
-        return name.includes(searchTerm) || 
-               mobile.includes(searchTerm) || 
-               email.includes(searchTerm) || 
-               servicesMatch || 
-               pincodeMatch;
+        return name.includes(searchTerm) || mobile.includes(searchTerm) || email.includes(searchTerm) || servicesMatch || pincodeMatch;
     });
-    
     renderProvidersList(filtered);
     document.getElementById('providerSearchCount').textContent = filtered.length + ' providers found';
 };
 
-// 🔄 CLEAR SEARCH
 window.clearProviderSearch = function() {
     const input = document.getElementById('providerSearchInput');
     if (input) input.value = '';
@@ -1766,9 +1517,6 @@ window.clearProviderSearch = function() {
     document.getElementById('providerSearchCount').textContent = '';
 };
 
-// ═══════════════════════════════════════════════════════════
-// SUBSCRIPTIONS
-// ═══════════════════════════════════════════════════════════
 async function loadSubscriptions() {
     const container = document.getElementById('adminSubscriptionList');
     container.innerHTML = '<div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
@@ -1777,15 +1525,12 @@ async function loadSubscriptions() {
         let freeTrial = 0, active = 0, expiring = 0, expired = 0;
         let html = '';
         const now = new Date();
-        
         snapshot.forEach(doc => {
             const p = doc.data();
             const trialEnd = p.freeTrialEndsAt ? new Date(p.freeTrialEndsAt) : null;
             const subActive = p.subscriptionActive === true;
             const subEnd = p.subscriptionExpiry ? (p.subscriptionExpiry.toMillis ? new Date(p.subscriptionExpiry.toMillis()) : new Date(p.subscriptionExpiry)) : null;
-            
             let statusLabel = '', statusClass = '';
-            
             if (subActive && subEnd && subEnd > now) {
                 const dLeft = Math.ceil((subEnd - now) / 86400000);
                 if (dLeft <= 7) { statusLabel = '⏰ ' + dLeft + 'd left'; statusClass = 'pending'; expiring++; }
@@ -1793,9 +1538,7 @@ async function loadSubscriptions() {
             } else if (subEnd && subEnd <= now) { statusLabel = '❌ Expired'; statusClass = 'inactive'; expired++; }
             else if (trialEnd && trialEnd > now) { statusLabel = '🆓 Free Trial'; statusClass = 'pending'; freeTrial++; }
             else { statusLabel = '❌ Expired'; statusClass = 'inactive'; expired++; }
-            
             const expiryDisplay = subEnd ? subEnd.toLocaleDateString('en-IN') : (trialEnd ? trialEnd.toLocaleDateString('en-IN') : '-');
-            
             html += `
                 <div class="list-item" style="border-left-color:${statusClass === 'active' ? '#00C853' : statusClass === 'pending' ? '#FF9800' : '#FF4757'}">
                     <div class="info">
@@ -1803,12 +1546,10 @@ async function loadSubscriptions() {
                         <div class="detail">📞 ${p.mobile || 'N/A'} • ✉️ ${p.email || 'N/A'}</div>
                         <div class="detail">Status: <span class="status-badge ${statusClass}">${statusLabel}</span></div>
                         <div class="detail">📅 Expires: ${expiryDisplay}</div>
-                        ${p.lastPaymentId ? `<div class="detail" style="font-size:10px;color:rgba(255,255,255,.3)">💳 Payment: ${p.lastPaymentId}</div>` : ''}
                     </div>
                 </div>
             `;
         });
-        
         document.getElementById('subFreeTrial').textContent = freeTrial;
         document.getElementById('subActive').textContent = active;
         document.getElementById('subExpiring').textContent = expiring;
@@ -1817,9 +1558,6 @@ async function loadSubscriptions() {
     } catch (e) { container.innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`; }
 }
 
-// ═══════════════════════════════════════════════════════════
-// ONBOARDING
-// ═══════════════════════════════════════════════════════════
 async function loadOnboarding() {
     const container = document.getElementById('adminOnboardingList');
     container.innerHTML = '<div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading bank details...</div>';
@@ -1827,27 +1565,18 @@ async function loadOnboarding() {
         const snapshot = await db.collection('providers').get();
         let html = '';
         let count = 0;
-        
         snapshot.forEach(doc => {
             const p = doc.data();
             const bank = p.bankDetails;
             if (!bank) return;
             count++;
-            
-            // ✅ FIX: submittedAt safely handle karo
             let submittedAt = 'N/A';
             if (bank.submittedAt) {
-                if (typeof bank.submittedAt === 'string') {
-                    submittedAt = new Date(bank.submittedAt).toLocaleDateString('en-IN');
-                } else if (bank.submittedAt.toMillis) {
-                    submittedAt = new Date(bank.submittedAt.toMillis()).toLocaleDateString('en-IN');
-                } else if (bank.submittedAt.seconds) {
-                    submittedAt = new Date(bank.submittedAt.seconds * 1000).toLocaleDateString('en-IN');
-                } else {
-                    submittedAt = new Date(bank.submittedAt).toLocaleDateString('en-IN');
-                }
+                if (typeof bank.submittedAt === 'string') submittedAt = new Date(bank.submittedAt).toLocaleDateString('en-IN');
+                else if (bank.submittedAt.toMillis) submittedAt = new Date(bank.submittedAt.toMillis()).toLocaleDateString('en-IN');
+                else if (bank.submittedAt.seconds) submittedAt = new Date(bank.submittedAt.seconds * 1000).toLocaleDateString('en-IN');
+                else submittedAt = new Date(bank.submittedAt).toLocaleDateString('en-IN');
             }
-            
             html += `
                 <div class="list-item" style="border-left-color:#00C853">
                     <div class="info">
@@ -1855,7 +1584,6 @@ async function loadOnboarding() {
                         <div class="detail">📞 ${p.mobile || 'N/A'} • ✉️ ${p.email || 'N/A'}</div>
                         <div class="detail">🏦 A/C: ${bank.account || 'N/A'} • Holder: ${bank.holder || 'N/A'}</div>
                         <div class="detail">🏛️ IFSC: ${bank.ifsc || 'N/A'} • Bank: ${bank.bankName || 'N/A'}</div>
-                        ${bank.pan ? `<div class="detail">🆔 PAN: ${bank.pan}</div>` : ''}
                         <div class="detail">📅 Submitted: ${submittedAt}</div>
                     </div>
                     <div class="actions">
@@ -1864,7 +1592,6 @@ async function loadOnboarding() {
                 </div>
             `;
         });
-        
         if (count === 0) { container.innerHTML = '<div class="empty-msg">No bank details submitted</div>'; return; }
         container.innerHTML = html;
     } catch (e) { container.innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`; }
@@ -1876,14 +1603,10 @@ window.viewBankDetails = function(id, bank) {
         <div style="background:rgba(255,255,255,.03);border-radius:10px;padding:12px;margin-bottom:10px"><div style="font-size:11px;color:rgba(255,255,255,.4)">Bank Account</div><div style="font-size:14px;font-weight:700;color:#4ECDC4;font-family:monospace">${bank.account || 'N/A'}</div></div>
         <div style="background:rgba(255,255,255,.03);border-radius:10px;padding:12px;margin-bottom:10px"><div style="font-size:11px;color:rgba(255,255,255,.4)">IFSC</div><div style="font-size:14px;font-weight:700;color:#4ECDC4;font-family:monospace">${bank.ifsc || 'N/A'}</div></div>
         <div style="background:rgba(255,255,255,.03);border-radius:10px;padding:12px;margin-bottom:10px"><div style="font-size:11px;color:rgba(255,255,255,.4)">Bank Name</div><div style="font-size:14px;font-weight:700;color:#fff">${bank.bankName || 'N/A'}</div></div>
-        ${bank.branch ? `<div style="background:rgba(255,255,255,.03);border-radius:10px;padding:12px;margin-bottom:10px"><div style="font-size:11px;color:rgba(255,255,255,.4)">Branch</div><div style="font-size:14px;font-weight:700;color:#fff">${bank.branch}</div></div>` : ''}
         ${bank.pan ? `<div style="background:rgba(255,255,255,.03);border-radius:10px;padding:12px"><div style="font-size:11px;color:rgba(255,255,255,.4)">PAN</div><div style="font-size:14px;font-weight:700;color:#fff;font-family:monospace">${bank.pan}</div></div>` : ''}
     `);
 };
 
-// ═══════════════════════════════════════════════════════════
-// DELIVERY PARTNERS
-// ═══════════════════════════════════════════════════════════
 async function loadAllDeliveryPartners() {
     const container = document.getElementById('adminDeliveryList');
     container.innerHTML = '<div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
@@ -1900,9 +1623,7 @@ async function loadAllDeliveryPartners() {
                         <div class="detail">📞 ${d.mobile || 'N/A'}</div>
                         <div class="detail">Provider ID: ${d.providerId || 'N/A'}</div>
                     </div>
-                    <div class="actions">
-                        <a href="https://wa.me/91${d.mobile}" target="_blank" class="btn-sm btn-whatsapp">💬 Chat</a>
-                    </div>
+                    <div class="actions"><a href="https://wa.me/91${d.mobile}" target="_blank" class="btn-sm btn-whatsapp">💬 Chat</a></div>
                 </div>
             `;
         });
@@ -1910,9 +1631,6 @@ async function loadAllDeliveryPartners() {
     } catch (e) { container.innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`; }
 }
 
-// ═══════════════════════════════════════════════════════════
-// BROADCAST
-// ═══════════════════════════════════════════════════════════
 window.publishBroadcast = async function() {
     const message = document.getElementById('broadcastMessageInput').value.trim();
     if (!message) { showToast('⚠️ Enter a message!', true); return; }
@@ -1955,9 +1673,6 @@ window.loadBroadcastData = async function() {
     } catch (e) { console.error(e); }
 };
 
-// ═══════════════════════════════════════════════════════════
-// STORES
-// ═══════════════════════════════════════════════════════════
 window.showAddStore = function() {
     currentLogoFile = null;
     openModal('Add Partner Store', `
@@ -2009,9 +1724,7 @@ window.addStore = async function() {
     const category = document.getElementById('fStoreCategory').value.trim();
     const link = document.getElementById('fStoreLink').value.trim();
     let icon = document.getElementById('fStoreIcon').value || '🏪';
-    
     if (!name || !category || !link) { showToast('❌ All fields required!', true); return; }
-    
     showLoading(true);
     try {
         let logoUrl = '';
@@ -2024,12 +1737,7 @@ window.addStore = async function() {
                 logoUrl = await snapshot.ref.getDownloadURL();
             } catch(err) { console.log('Upload failed'); }
         }
-        
-        await db.collection('stores').add({ 
-            name, category, link, icon, logoUrl,
-            status: 'active', createdAt: new Date().toISOString() 
-        });
-        
+        await db.collection('stores').add({ name, category, link, icon, logoUrl, status: 'active', createdAt: new Date().toISOString() });
         showToast('✅ Store added!');
         closeModal(); loadStores();
     } catch (e) { showToast('❌ ' + e.message, true); }
@@ -2052,9 +1760,7 @@ async function loadStores() {
         let html = '';
         snapshot.forEach(doc => {
             const d = doc.data();
-            const logoDisplay = d.logoUrl 
-                ? `<img src="${d.logoUrl}" style="width:40px;height:40px;object-fit:cover;border-radius:8px">`
-                : `<div style="font-size:32px">${d.icon || '🏪'}</div>`;
+            const logoDisplay = d.logoUrl ? `<img src="${d.logoUrl}" style="width:40px;height:40px;object-fit:cover;border-radius:8px">` : `<div style="font-size:32px">${d.icon || '🏪'}</div>`;
             html += `
                 <div class="list-item">
                     <div class="info">
@@ -2066,9 +1772,7 @@ async function loadStores() {
                             </div>
                         </div>
                     </div>
-                    <div class="actions">
-                        <button class="btn-sm btn-delete" onclick="deleteStore('${doc.id}')"><i class="fas fa-trash"></i></button>
-                    </div>
+                    <div class="actions"><button class="btn-sm btn-delete" onclick="deleteStore('${doc.id}')"><i class="fas fa-trash"></i></button></div>
                 </div>
             `;
         });
@@ -2076,9 +1780,6 @@ async function loadStores() {
     } catch (e) { container.innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`; }
 }
 
-// ═══════════════════════════════════════════════════════════
-// ACTIVITY LOGS
-// ═══════════════════════════════════════════════════════════
 async function loadActivityLogs() {
     const container = document.getElementById('adminActivityList');
     container.innerHTML = '<div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
@@ -2094,9 +1795,6 @@ async function loadActivityLogs() {
     } catch (e) { container.innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`; }
 }
 
-// ═══════════════════════════════════════════════════════════
-// BULK WHATSAPP
-// ═══════════════════════════════════════════════════════════
 window.collectNumbers = async function() {
     showToast('⏳ Collecting...');
     whatsappNumbers = [];
@@ -2108,7 +1806,7 @@ window.collectNumbers = async function() {
             const d = doc.data();
             const mobile = (d.customerMobile || '').replace(/\D/g, '').slice(-10);
             if (mobile && mobile.length === 10) {
-                if (seen.has(mobile)) { duplicatesRemoved++; }
+                if (seen.has(mobile)) duplicatesRemoved++;
                 else { seen.add(mobile); whatsappNumbers.push({ mobile, name: d.customerName || 'Customer', type: 'Customer' }); customerCount++; }
             }
         });
@@ -2117,7 +1815,7 @@ window.collectNumbers = async function() {
             const d = doc.data();
             const mobile = (d.mobile || '').replace(/\D/g, '').slice(-10);
             if (mobile && mobile.length === 10) {
-                if (seen.has(mobile)) { duplicatesRemoved++; }
+                if (seen.has(mobile)) duplicatesRemoved++;
                 else { seen.add(mobile); whatsappNumbers.push({ mobile, name: d.name || 'Provider', type: 'Provider' }); providerCount++; }
             }
         });
@@ -2162,9 +1860,6 @@ window.clearNumbers = function() {
     document.getElementById('waList').innerHTML = '<div class="empty-msg">Click "Refresh Numbers"</div>';
 };
 
-// ═══════════════════════════════════════════════════════════
-// LOAD PROVIDER BANK DETAILS
-// ═══════════════════════════════════════════════════════════
 async function loadProviderBankDetails() {
     try {
         const snapshot = await db.collection('providers').get();
@@ -2182,17 +1877,8 @@ async function loadProviderBankDetails() {
     } catch(e) { console.error(e); }
 }
 
-// INIT
 checkAdminSession();
-console.log('✅ NnlGharPro Admin Panel v13.0 — FINAL with Search');
-console.log('📋 Features:');
-console.log('  ✅ Provider Search (name, mobile, email, service, pincode)');
-console.log('  ✅ Services Array Fix (string/array safe)');
-console.log('  ✅ Pincodes Array Fix');
-console.log('  ✅ Date Filter Reports');
-console.log('  ✅ Weekly / Monthly / Complete Reports');
-console.log('  ✅ Provider Settlement + Income Summary');
+console.log('✅ NnlGharPro Admin Panel v13.0 — FINAL');
 </script>
 </body>
 </html>
-<!-- ============================================== -->
