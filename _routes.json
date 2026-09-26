@@ -1,0 +1,5 @@
+{
+  "version": 1,
+  "include": ["/create-order", "/verify-payment", "/razorpay-webhook", "/smart-collect"],
+  "exclude": []
+}
