@@ -14,7 +14,27 @@ export default {
             return new Response(null, { status: 204, headers: corsHeaders });
         }
 
+        // ═══════════════════════════════════════════════════════════
+        // 🔍 DEBUG ENDPOINT — Key check karne ke liye
+        // ═══════════════════════════════════════════════════════════
+        if (path === '/debug-keys') {
+            const keyId = env.RAZORPAY_KEY_ID || '';
+            const keySecret = env.RAZORPAY_KEY_SECRET || '';
+            return new Response(JSON.stringify({
+                keyIdExists: !!keyId,
+                keyIdLength: keyId.length,
+                keyIdPrefix: keyId ? keyId.substring(0, 12) : 'MISSING',
+                keyIdHasSpace: keyId !== keyId.trim(),
+                keySecretExists: !!keySecret,
+                keySecretLength: keySecret.length,
+                keySecretHasSpace: keySecret !== keySecret.trim(),
+                allEnvKeys: Object.keys(env).filter(k => k.includes('RAZORPAY') || k.includes('FIREBASE'))
+            }, null, 2), { status: 200, headers: corsHeaders });
+        }
+
+        // ═══════════════════════════════════════════════════════════
         // ✅ /create-order
+        // ═══════════════════════════════════════════════════════════
         if (path === '/create-order' && request.method === 'POST') {
             try {
                 const body = await request.json();
@@ -26,13 +46,16 @@ export default {
                     });
                 }
 
-                const keyId = env.RAZORPAY_KEY_ID;
-                const keySecret = env.RAZORPAY_KEY_SECRET;
+                const keyId = (env.RAZORPAY_KEY_ID || '').trim();
+                const keySecret = (env.RAZORPAY_KEY_SECRET || '').trim();
 
                 if (!keyId || !keySecret) {
-                    return new Response(JSON.stringify({ success: false, error: 'Keys not configured' }), {
-                        status: 500, headers: corsHeaders
-                    });
+                    return new Response(JSON.stringify({
+                        success: false,
+                        error: 'Keys not configured',
+                        hasKeyId: !!keyId,
+                        hasKeySecret: !!keySecret
+                    }), { status: 500, headers: corsHeaders });
                 }
 
                 const auth = btoa(`${keyId}:${keySecret}`);
@@ -59,7 +82,10 @@ export default {
                 if (!rzpRes.ok) {
                     return new Response(JSON.stringify({
                         success: false,
-                        error: data.error?.description || 'Failed'
+                        error: data.error?.description || 'Razorpay error',
+                        razorpayStatus: rzpRes.status,
+                        razorpayCode: data.error?.code || 'unknown',
+                        keyIdUsed: keyId.substring(0, 12) + '...'
                     }), { status: rzpRes.status, headers: corsHeaders });
                 }
 
@@ -76,13 +102,15 @@ export default {
             }
         }
 
+        // ═══════════════════════════════════════════════════════════
         // ✅ /verify-payment
+        // ═══════════════════════════════════════════════════════════
         if (path === '/verify-payment' && request.method === 'POST') {
             try {
                 const body = await request.json();
                 const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = body;
 
-                const keySecret = env.RAZORPAY_KEY_SECRET;
+                const keySecret = (env.RAZORPAY_KEY_SECRET || '').trim();
                 const bodyStr = `${razorpay_order_id}|${razorpay_payment_id}`;
                 const encoder = new TextEncoder();
                 const key = await crypto.subtle.importKey(
@@ -110,7 +138,9 @@ export default {
             }
         }
 
+        // ═══════════════════════════════════════════════════════════
         // ✅ /razorpay-webhook
+        // ═══════════════════════════════════════════════════════════
         if (path === '/razorpay-webhook' && request.method === 'POST') {
             try {
                 const signature = request.headers.get('x-razorpay-signature');
@@ -122,7 +152,7 @@ export default {
                     });
                 }
 
-                const webhookSecret = env.RAZORPAY_WEBHOOK_SECRET;
+                const webhookSecret = (env.RAZORPAY_WEBHOOK_SECRET || '').trim();
                 const encoder = new TextEncoder();
                 const key = await crypto.subtle.importKey(
                     'raw', encoder.encode(webhookSecret),
@@ -177,16 +207,20 @@ export default {
             }
         }
 
+        // ═══════════════════════════════════════════════════════════
         // ✅ /api-test
+        // ═══════════════════════════════════════════════════════════
         if (path === '/api-test') {
             return new Response(JSON.stringify({
                 status: 'ok',
                 message: 'NnlGharPro API running',
-                endpoints: ['/create-order', '/verify-payment', '/razorpay-webhook']
+                endpoints: ['/create-order', '/verify-payment', '/razorpay-webhook', '/debug-keys']
             }), { status: 200, headers: corsHeaders });
         }
 
-        // ✅ Static files serve karo
+        // ═══════════════════════════════════════════════════════════
+        // ✅ Static files
+        // ═══════════════════════════════════════════════════════════
         return env.ASSETS.fetch(request);
     }
 };
