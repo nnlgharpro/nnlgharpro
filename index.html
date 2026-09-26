@@ -1150,7 +1150,7 @@ async function createRazorpayPayment() {
         };
 
         db.collection('bookings').add(bookingData)
-            .then((docRef) => {
+           .then(async (docRef) => {
                 const bookingId = docRef.id;
                 currentBookingId = bookingId;
 // ✅ Razorpay Order ID lo Worker se
