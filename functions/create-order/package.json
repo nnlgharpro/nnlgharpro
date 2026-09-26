@@ -1,7 +1,0 @@
-{
-  "name": "create-order",
-  "version": "1.0.0",
-  "description": "Razorpay Order Creator",
-  "main": "create-order.js",
-  "dependencies": {}
-}
