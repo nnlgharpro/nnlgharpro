@@ -1,0 +1,7 @@
+{
+  "name": "verify-payment",
+  "version": "1.0.0",
+  "description": "Razorpay Payment Verifier",
+  "main": "verify-payment.js",
+  "dependencies": {}
+}
