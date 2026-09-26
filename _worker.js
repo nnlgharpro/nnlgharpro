@@ -14,9 +14,7 @@ export default {
             return new Response(null, { status: 204, headers: corsHeaders });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // 🔍 DEBUG ENDPOINT — Key check karne ke liye
-        // ═══════════════════════════════════════════════════════════
+        // 🔍 DEBUG endpoint
         if (path === '/debug-keys') {
             const keyId = env.RAZORPAY_KEY_ID || '';
             const keySecret = env.RAZORPAY_KEY_SECRET || '';
@@ -32,9 +30,6 @@ export default {
             }, null, 2), { status: 200, headers: corsHeaders });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // ✅ /create-order
-        // ═══════════════════════════════════════════════════════════
         if (path === '/create-order' && request.method === 'POST') {
             try {
                 const body = await request.json();
@@ -102,9 +97,6 @@ export default {
             }
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // ✅ /verify-payment
-        // ═══════════════════════════════════════════════════════════
         if (path === '/verify-payment' && request.method === 'POST') {
             try {
                 const body = await request.json();
@@ -138,9 +130,6 @@ export default {
             }
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // ✅ /razorpay-webhook
-        // ═══════════════════════════════════════════════════════════
         if (path === '/razorpay-webhook' && request.method === 'POST') {
             try {
                 const signature = request.headers.get('x-razorpay-signature');
@@ -207,9 +196,6 @@ export default {
             }
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // ✅ /api-test
-        // ═══════════════════════════════════════════════════════════
         if (path === '/api-test') {
             return new Response(JSON.stringify({
                 status: 'ok',
@@ -218,9 +204,6 @@ export default {
             }), { status: 200, headers: corsHeaders });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // ✅ Static files
-        // ═══════════════════════════════════════════════════════════
         return env.ASSETS.fetch(request);
     }
 };
