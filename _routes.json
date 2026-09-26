@@ -1,5 +1,5 @@
 {
   "version": 1,
-  "include": ["/create-order", "/verify-payment", "/razorpay-webhook", "/api-test", "/debug-keys"],
+  "include": ["/*"],
   "exclude": []
 }
