@@ -731,22 +731,53 @@ function loadSubscription() {
     });
 }
 
-function razorpaySubscribe() {
-    const options = {
-        key: RAZORPAY_KEY, amount: 50000, currency: "INR",
-        name: "NnlGharPro", description: "Provider Subscription - ₹500/month",
-        handler: function (response) {
-            db.collection('providers').doc(currentUser.id).set({
-                subscriptionActive: true,
-                subscriptionExpiry: firebase.firestore.Timestamp.fromMillis(Date.now() + 30 * 24 * 60 * 60 * 1000),
-                lastPaymentId: response.razorpay_payment_id,
-                email: currentUser.email
-            }, { merge: true }).then(() => showToast('✅ Subscription Active!'));
-        },
-        prefill: { email: currentUser.email },
-        theme: { color: "#4ECDC4" }
-    };
-    new Razorpay(options).open();
+async function razorpaySubscribe() {
+    try {
+        showLoading(true);
+        
+        const res = await fetch('/create-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                amount: 500,
+                purpose: 'provider_subscription',
+                providerId: currentUser.id
+            })
+        });
+        const data = await res.json();
+        showLoading(false);
+        
+        if (!data.success || !data.order_id) {
+            showToast('❌ Order creation failed: ' + (data.error || 'Unknown'), true);
+            return;
+        }
+        
+        const options = {
+            key: RAZORPAY_KEY,
+            amount: 50000,
+            currency: "INR",
+            name: "NnlGharPro",
+            description: "Provider Subscription - ₹500/month",
+            order_id: data.order_id,
+            handler: function (response) {
+                db.collection('providers').doc(currentUser.id).set({
+                    subscriptionActive: true,
+                    subscriptionExpiry: firebase.firestore.Timestamp.fromMillis(Date.now() + 30 * 24 * 60 * 60 * 1000),
+                    lastPaymentId: response.razorpay_payment_id,
+                    lastOrderId: response.razorpay_order_id,
+                    email: currentUser.email
+                }, { merge: true }).then(() => showToast('✅ Subscription Active!'));
+            },
+            prefill: { email: currentUser.email },
+            theme: { color: "#4ECDC4" }
+        };
+        new Razorpay(options).open();
+        
+    } catch (err) {
+        showLoading(false);
+        showToast('❌ ' + err.message, true);
+    }
+}  new Razorpay(options).open();
 }
 
 function cancelSubscription() {
