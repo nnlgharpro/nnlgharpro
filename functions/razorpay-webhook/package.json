@@ -1,0 +1,7 @@
+{
+  "name": "razorpay-webhook",
+  "version": "1.0.0",
+  "description": "Razorpay Webhook Handler",
+  "main": "razorpay-webhook.js",
+  "dependencies": {}
+}
