@@ -1085,7 +1085,7 @@ window.processRazorpayPayment = function() {
     createRazorpayPayment();
 };
 
-function createRazorpayPayment() {
+async function createRazorpayPayment() {
     const itemsTotal = getItemsTotal();
     const deliveryCharge = currentDeliveryCharge;
     const grandTotal = itemsTotal + deliveryCharge;
@@ -1153,9 +1153,27 @@ function createRazorpayPayment() {
             .then((docRef) => {
                 const bookingId = docRef.id;
                 currentBookingId = bookingId;
+// ✅ Razorpay Order ID lo Worker se
+const orderRes = await fetch('/create-order', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        amount: grandTotal,
+        purpose: 'customer_booking',
+        providerId: selectedProviderId
+    })
+});
+const orderData = await orderRes.json();
 
+if (!orderData.success || !orderData.order_id) {
+    showToast('❌ Payment setup failed: ' + (orderData.error || 'Unknown'), true);
+    isBookingSubmitting = false;
+    showLoading(false);
+    return;
+}
                 const options = {
                     key: RAZORPAY_CONFIG.KEY_ID,
+                    order_id: orderData.order_id,
                     amount: grandTotal * 100,
                     currency: "INR",
                     name: "NnlGharPro - Randhawa Enterprises",
