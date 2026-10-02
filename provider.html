@@ -32,7 +32,7 @@ input,textarea{user-select:text;-webkit-user-select:text}
 .sub-actions{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
 .btn-razorpay{flex:1;background:linear-gradient(135deg,#5F259F,#8B5CF6);color:#fff;border:none;padding:12px 20px;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;min-width:150px}
 .btn-cancel-sub{background:rgba(255,71,87,.15);color:#FF4757;border:1px solid rgba(255,71,87,.2);padding:12px 20px;border-radius:10px;font-weight:600;font-size:13px;cursor:pointer}
-.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
 .stat-box{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:14px;text-align:center}
 .stat-number{font-size:22px;font-weight:800;color:#4ECDC4}
 .stat-label{font-size:10px;color:rgba(255,255,255,.5);margin-top:2px}
@@ -224,15 +224,34 @@ input,textarea{user-select:text;-webkit-user-select:text}
         </div>
     </div>
 
-    <div class="stats">
-        <div class="stat-box"><div class="stat-number" id="totalEarnings">₹0</div><div class="stat-label">💰 Earnings (95%)</div></div>
-        <div class="stat-box"><div class="stat-number" id="totalOrders">0</div><div class="stat-label">📦 Orders</div></div>
+    <!-- ✅ NEW: 4 Stat Boxes -->
+    <div class="stats" style="grid-template-columns:repeat(2,1fr)">
+        <div class="stat-box">
+            <div class="stat-number" id="statEarnings" style="color:#FFD93D">₹0</div>
+            <div class="stat-label">💰 Total Earnings</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number" id="statTotalLeads" style="color:#4ECDC4">0</div>
+            <div class="stat-label">📋 Total Leads</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number" id="statAccepted" style="color:#00C853">0</div>
+            <div class="stat-label">✅ Accepted</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number" id="statRejected" style="color:#FF4757">0</div>
+            <div class="stat-label">❌ Rejected</div>
+        </div>
     </div>
+
+    <!-- ✅ PDF Download Button -->
+    <button onclick="downloadPDF()" style="width:100%;padding:12px;background:linear-gradient(135deg,#5F259F,#8B5CF6);color:#fff;border:none;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:14px">
+        📄 Download PDF Report
+    </button>
 
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('items',event)">📦 Items</button>
         <button class="tab-btn" onclick="switchTab('leads',event)">📋 Leads</button>
-        <button class="tab-btn" onclick="switchTab('earnings',event)">💰 Earnings</button>
         <button class="tab-btn" onclick="switchTab('onboarding',event)">🏦 Bank</button>
         <button class="tab-btn" onclick="switchTab('delivery',event)">🚚 Delivery</button>
         <button class="tab-btn" onclick="switchTab('pincodes',event)">📍 Pincodes</button>
@@ -253,13 +272,6 @@ input,textarea{user-select:text;-webkit-user-select:text}
                 <span id="leadCounterBadge" style="font-size:12px;background:rgba(255,152,0,.15);color:#FF9800;padding:3px 12px;border-radius:12px">0 Paid</span>
             </div>
             <div id="leadsList"><div class="empty-msg"><span class="icon">📋</span>No leads yet</div></div>
-        </div>
-    </div>
-
-    <div id="earningsTab" style="display:none">
-        <div class="card">
-            <div class="card-title">💰 My Earnings</div>
-            <div id="earningsList"><div class="empty-msg"><span class="icon">💰</span>Loading...</div></div>
         </div>
     </div>
 
@@ -667,6 +679,10 @@ function startSessionCheck() {
 window.logout = async function() {
     if (currentUser) try { await db.collection('providers').doc(currentUser.id).update({ currentSession: '' }); } catch(e) {}
     localStorage.removeItem('gharpro_session');
+    // Cache clear
+    Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('gharpro_cache_')) localStorage.removeItem(key);
+    });
     if (sessionCheckInterval) clearInterval(sessionCheckInterval);
     stopBellLoop();
     hideCallingOverlay();
@@ -680,7 +696,6 @@ function initApp() {
     loadSubscription();
     loadItems();
     loadLeads();
-    loadEarnings();
     loadOnboarding();
     loadDeliveryPartners();
     loadPincodes();
@@ -691,7 +706,7 @@ function initApp() {
 function switchTab(tab, e) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     if (e && e.target) e.target.classList.add('active');
-    ['items','leads','earnings','onboarding','delivery','pincodes'].forEach(t => {
+    ['items','leads','onboarding','delivery','pincodes'].forEach(t => {
         const el = document.getElementById(t + 'Tab');
         if (el) el.style.display = (t === tab) ? 'block' : 'none';
     });
@@ -996,7 +1011,7 @@ function loadLeads() {
         });
         renderLeads();
         updateLeadBadge();
-        loadEarnings();
+        updateStats();
     });
 }
 
@@ -1005,6 +1020,33 @@ function updateLeadBadge() {
         (b.status === 'pending' || b.status === 'assigned') && b.paymentStatus === 'paid'
     ).length;
     document.getElementById('leadCounterBadge').textContent = pending + ' Paid';
+}
+
+// ✅ NEW: Stats update karo
+function updateStats() {
+    let totalEarnings = 0;
+    let accepted = 0;
+    let rejected = 0;
+
+    allBookings.forEach(b => {
+        if (b.status === 'completed') {
+            accepted++;
+            totalEarnings += b.providerAmount || Math.round((b.itemsTotal || 0) * 0.95) || 0;
+        } else if (b.status === 'accepted') {
+            accepted++;
+        } else if (b.status === 'rejected') {
+            rejected++;
+        }
+    });
+
+    const el1 = document.getElementById('statEarnings');
+    const el2 = document.getElementById('statTotalLeads');
+    const el3 = document.getElementById('statAccepted');
+    const el4 = document.getElementById('statRejected');
+    if (el1) el1.textContent = '₹' + totalEarnings;
+    if (el2) el2.textContent = allBookings.length;
+    if (el3) el3.textContent = accepted;
+    if (el4) el4.textContent = rejected;
 }
 
 function renderLeads() {
@@ -1165,7 +1207,6 @@ function rejectLead(id) {
 // LEAD QUEUE — SIRF PAID + ASSIGNED
 // ═══════════════════════════════════════════════════════════
 function startLeadListener() {
-    // ✅ SIRF payment confirm + assigned wali lead
     db.collection('bookings')
       .where('providerId', '==', currentUser.id)
       .where('status', '==', 'assigned')
@@ -1181,7 +1222,7 @@ function startLeadListener() {
             }
         });
         processQueue();
-    });
+      });
 }
 
 function processQueue() {
@@ -1269,164 +1310,142 @@ function hideCallingOverlay() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// EARNINGS
+// 📄 PDF DOWNLOAD — Summary Report
 // ═══════════════════════════════════════════════════════════
-function loadEarnings() {
-    db.collection('bookings')
-      .where('providerId', '==', currentUser.id)
-      .onSnapshot(snap => {
-        let allLeads = [];
-        snap.forEach(d => allLeads.push({ id: d.id, ...d.data() }));
+window.downloadPDF = function() {
+    let totalEarnings = 0;
+    let accepted = 0;
+    let rejected = 0;
+    let pending = 0;
+    let completed = 0;
 
-        const totalLeads = allLeads.length;
-        const acceptedLeads = allLeads.filter(b => b.status === 'accepted' || b.status === 'completed').length;
-        const rejectedLeads = allLeads.filter(b => b.status === 'rejected').length;
-        const pendingLeads = allLeads.filter(b => b.status === 'pending' || b.status === 'assigned').length;
-
-        let totalEarnings = 0;
-        let todayEarnings = 0;
-        let weekEarnings = 0;
-        let monthEarnings = 0;
-        const today = new Date().toDateString();
-
-        allLeads.forEach(b => {
-            if (b.status === 'completed') {
-                const amt = b.providerAmount || Math.round((b.itemsTotal || 0) * 0.95) || 0;
-                totalEarnings += amt;
-
-                const paidDate = b.paidAt ? new Date(b.paidAt) : null;
-                if (paidDate) {
-                    if (paidDate.toDateString() === today) todayEarnings += amt;
-                    const daysDiff = Math.floor((Date.now() - paidDate.getTime()) / (1000 * 60 * 60 * 24));
-                    if (daysDiff <= 7) weekEarnings += amt;
-                    if (paidDate.getMonth() === new Date().getMonth() && paidDate.getFullYear() === new Date().getFullYear()) monthEarnings += amt;
-                }
-            }
-        });
-
-        document.getElementById('totalEarnings').textContent = '₹' + totalEarnings;
-        document.getElementById('totalOrders').textContent = acceptedLeads;
-
-        let html = `
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-                <div style="background:rgba(78,205,196,.08);border-radius:10px;padding:10px;text-align:center">
-                    <div style="font-size:20px;font-weight:800;color:#4ECDC4">${totalLeads}</div>
-                    <div style="font-size:10px;color:rgba(255,255,255,.5)">Total Leads</div>
-                </div>
-                <div style="background:rgba(0,200,83,.08);border-radius:10px;padding:10px;text-align:center">
-                    <div style="font-size:20px;font-weight:800;color:#00C853">${acceptedLeads}</div>
-                    <div style="font-size:10px;color:rgba(255,255,255,.5)">Accepted</div>
-                </div>
-                <div style="background:rgba(255,71,87,.08);border-radius:10px;padding:10px;text-align:center">
-                    <div style="font-size:20px;font-weight:800;color:#FF4757">${rejectedLeads}</div>
-                    <div style="font-size:10px;color:rgba(255,255,255,.5)">Rejected</div>
-                </div>
-                <div style="background:rgba(255,152,0,.08);border-radius:10px;padding:10px;text-align:center">
-                    <div style="font-size:20px;font-weight:800;color:#FF9800">${pendingLeads}</div>
-                    <div style="font-size:10px;color:rgba(255,255,255,.5)">Pending</div>
-                </div>
-            </div>
-
-            <div style="background:linear-gradient(135deg,rgba(78,205,196,.1),rgba(255,217,61,.05));border:1px solid rgba(78,205,196,.2);border-radius:12px;padding:12px;margin-bottom:12px">
-                <div style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:8px">💰 Earnings Summary</div>
-                <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px">
-                    <span style="color:rgba(255,255,255,.6)">Today:</span>
-                    <strong style="color:#FFD93D">₹${todayEarnings}</strong>
-                </div>
-                <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px">
-                    <span style="color:rgba(255,255,255,.6)">Last 7 days:</span>
-                    <strong style="color:#FFD93D">₹${weekEarnings}</strong>
-                </div>
-                <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px">
-                    <span style="color:rgba(255,255,255,.6)">This month:</span>
-                    <strong style="color:#FFD93D">₹${monthEarnings}</strong>
-                </div>
-                <div style="display:flex;justify-content:space-between;padding:8px 0 0 0;border-top:1px solid rgba(255,255,255,.1);margin-top:8px;font-size:14px">
-                    <span style="color:#fff;font-weight:700">Total:</span>
-                    <strong style="color:#00C853;font-size:16px">₹${totalEarnings}</strong>
-                </div>
-            </div>
-
-            <button onclick="downloadExcel()" style="width:100%;padding:12px;background:linear-gradient(135deg,#00C853,#00E676);color:#fff;border:none;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:12px">
-                📥 Download Excel Report
-            </button>
-
-            <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:8px">📋 Recent Orders</div>
-        `;
-
-        const completedOrders = allLeads.filter(b => b.status === 'completed').sort((a, b) => {
-            const at = a.completedAt?.toMillis ? a.completedAt.toMillis() : (a.completedAt ? new Date(a.completedAt).getTime() : 0);
-            const bt = b.completedAt?.toMillis ? b.completedAt.toMillis() : (b.completedAt ? new Date(b.completedAt).getTime() : 0);
-            return bt - at;
-        });
-
-        if (completedOrders.length === 0) {
-            html += '<div class="empty-msg"><span class="icon">💰</span>No completed orders yet</div>';
+    allBookings.forEach(b => {
+        if (b.status === 'completed') {
+            completed++;
+            accepted++;
+            totalEarnings += b.providerAmount || Math.round((b.itemsTotal || 0) * 0.95) || 0;
+        } else if (b.status === 'accepted') {
+            accepted++;
+        } else if (b.status === 'rejected') {
+            rejected++;
         } else {
-            completedOrders.forEach(b => {
-                const amount = b.providerAmount || Math.round((b.itemsTotal || 0) * 0.95) || 0;
-                const dateStr = b.completedAt ? new Date(b.completedAt.toMillis ? b.completedAt.toMillis() : b.completedAt).toLocaleDateString('en-IN') : 'N/A';
-                html += `
-                    <div class="item-card">
-                        <div class="main-name">${b.service || 'Service'}</div>
-                        <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px">
-                            👤 ${b.customerName || '-'}<br>
-                            📅 ${dateStr}<br>
-                            💰 ₹${amount} (Aapka 95%)
-                        </div>
-                        <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
-                            <button class="btn-whatsapp" onclick="resendReceiptById('${b.id}')">🧾 Receipt</button>
-                            <button class="btn-whatsapp" onclick="chatCustomer('${b.id}')">💬 Chat</button>
-                        </div>
-                    </div>
-                `;
-            });
+            pending++;
         }
-
-        document.getElementById('earningsList').innerHTML = html;
     });
-}
 
-window.downloadExcel = function() {
-    db.collection('bookings')
-      .where('providerId', '==', currentUser.id)
-      .get()
-      .then(snap => {
-        let csv = 'Date,Service,Customer,Mobile,Status,Payment,Items Total,Delivery,Total Amount,Provider Amount (95%)\n';
-        
-        snap.forEach(d => {
-            const b = d.data();
-            const date = b.completedAt || b.createdAt || b.paidAt;
-            let dateStr = 'N/A';
-            if (date) {
-                const dateObj = date.toMillis ? new Date(date.toMillis()) : new Date(date);
-                dateStr = dateObj.toLocaleDateString('en-IN') + ' ' + dateObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-            }
-            
-            const itemsTotal = b.itemsTotal || 0;
-            const deliveryCharge = b.deliveryCharge || 0;
-            const totalAmount = b.totalAmount || 0;
-            const providerAmount = b.providerAmount || Math.round(itemsTotal * 0.95) || 0;
-            
-            csv += `"${dateStr}","${b.service || ''}","${b.customerName || ''}","${b.customerMobile || ''}","${b.status || ''}","${b.paymentStatus || ''}",${itemsTotal},${deliveryCharge},${totalAmount},${providerAmount}\n`;
-        });
-        
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', `NnlGharPro_Report_${new Date().toISOString().split('T')[0]}.csv`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        showToast('✅ Excel report downloaded!');
-      })
-      .catch(err => {
-        showToast('❌ Download failed: ' + err.message, true);
-      });
+    const today = new Date().toLocaleDateString('en-IN');
+    const todayTime = new Date().toLocaleTimeString('en-IN');
+
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>NnlGharPro Report - ${today}</title>
+            <style>
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body { font-family: 'Segoe UI', Arial, sans-serif; padding: 30px; color: #000; background: #fff; }
+                .header { text-align: center; border-bottom: 3px solid #1a237e; padding-bottom: 15px; margin-bottom: 25px; }
+                .header h1 { font-size: 28px; color: #1a237e; margin-bottom: 5px; }
+                .header p { font-size: 12px; color: #666; }
+                .provider-info { background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; }
+                .provider-info strong { color: #1a237e; }
+                .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px; }
+                .stat-box { background: #f9f9f9; border-left: 4px solid #4ECDC4; padding: 15px; border-radius: 6px; }
+                .stat-box .label { font-size: 11px; color: #666; text-transform: uppercase; margin-bottom: 5px; }
+                .stat-box .value { font-size: 22px; font-weight: 800; color: #1a237e; }
+                .stat-box.earning { border-left-color: #FFD93D; }
+                .stat-box.accepted { border-left-color: #00C853; }
+                .stat-box.rejected { border-left-color: #FF4757; }
+                .stat-box.pending { border-left-color: #FF9800; }
+                .stat-box.leads { border-left-color: #4ECDC4; }
+                .stat-box.completed { border-left-color: #5F259F; }
+                .footer { margin-top: 30px; padding-top: 15px; border-top: 2px solid #ddd; text-align: center; font-size: 11px; color: #666; }
+                .footer strong { color: #1a237e; }
+                .summary-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
+                .summary-table th, .summary-table td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #eee; }
+                .summary-table th { background: #1a237e; color: #fff; font-weight: 600; }
+                .summary-table tr:nth-child(even) { background: #f9f9f9; }
+                @media print { body { padding: 15px; } .no-print { display: none; } }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>🏠 NnlGharPro</h1>
+                <p>Provider Report — ${today}</p>
+            </div>
+
+            <div class="provider-info">
+                <strong>Provider Name:</strong> ${currentUser.name || 'N/A'}<br>
+                <strong>Email:</strong> ${currentUser.email || 'N/A'}<br>
+                <strong>Mobile:</strong> ${currentUser.mobile || 'N/A'}<br>
+                <strong>Report Generated:</strong> ${today} at ${todayTime}
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-box earning">
+                    <div class="label">💰 Total Earnings</div>
+                    <div class="value">₹${totalEarnings}</div>
+                </div>
+                <div class="stat-box leads">
+                    <div class="label">📋 Total Leads</div>
+                    <div class="value">${allBookings.length}</div>
+                </div>
+                <div class="stat-box accepted">
+                    <div class="label">✅ Accepted</div>
+                    <div class="value">${accepted}</div>
+                </div>
+                <div class="stat-box rejected">
+                    <div class="label">❌ Rejected</div>
+                    <div class="value">${rejected}</div>
+                </div>
+                <div class="stat-box pending">
+                    <div class="label">⏳ Pending</div>
+                    <div class="value">${pending}</div>
+                </div>
+                <div class="stat-box completed">
+                    <div class="label">🎯 Completed</div>
+                    <div class="value">${completed}</div>
+                </div>
+            </div>
+
+            <table class="summary-table">
+                <thead>
+                    <tr><th>Category</th><th style="text-align:right">Count</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Total Leads Received</td><td style="text-align:right"><strong>${allBookings.length}</strong></td></tr>
+                    <tr><td>Accepted Leads</td><td style="text-align:right"><strong>${accepted}</strong></td></tr>
+                    <tr><td>Completed Orders</td><td style="text-align:right"><strong>${completed}</strong></td></tr>
+                    <tr><td>Rejected Leads</td><td style="text-align:right"><strong>${rejected}</strong></td></tr>
+                    <tr><td>Pending Leads</td><td style="text-align:right"><strong>${pending}</strong></td></tr>
+                    <tr style="background:#1a237e;color:#fff">
+                        <td><strong>Total Earnings (95%)</strong></td>
+                        <td style="text-align:right"><strong>₹${totalEarnings}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="footer">
+                <p><strong>NnlGharPro</strong> — Managed by Randhawa Enterprises</p>
+                <p>📞 9588562553 | 📧 nnlgharpro@gmail.com</p>
+                <p style="margin-top:8px;font-size:10px;color:#999">This is a computer-generated report. No signature required.</p>
+            </div>
+
+            <div class="no-print" style="text-align:center;margin-top:25px">
+                <button onclick="window.print()" style="background:#1a237e;color:#fff;border:none;padding:12px 30px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">
+                    🖨️ Print / Save as PDF
+                </button>
+                <button onclick="window.close()" style="background:#ccc;color:#000;border:none;padding:12px 30px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;margin-left:8px">
+                    ✕ Close
+                </button>
+            </div>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
 };
+
 function resendReceiptById(id) {
     const lead = allBookings.find(b => b.id === id);
     if (!lead) { showToast('❌ Booking not found', true); return; }
@@ -1708,14 +1727,15 @@ function removePincode(pin) {
 
 document.addEventListener('DOMContentLoaded', checkSession);
 
-console.log('✅ NnlGharPro Provider Portal v9.0');
+console.log('✅ NnlGharPro Provider Portal v10.0 — COST OPTIMIZED');
 console.log('📋 Features:');
-console.log('  ✅ Payment confirm + assigned status only lead');
-console.log('  ✅ Customer notes visible in lead');
-console.log('  ✅ Distance + delivery charge visible');
-console.log('  ✅ Provider amount (95%) visible');
+console.log('  ✅ 4 Stat boxes (Earnings/Leads/Accepted/Rejected)');
+console.log('  ✅ PDF report download');
+console.log('  ✅ Earnings tab REMOVED (cost saving)');
+console.log('  ✅ Duplicate listeners removed');
+console.log('  ✅ localStorage cache');
 console.log('  ✅ Loud sound + vibration + wake lock');
-console.log('  ✅ Delivery partner WhatsApp with notes');
+console.log('  ✅ Delivery partner WhatsApp');
 console.log('  ✅ 100+ lead queue system');
 </script>
 </body>
