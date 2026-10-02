@@ -1274,33 +1274,158 @@ function hideCallingOverlay() {
 function loadEarnings() {
     db.collection('bookings')
       .where('providerId', '==', currentUser.id)
-      .where('status', '==', 'completed')
       .onSnapshot(snap => {
-        let total = 0, count = 0, html = '';
+        let allLeads = [];
+        snap.forEach(d => allLeads.push({ id: d.id, ...d.data() }));
+
+        const totalLeads = allLeads.length;
+        const acceptedLeads = allLeads.filter(b => b.status === 'accepted' || b.status === 'completed').length;
+        const rejectedLeads = allLeads.filter(b => b.status === 'rejected').length;
+        const pendingLeads = allLeads.filter(b => b.status === 'pending' || b.status === 'assigned').length;
+
+        let totalEarnings = 0;
+        let todayEarnings = 0;
+        let weekEarnings = 0;
+        let monthEarnings = 0;
+        const today = new Date().toDateString();
+
+        allLeads.forEach(b => {
+            if (b.status === 'completed') {
+                const amt = b.providerAmount || Math.round((b.itemsTotal || 0) * 0.95) || 0;
+                totalEarnings += amt;
+
+                const paidDate = b.paidAt ? new Date(b.paidAt) : null;
+                if (paidDate) {
+                    if (paidDate.toDateString() === today) todayEarnings += amt;
+                    
+                    const daysDiff = Math.floor((Date.now() - paidDate.getTime()) / (1000 * 60 * 60 * 24));
+                    if (daysDiff <= 7) weekEarnings += amt;
+                    if (paidDate.getMonth() === new Date().getMonth() && paidDate.getFullYear() === new Date().getFullYear()) monthEarnings += amt;
+                }
+            }
+        });
+
+        document.getElementById('totalEarnings').textContent = '₹' + totalEarnings;
+        document.getElementById('totalOrders').textContent = acceptedLeads;
+
+        let html = `
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+                <div style="background:rgba(78,205,196,.08);border-radius:10px;padding:10px;text-align:center">
+                    <div style="font-size:20px;font-weight:800;color:#4ECDC4">${totalLeads}</div>
+                    <div style="font-size:10px;color:rgba(255,255,255,.5)">Total Leads</div>
+                </div>
+                <div style="background:rgba(0,200,83,.08);border-radius:10px;padding:10px;text-align:center">
+                    <div style="font-size:20px;font-weight:800;color:#00C853">${acceptedLeads}</div>
+                    <div style="font-size:10px;color:rgba(255,255,255,.5)">Accepted</div>
+                </div>
+                <div style="background:rgba(255,71,87,.08);border-radius:10px;padding:10px;text-align:center">
+                    <div style="font-size:20px;font-weight:800;color:#FF4757">${rejectedLeads}</div>
+                    <div style="font-size:10px;color:rgba(255,255,255,.5)">Rejected</div>
+                </div>
+                <div style="background:rgba(255,152,0,.08);border-radius:10px;padding:10px;text-align:center">
+                    <div style="font-size:20px;font-weight:800;color:#FF9800">${pendingLeads}</div>
+                    <div style="font-size:10px;color:rgba(255,255,255,.5)">Pending</div>
+                </div>
+            </div>
+
+            <div style="background:linear-gradient(135deg,rgba(78,205,196,.1),rgba(255,217,61,.05));border:1px solid rgba(78,205,196,.2);border-radius:12px;padding:12px;margin-bottom:12px">
+                <div style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:8px">💰 Earnings Summary</div>
+                <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px">
+                    <span style="color:rgba(255,255,255,.6)">Today:</span>
+                    <strong style="color:#FFD93D">₹${todayEarnings}</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px">
+                    <span style="color:rgba(255,255,255,.6)">Last 7 days:</span>
+                    <strong style="color:#FFD93D">₹${weekEarnings}</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px">
+                    <span style="color:rgba(255,255,255,.6)">This month:</span>
+                    <strong style="color:#FFD93D">₹${monthEarnings}</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:8px 0 0 0;border-top:1px solid rgba(255,255,255,.1);margin-top:8px;font-size:14px">
+                    <span style="color:#fff;font-weight:700">Total:</span>
+                    <strong style="color:#00C853;font-size:16px">₹${totalEarnings}</strong>
+                </div>
+            </div>
+
+            <button onclick="downloadExcel()" style="width:100%;padding:12px;background:linear-gradient(135deg,#00C853,#00E676);color:#fff;border:none;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:12px">
+                📥 Download Excel Report
+            </button>
+
+            <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:8px">📋 Recent Orders</div>
+        `;
+
+        const completedOrders = allLeads.filter(b => b.status === 'completed').sort((a, b) => {
+            const at = a.completedAt?.toMillis ? a.completedAt.toMillis() : (a.completedAt ? new Date(a.completedAt).getTime() : 0);
+            const bt = b.completedAt?.toMillis ? b.completedAt.toMillis() : (b.completedAt ? new Date(b.completedAt).getTime() : 0);
+            return bt - at;
+        });
+
+        if (completedOrders.length === 0) {
+            html += '<div class="empty-msg"><span class="icon">💰</span>No completed orders yet</div>';
+        } else {
+            completedOrders.forEach(b => {
+                const amount = b.providerAmount || Math.round((b.itemsTotal || 0) * 0.95) || 0;
+                const dateStr = b.completedAt ? new Date(b.completedAt.toMillis ? b.completedAt.toMillis() : b.completedAt).toLocaleDateString('en-IN') : 'N/A';
+                html += `
+                    <div class="item-card">
+                        <div class="main-name">${b.service || 'Service'}</div>
+                        <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px">
+                            👤 ${b.customerName || '-'}<br>
+                            📅 ${dateStr}<br>
+                            💰 ₹${amount} (Aapka 95%)
+                        </div>
+                        <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
+                            <button class="btn-whatsapp" onclick="resendReceiptById('${b.id}')">🧾 Receipt</button>
+                            <button class="btn-whatsapp" onclick="chatCustomer('${b.id}')">💬 Chat</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+window.downloadExcel = function() {
+    db.collection('bookings')
+      .where('providerId', '==', currentUser.id)
+      .get()
+      .then(snap => {
+        let csv = 'Date,Service,Customer,Mobile,Status,Payment,Items Total,Delivery,Total Amount,Provider Amount (95%)\n';
+        
         snap.forEach(d => {
             const b = d.data();
-            const amount = b.providerAmount || Math.round((b.itemsTotal || 0) * 0.95) || 0;
-            total += amount; 
-            count++;
-            html += `
-                <div class="item-card">
-                    <div class="main-name">${b.service || 'Service'}</div>
-                    <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px">
-                        👤 ${b.customerName || '-'}<br>
-                        💰 ₹${amount} (Aapka 95%)
-                    </div>
-                    <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
-                        <button class="btn-whatsapp" onclick="resendReceiptById('${d.id}')">🧾 Receipt</button>
-                        <button class="btn-whatsapp" onclick="chatCustomer('${d.id}')">💬 Chat</button>
-                    </div>
-                </div>
-            `;
+            const date = b.completedAt || b.createdAt || b.paidAt;
+            let dateStr = 'N/A';
+            if (date) {
+                const dateObj = date.toMillis ? new Date(date.toMillis()) : new Date(date);
+                dateStr = dateObj.toLocaleDateString('en-IN') + ' ' + dateObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+            }
+            
+            const itemsTotal = b.itemsTotal || 0;
+            const deliveryCharge = b.deliveryCharge || 0;
+            const totalAmount = b.totalAmount || 0;
+            const providerAmount = b.providerAmount || Math.round(itemsTotal * 0.95) || 0;
+            
+            csv += `"${dateStr}","${b.service || ''}","${b.customerName || ''}","${b.customerMobile || ''}","${b.status || ''}","${b.paymentStatus || ''}",${itemsTotal},${deliveryCharge},${totalAmount},${providerAmount}\n`;
         });
-        document.getElementById('totalEarnings').textContent = '₹' + total;
-        document.getElementById('totalOrders').textContent = count;
-        document.getElementById('earningsList').innerHTML = html || 
-            '<div class="empty-msg"><span class="icon">💰</span>No earnings yet<br><span style="font-size:11px;opacity:.5">Complete orders to see earnings</span></div>';
+        
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `NnlGharPro_Report_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        showToast('✅ Excel report downloaded!');
+      })
+      .catch(err => {
+        showToast('❌ Download failed: ' + err.message, true);
+      });
+};
+        document.getElementById('earningsList').innerHTML = html;
     });
+}
 }
 
 function resendReceiptById(id) {
