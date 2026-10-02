@@ -1297,7 +1297,6 @@ function loadEarnings() {
                 const paidDate = b.paidAt ? new Date(b.paidAt) : null;
                 if (paidDate) {
                     if (paidDate.toDateString() === today) todayEarnings += amt;
-                    
                     const daysDiff = Math.floor((Date.now() - paidDate.getTime()) / (1000 * 60 * 60 * 24));
                     if (daysDiff <= 7) weekEarnings += amt;
                     if (paidDate.getMonth() === new Date().getMonth() && paidDate.getFullYear() === new Date().getFullYear()) monthEarnings += amt;
@@ -1383,6 +1382,11 @@ function loadEarnings() {
                 `;
             });
         }
+
+        document.getElementById('earningsList').innerHTML = html;
+    });
+}
+
 window.downloadExcel = function() {
     db.collection('bookings')
       .where('providerId', '==', currentUser.id)
@@ -1423,11 +1427,6 @@ window.downloadExcel = function() {
         showToast('❌ Download failed: ' + err.message, true);
       });
 };
-        document.getElementById('earningsList').innerHTML = html;
-    });
-}
-}
-
 function resendReceiptById(id) {
     const lead = allBookings.find(b => b.id === id);
     if (!lead) { showToast('❌ Booking not found', true); return; }
