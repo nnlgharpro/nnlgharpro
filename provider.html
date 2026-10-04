@@ -1485,12 +1485,7 @@ window.downloadPDF = function(range = 'all') {
     const today = new Date().toLocaleDateString('en-IN');
     const todayTime = new Date().toLocaleTimeString('en-IN');
 
-        const printWindow = window.open('', '_blank', 'width=800,height=900');
-    if (!printWindow) {
-        showToast('⚠️ Popup blocked! Please allow popups.', true);
-        return;
-    }
-    printWindow.document.write(`
+            const htmlContent = `
         <!DOCTYPE html>
         <html>
         <head>
@@ -1612,10 +1607,23 @@ window.downloadPDF = function(range = 'all') {
             </div>
         </body>
         </html>
-    `);
-    printWindow.document.close();
+      `;
+    
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    
+    const newWindow = window.open(url, '_blank');
+    
+    if (!newWindow) {
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'NnlGharPro_Report_' + new Date().toISOString().slice(0,10) + '.html';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast('✅ Report downloaded!');
+    }
 };
-
 function resendReceiptById(id) {
     const lead = allBookings.find(b => b.id === id);
     if (!lead) { showToast('❌ Booking not found', true); return; }
