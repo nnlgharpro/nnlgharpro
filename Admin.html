@@ -176,6 +176,105 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
 .load-more-btn:hover{transform:scale(1.02)}
 .load-more-info{font-size:11px;color:rgba(255,255,255,.4);margin-top:8px}
 @media(max-width:600px){.dashboard-top{grid-template-columns:1fr}.admin-stats{grid-template-columns:repeat(2,1fr)}.list-item{flex-direction:column;align-items:stretch}.admin-tab{min-width:60px;font-size:9px;padding:8px 4px}.wa-stats{grid-template-columns:repeat(2,1fr)}.reports-grid{grid-template-columns:1fr}}
+    
+/* ═══════════════════════════════════════════════════════════
+   💰 PAYMENT LIST — Smart Collapsible UI
+   ═══════════════════════════════════════════════════════════ */
+
+.payment-toggle-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, rgba(78,205,196,.1), rgba(26,35,126,.05));
+    border: 1px solid rgba(78,205,196,.2);
+    border-radius: 12px;
+    color: #4ECDC4;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    margin: 12px 0;
+    transition: all .3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: 'Inter', sans-serif;
+}
+
+.payment-toggle-btn:hover {
+    background: linear-gradient(135deg, rgba(78,205,196,.15), rgba(26,35,126,.1));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(78,205,196,.15);
+}
+
+.payment-toggle-btn i {
+    font-size: 14px;
+}
+
+.payment-search-box {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 10px;
+    background: rgba(255,255,255,.03);
+    color: #fff;
+    font-size: 13px;
+    outline: none;
+    margin-bottom: 12px;
+    font-family: 'Inter', sans-serif;
+    transition: all .3s;
+}
+
+.payment-search-box:focus {
+    border-color: #4ECDC4;
+    background: rgba(78,205,196,.04);
+    box-shadow: 0 0 0 3px rgba(78,205,196,.1);
+}
+
+.payment-search-box::placeholder {
+    color: rgba(255,255,255,.25);
+}
+
+.payment-list-box {
+    max-height: 400px;
+    overflow-y: auto;
+    border-radius: 12px;
+    padding: 4px;
+    background: rgba(255,255,255,.02);
+    border: 1px solid rgba(255,255,255,.05);
+    transition: max-height .3s;
+}
+
+.payment-list-box::-webkit-scrollbar {
+    width: 6px;
+}
+
+.payment-list-box::-webkit-scrollbar-track {
+    background: rgba(255,255,255,.02);
+    border-radius: 10px;
+}
+
+.payment-list-box::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #1a237e, #283593);
+    border-radius: 10px;
+}
+
+.payment-list-box::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #283593, #1a237e);
+}
+
+.payment-count-info {
+    font-size: 11px;
+    color: rgba(255,255,255,.4);
+    margin-bottom: 8px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.payment-count-info i {
+    color: #4ECDC4;
+}
 </style>
 </head>
 <body>
@@ -1545,45 +1644,126 @@ async function loadAllDeliveryPartners() {
 // ═══════════════════════════════════════════════════════════════════
 // 💰 PAYMENTS
 // ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
+// 💰 PAYMENTS — Smart List (Latest 10 + Collapsible + Search)
+// ═══════════════════════════════════════════════════════════════════
+let isPaymentListExpanded = false;
+let paymentSearchTerm = '';
+
 async function loadPayments() {
     const container = document.getElementById('paymentList');
     container.innerHTML = '<div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+    
     try {
-        const bookings = bookingsCache || [];
+        const bookings = bookingsCache || await getBookings();
         const { from, to } = getDateRange('last30days');
-        const recentBookings = filterBookingsByDate(bookings, from, to);
+        let recentBookings = filterBookingsByDate(bookings, from, to);
         
-        let paid = 0, revenue = 0, commission = 0;
-        let html = '';
-        
-        recentBookings.slice(0, 50).forEach(d => {
-            const status = d.paymentStatus || 'not_paid';
-            const amounts = getBookingAmounts(d);
-            if (status === 'paid') { 
-                paid++; revenue += amounts.grandTotal; 
-                commission += amounts.adminCommission; 
-            }
-            const statusClass = status === 'paid' ? 'paid' : 'unpaid';
-            html += `
-                <div class="list-item" style="border-left-color:${status === 'paid' ? '#00C853' : '#FF4757'}">
-                    <div class="info">
-                        <div class="name">${d.customerName || 'N/A'} - ${d.service || 'N/A'}</div>
-                        <div class="detail">💰 ₹${amounts.grandTotal} • ${status.toUpperCase()} • Provider: ${d.providerName || 'N/A'}</div>
-                    </div>
-                    <div class="actions">
-                        <span class="status-badge ${statusClass}">${status === 'paid' ? '✅ Paid' : '❌ Not Paid'}</span>
-                    </div>
-                </div>
-            `;
+        recentBookings.sort((a, b) => {
+            const at = parseDateSafely(a.createdAt)?.getTime() || 0;
+            const bt = parseDateSafely(b.createdAt)?.getTime() || 0;
+            return bt - at;
         });
         
-        document.getElementById('totalRevenue').textContent = '₹' + revenue.toLocaleString();
-        document.getElementById('totalCommission').textContent = '₹' + commission.toLocaleString();
-        document.getElementById('paidPayments').textContent = paid;
-        container.innerHTML = html || '<div class="empty-msg">No payments in last 30 days</div>';
-    } catch (e) { container.innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`; }
+        let paid = 0, revenue = 0, commission = 0;
+        recentBookings.forEach(d => {
+            const status = d.paymentStatus || 'not_paid';
+            const amounts = getBookingAmounts(d);
+            if (status === 'paid') {
+                paid++;
+                revenue += amounts.grandTotal;
+                commission += amounts.netAdminIncome || amounts.adminCommission;
+            }
+        });
+        
+        const totalEl = document.getElementById('totalPayments');
+        const paidEl = document.getElementById('paidPayments');
+        const unpaidEl = document.getElementById('unpaidPayments');
+        const revEl = document.getElementById('totalRevenue');
+        const commEl = document.getElementById('totalCommission');
+        
+        if (totalEl) totalEl.textContent = recentBookings.length;
+        if (paidEl) paidEl.textContent = paid;
+        if (unpaidEl) unpaidEl.textContent = recentBookings.length - paid;
+        if (revEl) revEl.textContent = '₹' + revenue.toLocaleString();
+        if (commEl) commEl.textContent = '₹' + commission.toLocaleString();
+        
+        renderPaymentList(recentBookings);
+        
+    } catch (e) {
+        container.innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`;
+    }
 }
 
+function renderPaymentList(allPayments) {
+    const container = document.getElementById('paymentList');
+    
+    let filtered = allPayments;
+    if (paymentSearchTerm) {
+        const term = paymentSearchTerm.toLowerCase();
+        filtered = allPayments.filter(d => 
+            (d.customerName || '').toLowerCase().includes(term) ||
+            (d.customerMobile || '').includes(term) ||
+            (d.providerName || '').toLowerCase().includes(term) ||
+            (d.service || '').toLowerCase().includes(term)
+        );
+    }
+    
+    const displayPayments = isPaymentListExpanded ? filtered : filtered.slice(0, 10);
+    
+    let listHtml = '';
+    displayPayments.forEach(d => {
+        const status = d.paymentStatus || 'not_paid';
+        const amounts = getBookingAmounts(d);
+        const statusClass = status === 'paid' ? 'paid' : 'unpaid';
+        listHtml += `
+            <div class="list-item" style="border-left-color:${status === 'paid' ? '#00C853' : '#FF4757'}">
+                <div class="info">
+                    <div class="name">${d.customerName || 'N/A'} - ${d.service || 'N/A'}</div>
+                    <div class="detail">💰 ₹${amounts.grandTotal} • ${status.toUpperCase()} • Provider: ${d.providerName || 'N/A'}</div>
+                </div>
+                <div class="actions">
+                    <span class="status-badge ${statusClass}">${status === 'paid' ? '✅ Paid' : '❌ Not Paid'}</span>
+                </div>
+            </div>
+        `;
+    });
+    
+    const totalFiltered = filtered.length;
+    
+    container.innerHTML = `
+        <input type="text" class="payment-search-box" placeholder="🔍 Search customer, mobile, provider..." value="${paymentSearchTerm}" oninput="searchPayments(this.value)">
+        
+        <div class="payment-count-info">
+            <i class="fas fa-list"></i>
+            ${isPaymentListExpanded ? 'All' : 'Latest 10'} Payments ${paymentSearchTerm ? `(filtered: ${totalFiltered})` : `(${totalFiltered} total)`}
+        </div>
+        
+        <div class="payment-list-box">
+            ${listHtml || '<div class="empty-msg">No payments found</div>'}
+        </div>
+        
+        ${totalFiltered > 10 ? `
+            <button class="payment-toggle-btn" onclick="togglePaymentList()">
+                <i class="fas fa-chevron-${isPaymentListExpanded ? 'up' : 'down'}"></i>
+                ${isPaymentListExpanded ? 'Hide (Show Latest 10)' : `Show All ${totalFiltered} Payments`}
+            </button>
+        ` : ''}
+    `;
+}
+
+window.togglePaymentList = function() {
+    isPaymentListExpanded = !isPaymentListExpanded;
+    loadPayments();
+};
+
+window.searchPayments = function(term) {
+    paymentSearchTerm = term;
+    const bookings = bookingsCache || [];
+    const { from, to } = getDateRange('last30days');
+    const filtered = filterBookingsByDate(bookings, from, to);
+    renderPaymentList(filtered);
+};
 // ═══════════════════════════════════════════════════════════════════
 // 📢 BROADCAST
 // ═══════════════════════════════════════════════════════════════════
