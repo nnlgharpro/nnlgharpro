@@ -1299,6 +1299,12 @@ function rejectLead(id) {
 // LEAD QUEUE — SIRF PAID + ASSIGNED
 // ═══════════════════════════════════════════════════════════
 function startLeadListener() {
+        // ✅ Guard — duplicate listener rok do
+    if (window._leadListenerActive) {
+        console.log('⚠️ Lead listener already active, skipping...');
+        return;
+    }
+    window._leadListenerActive = true;
     db.collection('bookings')
       .where('providerId', '==', currentUser.id)
       .where('status', '==', 'assigned')
