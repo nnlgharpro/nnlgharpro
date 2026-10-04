@@ -894,10 +894,21 @@ function loadItems() {
     });
 }
 
+// ═══════════════════════════════════════════════════════════
+// ITEMS — Collapsible + Latest 10
+// ═══════════════════════════════════════════════════════════
+let itemsExpanded = false;
+
 function renderItems() {
     const list = document.getElementById('itemsList');
-    if (!providerItems.length) { list.innerHTML = '<div class="empty-msg"><span class="icon">📦</span>No items yet</div>'; return; }
-    list.innerHTML = providerItems.map(item => `
+    if (!providerItems.length) { 
+        list.innerHTML = '<div class="empty-msg"><span class="icon">📦</span>No items yet</div>'; 
+        return; 
+    }
+    
+    const displayItems = itemsExpanded ? providerItems : providerItems.slice(0, 10);
+    
+    let itemsHtml = displayItems.map(item => `
         <div class="item-card ${item.hidden ? 'hidden-item' : ''}">
             <div class="main-name">${item.name}${item.hidden ? '<span class="hidden-badge">Hidden</span>' : ''}<span class="sub-count">(${(item.subItems || []).length} sub-items)</span></div>
             <div class="main-actions">
@@ -920,14 +931,28 @@ function renderItems() {
             </div>
         </div>
     `).join('');
+    
+    list.innerHTML = `
+        <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:8px;font-weight:600">
+            📦 ${itemsExpanded ? 'All' : 'Latest 10'} Items (${providerItems.length} total)
+        </div>
+        
+        <div style="max-height:${itemsExpanded ? '600px' : 'none'};overflow-y:${itemsExpanded ? 'auto' : 'visible'};padding:4px;border-radius:12px">
+            ${itemsHtml}
+        </div>
+        
+        ${providerItems.length > 10 ? `
+            <button onclick="toggleItems()" style="width:100%;padding:14px;background:linear-gradient(135deg,rgba(78,205,196,.1),rgba(26,35,126,.05));border:1px solid rgba(78,205,196,.2);border-radius:12px;color:#4ECDC4;font-weight:700;font-size:13px;cursor:pointer;margin-top:12px;font-family:inherit">
+                ${itemsExpanded ? '▲ Hide (Show Latest 10)' : `▼ Show All ${providerItems.length} Items`}
+            </button>
+        ` : ''}
+    `;
 }
 
-function showAddMainForm() {
-    openModal('➕ Add Main Item', `
-        <div class="form-group"><label>Item Name</label><input id="mName" placeholder="e.g. AC Repair"></div>
-        <button class="btn btn-primary" onclick="saveMainItem()" style="width:100%">Save</button>
-    `);
-}
+window.toggleItems = function() {
+    itemsExpanded = !itemsExpanded;
+    renderItems();
+};
 
 function saveMainItem() {
     const name = document.getElementById('mName').value.trim();
@@ -1092,6 +1117,12 @@ function updateStats() {
     if (el4) el4.textContent = rejected;
 }
 
+// ═══════════════════════════════════════════════════════════
+// LEADS — Collapsible + Latest 10 + Search
+// ═══════════════════════════════════════════════════════════
+let leadsExpanded = false;
+let leadsSearchTerm = '';
+
 function renderLeads() {
     const list = document.getElementById('leadsList');
     if (!allBookings.length) { 
@@ -1099,7 +1130,22 @@ function renderLeads() {
         return; 
     }
     
-    list.innerHTML = allBookings.map(b => {
+    // ✅ Filter by search
+    let filtered = allBookings;
+    if (leadsSearchTerm) {
+        const term = leadsSearchTerm.toLowerCase();
+        filtered = allBookings.filter(b => 
+            (b.customerName || '').toLowerCase().includes(term) ||
+            (b.customerMobile || '').includes(term) ||
+            (b.service || '').toLowerCase().includes(term)
+        );
+    }
+    
+    // ✅ Latest 10 default
+    const displayLeads = leadsExpanded ? filtered : filtered.slice(0, 10);
+    
+    // ✅ Render lead cards
+    let leadsHtml = displayLeads.map(b => {
         const status = b.status || 'pending';
         const paymentStatus = b.paymentStatus || 'not_paid';
         const isPaid = paymentStatus === 'paid' && b.paymentConfirmed === true;
@@ -1161,8 +1207,7 @@ function renderLeads() {
         } else if (status === 'rejected') {
             actionButtons = `
                 <button class="btn-whatsapp" onclick="chatCustomer('${b.id}')">💬 Chat</button>
-            `;
-        }
+            };
         
         return `
             <div class="lead-card" style="border-left-color:${isPaid ? '#00C853' : '#FF4757'}">
@@ -1185,6 +1230,36 @@ function renderLeads() {
             </div>
         `;
     }).join('');
+    
+    // ✅ Final HTML with search + toggle
+    list.innerHTML = `
+        <input type="text" class="lead-search-box" placeholder="🔍 Search customer, mobile, service..." value="${leadsSearchTerm}" oninput="searchLeads(this.value)" style="width:100%;padding:12px 16px;border:1px solid rgba(255,255,255,.06);border-radius:10px;background:rgba(255,255,255,.03);color:#fff;font-size:13px;outline:none;margin-bottom:12px">
+        
+        <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:8px;font-weight:600">
+            📋 ${leadsExpanded ? 'All' : 'Latest 10'} Leads ${leadsSearchTerm ? `(filtered: ${filtered.length})` : `(${filtered.length} total)`}
+        </div>
+        
+        <div style="max-height:${leadsExpanded ? '600px' : 'none'};overflow-y:${leadsExpanded ? 'auto' : 'visible'};padding:4px;border-radius:12px">
+            ${leadsHtml || '<div class="empty-msg">No leads found</div>'}
+        </div>
+        
+        ${filtered.length > 10 ? `
+            <button onclick="toggleLeads()" style="width:100%;padding:14px;background:linear-gradient(135deg,rgba(78,205,196,.1),rgba(26,35,126,.05));border:1px solid rgba(78,205,196,.2);border-radius:12px;color:#4ECDC4;font-weight:700;font-size:13px;cursor:pointer;margin-top:12px;font-family:inherit">
+                ${leadsExpanded ? '▲ Hide (Show Latest 10)' : `▼ Show All ${filtered.length} Leads`}
+            </button>
+        ` : ''}
+    `;
+}
+
+window.toggleLeads = function() {
+    leadsExpanded = !leadsExpanded;
+    renderLeads();
+};
+
+window.searchLeads = function(term) {
+    leadsSearchTerm = term;
+    renderLeads();
+};
 }
 
 window.chatCustomer = function(id) {
