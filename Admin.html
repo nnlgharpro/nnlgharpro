@@ -2023,7 +2023,7 @@ function downloadIncomeReport(bookings, filterLabel) {
     const ws = XLSX.utils.json_to_sheet(summaryData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Income Summary');
-    XLSX.writeFile(wb, `NnlGharPro_Income_${filterLabel}_${new Date().toISOString().slice(0,10)}.xlsx);
+    XLSX.writeFile(wb, `NnlGharPro_Income_${filterLabel}_${new Date().toISOString().slice(0,10)}.xlsx`);
 } 
    
 function downloadWeeklyReport(bookings, filterLabel) {
