@@ -244,11 +244,21 @@ input,textarea{user-select:text;-webkit-user-select:text}
         </div>
     </div>
 
-    <!-- ✅ PDF Download Button -->
-    <button onclick="downloadPDF()" style="width:100%;padding:12px;background:linear-gradient(135deg,#5F259F,#8B5CF6);color:#fff;border:none;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:14px">
-        📄 Download PDF Report
+<!-- ✅ 4 Report Buttons -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+    <button onclick="downloadPDF('daily')" style="padding:12px;background:linear-gradient(135deg,#00C853,#00E676);color:#fff;border:none;border-radius:12px;font-weight:700;font-size:13px;cursor:pointer">
+        📅 Daily Report
     </button>
-
+    <button onclick="downloadPDF('weekly')" style="padding:12px;background:linear-gradient(135deg,#4ECDC4,#44B3A8);color:#fff;border:none;border-radius:12px;font-weight:700;font-size:13px;cursor:pointer">
+        📅 Weekly Report
+    </button>
+    <button onclick="downloadPDF('monthly')" style="padding:12px;background:linear-gradient(135deg,#FFD93D,#F4A261);color:#1a1a2e;border:none;border-radius:12px;font-weight:700;font-size:13px;cursor:pointer">
+        📅 Monthly Report
+    </button>
+    <button onclick="downloadPDF('all')" style="padding:12px;background:linear-gradient(135deg,#5F259F,#8B5CF6);color:#fff;border:none;border-radius:12px;font-weight:700;font-size:13px;cursor:pointer">
+        📅 All Time Report
+    </button>
+</div>
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('items',event)">📦 Items</button>
         <button class="tab-btn" onclick="switchTab('leads',event)">📋 Leads</button>
@@ -1346,14 +1356,46 @@ function hideCallingOverlay() {
 // ═══════════════════════════════════════════════════════════
 // 📄 PDF DOWNLOAD — Summary Report
 // ═══════════════════════════════════════════════════════════
-window.downloadPDF = function() {
+// ═══════════════════════════════════════════════════════════
+// 📄 PDF DOWNLOAD — With Date Range Filter
+// ═══════════════════════════════════════════════════════════
+window.downloadPDF = function(range = 'all') {
+    let filteredBookings = allBookings;
+    const now = new Date();
+    let rangeLabel = '';
+    
+    if (range === 'daily') {
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        filteredBookings = allBookings.filter(b => {
+            const d = new Date(b.createdAt || b.bookingDate || 0);
+            return d >= today;
+        });
+        rangeLabel = 'Daily Report — ' + now.toLocaleDateString('en-IN');
+    } else if (range === 'weekly') {
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        filteredBookings = allBookings.filter(b => {
+            const d = new Date(b.createdAt || b.bookingDate || 0);
+            return d >= weekAgo;
+        });
+        rangeLabel = 'Weekly Report — ' + weekAgo.toLocaleDateString('en-IN') + ' to ' + now.toLocaleDateString('en-IN');
+    } else if (range === 'monthly') {
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        filteredBookings = allBookings.filter(b => {
+            const d = new Date(b.createdAt || b.bookingDate || 0);
+            return d >= monthStart;
+        });
+        rangeLabel = 'Monthly Report — ' + now.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+    } else {
+        rangeLabel = 'All Time Report';
+    }
+    
     let totalEarnings = 0;
     let accepted = 0;
     let rejected = 0;
     let pending = 0;
     let completed = 0;
 
-    allBookings.forEach(b => {
+    filteredBookings.forEach(b => {
         if (b.status === 'completed') {
             completed++;
             accepted++;
@@ -1376,13 +1418,14 @@ window.downloadPDF = function() {
         <!DOCTYPE html>
         <html>
         <head>
-            <title>NnlGharPro Report - ${today}</title>
+            <title>NnlGharPro ${rangeLabel} - ${today}</title>
             <style>
                 * { margin: 0; padding: 0; box-sizing: border-box; }
                 body { font-family: 'Segoe UI', Arial, sans-serif; padding: 30px; color: #000; background: #fff; }
                 .header { text-align: center; border-bottom: 3px solid #1a237e; padding-bottom: 15px; margin-bottom: 25px; }
                 .header h1 { font-size: 28px; color: #1a237e; margin-bottom: 5px; }
                 .header p { font-size: 12px; color: #666; }
+                .header .range { font-size: 14px; color: #FF6B35; font-weight: 700; margin-top: 8px; }
                 .provider-info { background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; }
                 .provider-info strong { color: #1a237e; }
                 .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px; }
@@ -1407,7 +1450,8 @@ window.downloadPDF = function() {
         <body>
             <div class="header">
                 <h1>🏠 NnlGharPro</h1>
-                <p>Provider Report — ${today}</p>
+                <p>Provider Report</p>
+                <div class="range">📅 ${rangeLabel}</div>
             </div>
 
             <div class="provider-info">
@@ -1424,7 +1468,7 @@ window.downloadPDF = function() {
                 </div>
                 <div class="stat-box leads">
                     <div class="label">📋 Total Leads</div>
-                    <div class="value">${allBookings.length}</div>
+                    <div class="value">${filteredBookings.length}</div>
                 </div>
                 <div class="stat-box accepted">
                     <div class="label">✅ Accepted</div>
@@ -1449,7 +1493,7 @@ window.downloadPDF = function() {
                     <tr><th>Category</th><th style="text-align:right">Count</th></tr>
                 </thead>
                 <tbody>
-                    <tr><td>Total Leads Received</td><td style="text-align:right"><strong>${allBookings.length}</strong></td></tr>
+                    <tr><td>Total Leads Received</td><td style="text-align:right"><strong>${filteredBookings.length}</strong></td></tr>
                     <tr><td>Accepted Leads</td><td style="text-align:right"><strong>${accepted}</strong></td></tr>
                     <tr><td>Completed Orders</td><td style="text-align:right"><strong>${completed}</strong></td></tr>
                     <tr><td>Rejected Leads</td><td style="text-align:right"><strong>${rejected}</strong></td></tr>
