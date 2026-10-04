@@ -832,14 +832,36 @@ function filterBookingsByDate(bookings, from, to) {
 // ═══════════════════════════════════════════════════════════════════
 // 💰 100% ACCURATE CALCULATIONS
 // ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+// 💰 100% ACCURATE CALCULATIONS — v2.0
+// ═══════════════════════════════════════════════════════════
+const ADMIN_DELIVERY_SHARE = 10;   // ₹10 fixed per delivery
+
 function getBookingAmounts(d) {
     const itemsTotal = d.itemsTotal || (d.totalAmount ? d.totalAmount - (d.deliveryCharge || 0) : 0) || 0;
     const deliveryCharge = d.deliveryCharge || 0;
     const grandTotal = d.totalAmount || (itemsTotal + deliveryCharge);
-    const gatewayFee = d.gatewayFee || Math.round(grandTotal * GATEWAY_FEE);
-    const adminCommission = d.adminCommission || Math.round(itemsTotal * ADMIN_SHARE);
-    const providerAmount = d.providerAmount || Math.round(itemsTotal * PROVIDER_SHARE);
-    const deliveryPartnerAmount = deliveryCharge;
+    
+    // Razorpay Fee (2% of grand total) — Admin bears
+    const gatewayFee = d.gatewayFee || Math.round(grandTotal * 0.02);
+    
+    // Admin Commission (5% of items)
+    const adminCommission = d.adminCommission || Math.round(itemsTotal * 0.05);
+    
+    // Admin Delivery Income (₹10 per delivery)
+    const adminDeliveryIncome = d.adminDeliveryIncome || (deliveryCharge > 0 ? ADMIN_DELIVERY_SHARE : 0);
+    
+    // Total Admin Income (before Razorpay)
+    const totalAdminIncome = adminCommission + adminDeliveryIncome;
+    
+    // Net Admin Income (after Razorpay deduction)
+    const netAdminIncome = totalAdminIncome - gatewayFee;
+    
+    // Provider Amount (95% of items)
+    const providerAmount = d.providerAmount || Math.round(itemsTotal * 0.95);
+    
+    // Delivery Partner Amount (delivery charge - ₹10)
+    const deliveryPartnerAmount = d.deliveryPartnerAmount || (deliveryCharge > 0 ? (deliveryCharge - ADMIN_DELIVERY_SHARE) : 0);
     
     return {
         itemsTotal,
@@ -847,11 +869,13 @@ function getBookingAmounts(d) {
         grandTotal,
         gatewayFee,
         adminCommission,
+        adminDeliveryIncome,
+        totalAdminIncome,
+        netAdminIncome,
         providerAmount,
         deliveryPartnerAmount
     };
 }
-
 // ═══════════════════════════════════════════════════════════════════
 // 🎯 UI UTILITIES
 // ═══════════════════════════════════════════════════════════════════
@@ -1879,6 +1903,9 @@ function downloadCustomerReport(bookings, filterLabel) {
             'Delivery Charge': a.deliveryCharge, 'Grand Total': a.grandTotal,
             'Razorpay (2%)': a.gatewayFee, 'Admin Commission (5%)': a.adminCommission,
             'Provider Amount (95%)': a.providerAmount, 'Delivery Partner Amt': a.deliveryPartnerAmount,
+            'Admin Delivery Income': a.adminDeliveryIncome,
+            'Total Admin Income': a.totalAdminIncome,
+            'Net Admin Income': a.netAdminIncome,
             'Payment': d.paymentStatus || '', 'Status': d.status || ''
         });
     });
@@ -1948,17 +1975,33 @@ function downloadDeliveryReport(bookings, filterLabel) {
     XLSX.writeFile(wb, `NnlGharPro_Delivery_${filterLabel}_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// 📥 INCOME REPORT — 100% Accurate (v2.0)
+// ═══════════════════════════════════════════════════════════════════
 function downloadIncomeReport(bookings, filterLabel) {
-    let totalOrders = 0, totalItems = 0, totalDelivery = 0, totalAmount = 0, totalGatewayFee = 0, totalCommission = 0, totalProviderPay = 0, totalDeliveryPay = 0;
+    let totalOrders = 0;
+    let totalItems = 0;
+    let totalDelivery = 0;
+    let totalAmount = 0;
+    let totalGatewayFee = 0;
+    let totalAdminCommission = 0;
+    let totalAdminDeliveryIncome = 0;
+    let totalAdminIncome = 0;
+    let totalNetAdminIncome = 0;
+    let totalProviderPay = 0;
+    let totalDeliveryPay = 0;
     
     bookings.forEach(d => {
         const a = getBookingAmounts(d);
-        totalOrders++; 
-        totalItems += a.itemsTotal; 
-        totalDelivery += a.deliveryCharge; 
+        totalOrders++;
+        totalItems += a.itemsTotal;
+        totalDelivery += a.deliveryCharge;
         totalAmount += a.grandTotal;
         totalGatewayFee += a.gatewayFee;
-        totalCommission += a.adminCommission;
+        totalAdminCommission += a.adminCommission;
+        totalAdminDeliveryIncome += a.adminDeliveryIncome;      // 🆕
+        totalAdminIncome += a.totalAdminIncome;                // 🆕
+        totalNetAdminIncome += a.netAdminIncome;               // 🆕
         totalProviderPay += a.providerAmount;
         totalDeliveryPay += a.deliveryPartnerAmount;
     });
@@ -1968,13 +2011,20 @@ function downloadIncomeReport(bookings, filterLabel) {
         { 'Item': '🛒 Total Items Amount', 'Amount': '₹' + totalItems.toLocaleString() },
         { 'Item': '🚚 Total Delivery Charge', 'Amount': '₹' + totalDelivery.toLocaleString() },
         { 'Item': '💰 Grand Total Revenue', 'Amount': '₹' + totalAmount.toLocaleString() },
-        { 'Item': '💳 Razorpay Fee (2%)', 'Amount': '-₹' + totalGatewayFee.toLocaleString() },
-        { 'Item': '💵 Admin Commission (5%)', 'Amount': '₹' + totalCommission.toLocaleString() },
-        { 'Item': '👤 Provider Payout (95%)', 'Amount': '-₹' + totalProviderPay.toLocaleString() },
+        { 'Item': '💳 Razorpay Fee (2%) [Admin bears]', 'Amount': '-₹' + totalGatewayFee.toLocaleString() },
+        { 'Item': '💵 Admin Commission (5% of items)', 'Amount': '₹' + totalAdminCommission.toLocaleString() },
+        { 'Item': '📦 Admin Delivery Income (₹10/delivery)', 'Amount': '₹' + totalAdminDeliveryIncome.toLocaleString() },  // 🆕
+        { 'Item': '💰 Total Admin Income (Before Razorpay)', 'Amount': '₹' + totalAdminIncome.toLocaleString() },            // 🆕
+        { 'Item': '👤 Provider Payout (95% of items)', 'Amount': '-₹' + totalProviderPay.toLocaleString() },
         { 'Item': '🚚 Delivery Partner Payout', 'Amount': '-₹' + totalDeliveryPay.toLocaleString() },
-        { 'Item': '💎 NET INCOME (Aapki)', 'Amount': '₹' + totalCommission.toLocaleString() }
+        { 'Item': '💎 NET ADMIN INCOME (After Razorpay)', 'Amount': '₹' + totalNetAdminIncome.toLocaleString() }              // 🆕
     ];
     
+    const ws = XLSX.utils.json_to_sheet(summaryData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Income Summary');
+    XLSX.writeFile(wb, `NnlGharPro_Income_${filterLabel}_${new Date().toISOString().slice(0,10)}.xlsx`);
+} 
     const ws = XLSX.utils.json_to_sheet(summaryData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Income Summary');
@@ -2039,7 +2089,11 @@ async function downloadCompleteReport(bookings, filterLabel) {
             'Customer': d.customerName || '', 'Mobile': d.customerMobile || '',
             'Provider': d.providerName || '', 'Service': d.service || '',
             'Items Total': a.itemsTotal, 'Delivery': a.deliveryCharge, 
-            'Total': a.grandTotal, 'Admin Income': a.adminCommission, 
+            'Total': a.grandTotal,
+            'Admin Commission (5%)': a.adminCommission,
+            'Admin Delivery Income': a.adminDeliveryIncome,
+            'Total Admin Income': a.totalAdminIncome,
+            'Net Admin Income': a.netAdminIncome,
             'Payment': d.paymentStatus || ''
         });
     });
@@ -2083,22 +2137,34 @@ async function downloadCompleteReport(bookings, filterLabel) {
     }));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(delData), 'Delivery');
     
-    let totalAmount = 0, totalCommission = 0, totalProvider = 0, totalDelivery = 0, totalGateway = 0;
-    paidBookings.forEach(d => {
+        let totalAmount = 0;
+    let totalAdminCommission = 0;
+    let totalAdminDeliveryIncome = 0;
+    let totalAdminIncome = 0;
+    let totalNetAdminIncome = 0;
+    let totalProvider = 0;
+    let totalDelivery = 0;
+    let totalGateway = 0;
+       paidBookings.forEach(d => {
         const a = getBookingAmounts(d);
         totalAmount += a.grandTotal;
-        totalCommission += a.adminCommission;
+        totalAdminCommission += a.adminCommission;              // 🆕
+        totalAdminDeliveryIncome += a.adminDeliveryIncome;      // 🆕
+        totalAdminIncome += a.totalAdminIncome;                // 🆕
+        totalNetAdminIncome += a.netAdminIncome;               // 🆕
         totalProvider += a.providerAmount;
         totalDelivery += a.deliveryPartnerAmount;
         totalGateway += a.gatewayFee;
     });
-    const incomeData = [
-        { 'Item': 'Total Revenue', 'Amount': totalAmount },
-        { 'Item': 'Razorpay Fee (2%)', 'Amount': totalGateway },
-        { 'Item': 'Admin Income (5%)', 'Amount': totalCommission },
-        { 'Item': 'Provider Payout', 'Amount': totalProvider },
-        { 'Item': 'Delivery Payout', 'Amount': totalDelivery },
-        { 'Item': 'NET INCOME', 'Amount': totalCommission }
+      const incomeData = [
+        { 'Item': '💰 Total Revenue', 'Amount': totalAmount },
+        { 'Item': '💳 Razorpay Fee (2%) [Admin bears]', 'Amount': '-₹' + totalGateway.toLocaleString() },
+        { 'Item': '💵 Admin Commission (5% of items)', 'Amount': '₹' + totalAdminCommission.toLocaleString() },
+        { 'Item': '📦 Admin Delivery Income (₹10/delivery)', 'Amount': '₹' + totalAdminDeliveryIncome.toLocaleString() },
+        { 'Item': '💰 Total Admin Income (Before Razorpay)', 'Amount': '₹' + totalAdminIncome.toLocaleString() },
+        { 'Item': '👤 Provider Payout (95%)', 'Amount': '-₹' + totalProvider.toLocaleString() },
+        { 'Item': '🚚 Delivery Partner Payout', 'Amount': '-₹' + totalDelivery.toLocaleString() },
+        { 'Item': '💎 NET ADMIN INCOME (After Razorpay)', 'Amount': '₹' + totalNetAdminIncome.toLocaleString() }
     ];
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(incomeData), 'Income');
     
@@ -2123,6 +2189,10 @@ window.downloadCustomerExcel = async function() {
                 'Items Total': a.itemsTotal, 'Delivery Charge': a.deliveryCharge, 
                 'Grand Total': a.grandTotal, 'Razorpay (2%)': a.gatewayFee, 
                 'Admin Commission (5%)': a.adminCommission,
+                                'Admin Delivery Income': a.adminDeliveryIncome,
+                'Total Admin Income': a.totalAdminIncome,
+                'Net Admin Income': a.netAdminIncome,
+                'Delivery Partner Amt': a.deliveryPartnerAmount,
                 'Provider Amount (95%)': a.providerAmount,
                 'Payment': d.paymentStatus || '', 'Status': d.status || ''
             });
