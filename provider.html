@@ -697,6 +697,7 @@ window.logout = async function() {
     stopBellLoop();
     hideCallingOverlay();
     window._leadListenerActive = false;
+    window._processedLeads = new Set();
     location.reload();
 };
 
@@ -709,6 +710,7 @@ function initApp() {
     loadLeads();
     loadOnboarding();
     loadDeliveryPartners();
+    window._processedLeads = new Set();
     window._leadListenerActive = false;
     loadPincodes();
     startLeadListener();
@@ -1301,12 +1303,19 @@ function rejectLead(id) {
 // LEAD QUEUE — SIRF PAID + ASSIGNED
 // ═══════════════════════════════════════════════════════════
 function startLeadListener() {
-        // ✅ Guard — duplicate listener rok do
+    // ✅ Guard — duplicate listener rok do
     if (window._leadListenerActive) {
         console.log('⚠️ Lead listener already active, skipping...');
         return;
     }
     window._leadListenerActive = true;
+    
+    // ✅ Processed leads ka set banao
+    if (!window._processedLeads) {
+        window._processedLeads = new Set();
+    }
+    const processedLeads = window._processedLeads;
+    
     db.collection('bookings')
       .where('providerId', '==', currentUser.id)
       .where('status', '==', 'assigned')
@@ -1315,8 +1324,16 @@ function startLeadListener() {
         snap.docChanges().forEach(change => {
             if (change.type === 'added') {
                 const lead = { id: change.doc.id, ...change.doc.data() };
+                
+                // ✅ Check karo ki same lead already processed toh nahi
+                if (processedLeads.has(lead.id)) {
+                    console.log('⚠️ Lead already processed:', lead.id);
+                    return;
+                }
+                
                 if (!leadQueue.find(l => l.id === lead.id) && pendingLeadId !== lead.id) {
                     leadQueue.push(lead);
+                    processedLeads.add(lead.id);   // ✅ Mark as processed
                     console.log('🔔 New PAID lead:', lead.customerName);
                 }
             }
@@ -1324,7 +1341,6 @@ function startLeadListener() {
         processQueue();
       });
 }
-
 function processQueue() {
     if (isProcessing || leadQueue.length === 0) return;
     isProcessing = true;
@@ -1469,7 +1485,11 @@ window.downloadPDF = function(range = 'all') {
     const today = new Date().toLocaleDateString('en-IN');
     const todayTime = new Date().toLocaleTimeString('en-IN');
 
-    const printWindow = window.open('', '_blank');
+        const printWindow = window.open('', '_blank', 'width=800,height=900');
+    if (!printWindow) {
+        showToast('⚠️ Popup blocked! Please allow popups.', true);
+        return;
+    }
     printWindow.document.write(`
         <!DOCTYPE html>
         <html>
@@ -1500,6 +1520,21 @@ window.downloadPDF = function(range = 'all') {
                 .summary-table th, .summary-table td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #eee; }
                 .summary-table th { background: #1a237e; color: #fff; font-weight: 600; }
                 .summary-table tr:nth-child(even) { background: #f9f9f9; }
+                    @media (max-width: 600px) {
+                    body { padding: 12px !important; font-size: 11px !important; }
+                    .header h1 { font-size: 20px !important; }
+                    .header p { font-size: 10px !important; }
+                    .header .range { font-size: 12px !important; }
+                    .provider-info { font-size: 11px !important; padding: 10px !important; }
+                    .stats-grid { grid-template-columns: 1fr !important; gap: 8px !important; }
+                    .stat-box { padding: 10px !important; }
+                    .stat-box .value { font-size: 18px !important; }
+                    .stat-box .label { font-size: 10px !important; }
+                    .summary-table { font-size: 10px !important; }
+                    .summary-table th, .summary-table td { padding: 5px 4px !important; }
+                    .footer { font-size: 10px !important; padding-top: 10px !important; }
+                    .no-print button { padding: 10px 20px !important; font-size: 12px !important; }
+                }
                 @media print { body { padding: 15px; } .no-print { display: none; } }
             </style>
         </head>
