@@ -998,6 +998,38 @@ function deleteSubItem(id, index) {
 // ═══════════════════════════════════════════════════════════
 // LEADS
 // ═══════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════
+// 💰 100% ACCURATE CALCULATIONS — v2.0
+// ═══════════════════════════════════════
+const ADMIN_DELIVERY_SHARE = 10;
+
+function getBookingAmounts(d) {
+    const itemsTotal = d.itemsTotal || (d.totalAmount ? d.totalAmount - (d.deliveryCharge || 0) : 0) || 0;
+    const deliveryCharge = d.deliveryCharge || 0;
+    const grandTotal = d.totalAmount || (itemsTotal + deliveryCharge);
+    
+    const gatewayFee = d.gatewayFee || Math.round(grandTotal * 0.02);
+    const adminCommission = d.adminCommission || Math.round(itemsTotal * 0.05);
+    const adminDeliveryIncome = d.adminDeliveryIncome || (deliveryCharge > 0 ? ADMIN_DELIVERY_SHARE : 0);
+    const totalAdminIncome = adminCommission + adminDeliveryIncome;
+    const netAdminIncome = totalAdminIncome - gatewayFee;
+    const providerAmount = d.providerAmount || Math.round(itemsTotal * 0.95);
+    const deliveryPartnerAmount = d.deliveryPartnerAmount || (deliveryCharge > 0 ? (deliveryCharge - ADMIN_DELIVERY_SHARE) : 0);
+    
+    return {
+        itemsTotal,
+        deliveryCharge,
+        grandTotal,
+        gatewayFee,
+        adminCommission,
+        adminDeliveryIncome,
+        totalAdminIncome,
+        netAdminIncome,
+        providerAmount,
+        deliveryPartnerAmount
+    };
+}
+
 function loadLeads() {
     db.collection('bookings')
       .where('providerId', '==', currentUser.id)
@@ -1031,7 +1063,8 @@ function updateStats() {
     allBookings.forEach(b => {
         if (b.status === 'completed') {
             accepted++;
-            totalEarnings += b.providerAmount || Math.round((b.itemsTotal || 0) * 0.95) || 0;
+            const a = getBookingAmounts(b);
+            totalEarnings += a.providerAmount;
         } else if (b.status === 'accepted') {
             accepted++;
         } else if (b.status === 'rejected') {
@@ -1064,7 +1097,8 @@ function renderLeads() {
         const itemsTotal = b.itemsTotal || 0;
         const deliveryCharge = b.deliveryCharge || 0;
         const deliveryDistance = b.deliveryDistance || 0;
-        const providerAmount = b.providerAmount || Math.round(itemsTotal * 0.95);
+        const a = getBookingAmounts(b);
+        const providerAmount = a.providerAmount;
         const customerName = b.customerName || 'Customer';
         const customerMobile = b.customerMobile || '';
         const service = b.service || 'Service';
@@ -1323,7 +1357,8 @@ window.downloadPDF = function() {
         if (b.status === 'completed') {
             completed++;
             accepted++;
-            totalEarnings += b.providerAmount || Math.round((b.itemsTotal || 0) * 0.95) || 0;
+            const a = getBookingAmounts(b);
+            totalEarnings += a.providerAmount;
         } else if (b.status === 'accepted') {
             accepted++;
         } else if (b.status === 'rejected') {
