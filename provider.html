@@ -1123,29 +1123,33 @@ function updateStats() {
 let leadsExpanded = false;
 let leadsSearchTerm = '';
 
+// ═══════════════════════════════════════════════════════════
+// LEADS — Collapsible + Latest 10 + Search (No Backticks)
+// ═══════════════════════════════════════════════════════════
+let leadsExpanded = false;
+let leadsSearchTerm = '';
+
 function renderLeads() {
     const list = document.getElementById('leadsList');
-    if (!allBookings.length) { 
-        list.innerHTML = '<div class="empty-msg"><span class="icon">📋</span>No leads yet</div>'; 
-        return; 
+    if (!allBookings.length) {
+        list.innerHTML = '<div class="empty-msg"><span class="icon">📋</span>No leads yet</div>';
+        return;
     }
-    
-    // ✅ Filter by search
+
     let filtered = allBookings;
     if (leadsSearchTerm) {
         const term = leadsSearchTerm.toLowerCase();
-        filtered = allBookings.filter(b => 
-            (b.customerName || '').toLowerCase().includes(term) ||
-            (b.customerMobile || '').includes(term) ||
-            (b.service || '').toLowerCase().includes(term)
-        );
+        filtered = allBookings.filter(function(b) {
+            return (b.customerName || '').toLowerCase().indexOf(term) !== -1 ||
+                   (b.customerMobile || '').indexOf(term) !== -1 ||
+                   (b.service || '').toLowerCase().indexOf(term) !== -1;
+        });
     }
-    
-    // ✅ Latest 10 default
+
     const displayLeads = leadsExpanded ? filtered : filtered.slice(0, 10);
-    
-    // ✅ Render lead cards
-    let leadsHtml = displayLeads.map(b => {
+
+    let leadsHtml = '';
+    displayLeads.forEach(function(b) {
         const status = b.status || 'pending';
         const paymentStatus = b.paymentStatus || 'not_paid';
         const isPaid = paymentStatus === 'paid' && b.paymentConfirmed === true;
@@ -1160,95 +1164,71 @@ function renderLeads() {
         const service = b.service || 'Service';
         const address = b.customerAddress || b.address || '-';
         const customerNotes = b.customerNotes || '';
-        
-        let paymentBadge = isPaid 
+
+        let paymentBadge = isPaid
             ? '<span style="background:rgba(0,200,83,.15);color:#00C853;padding:3px 12px;border-radius:12px;font-size:10px;font-weight:700;display:inline-block">✅ PAID ₹' + amount + '</span>'
             : '<span style="background:rgba(255,71,87,.15);color:#FF4757;padding:3px 12px;border-radius:12px;font-size:10px;font-weight:700;display:inline-block">❌ NOT PAID</span>';
-        
-        let notesBox = customerNotes ? `
-            <div class="customer-notes-box">
-                <i class="fas fa-sticky-note"></i> <strong>Customer Notes:</strong> ${customerNotes}
-            </div>
-        ` : '';
-        
-        let deliveryBox = (deliveryCharge > 0) ? `
-            <div class="delivery-info-box">
-                <div class="d-label"><i class="fas fa-truck"></i> Delivery (${deliveryDistance === 1 ? '0-4' : deliveryDistance} km)</div>
-                <div class="d-amount">₹${deliveryCharge}</div>
-            </div>
-        ` : '';
-        
+
+        let notesBox = customerNotes
+            ? '<div class="customer-notes-box"><i class="fas fa-sticky-note"></i> <strong>Notes:</strong> ' + customerNotes + '</div>'
+            : '';
+
+        let deliveryBox = deliveryCharge > 0
+            ? '<div class="delivery-info-box"><div class="d-label"><i class="fas fa-truck"></i> Delivery (' + (deliveryDistance === 1 ? '0-4' : deliveryDistance) + ' km)</div><div class="d-amount">₹' + deliveryCharge + '</div></div>'
+            : '';
+
         let actionButtons = '';
-        
         if (!isPaid) {
-            actionButtons = `
-                <div style="font-size:11px;color:rgba(255,71,87,.8);padding:6px 0">⚠️ Payment pending — Action nahi le sakte</div>
-                <button class="btn-whatsapp" onclick="chatCustomer('${b.id}')">💬 Chat</button>
-            `;
+            actionButtons = '<div style="font-size:11px;color:rgba(255,71,87,.8);padding:6px 0">⚠️ Payment pending</div>' +
+                '<button class="btn-whatsapp" onclick="chatCustomer(\'' + b.id + '\')">💬 Chat</button>';
         } else if (status === 'pending' || status === 'assigned') {
-            actionButtons = `
-                <button class="btn-accept" onclick="acceptLead('${b.id}')">✅ Accept</button>
-                <button class="btn-reject" onclick="rejectLead('${b.id}')">❌ Reject</button>
-                <button class="btn-delivery" onclick="sendToDeliveryPartnerFromLead('${b.id}')">🚚 Delivery</button>
-                <button class="btn-whatsapp" onclick="chatCustomer('${b.id}')">💬 Chat</button>
-            `;
+            actionButtons = '<button class="btn-accept" onclick="acceptLead(\'' + b.id + '\')">✅ Accept</button>' +
+                '<button class="btn-reject" onclick="rejectLead(\'' + b.id + '\')">❌ Reject</button>' +
+                '<button class="btn-delivery" onclick="sendToDeliveryPartnerFromLead(\'' + b.id + '\')">🚚 Delivery</button>' +
+                '<button class="btn-whatsapp" onclick="chatCustomer(\'' + b.id + '\')">💬 Chat</button>';
         } else if (status === 'accepted') {
-            actionButtons = `
-                <button class="btn-complete" onclick="completeLead('${b.id}')">✅ Complete</button>
-                <button class="btn-delivery" onclick="sendToDeliveryPartnerFromLead('${b.id}')">🚚 Delivery</button>
-                <button class="btn-whatsapp" onclick="resendReceiptById('${b.id}')">🧾 Receipt</button>
-                <button class="btn-whatsapp" onclick="chatCustomer('${b.id}')">💬 Chat</button>
-            `;
+            actionButtons = '<button class="btn-complete" onclick="completeLead(\'' + b.id + '\')">✅ Complete</button>' +
+                '<button class="btn-delivery" onclick="sendToDeliveryPartnerFromLead(\'' + b.id + '\')">🚚 Delivery</button>' +
+                '<button class="btn-whatsapp" onclick="resendReceiptById(\'' + b.id + '\')">🧾 Receipt</button>' +
+                '<button class="btn-whatsapp" onclick="chatCustomer(\'' + b.id + '\')">💬 Chat</button>';
         } else if (status === 'completed') {
-            actionButtons = `
-                <button class="btn-whatsapp" onclick="resendReceiptById('${b.id}')">🧾 Send Receipt</button>
-                <button class="btn-whatsapp" onclick="chatCustomer('${b.id}')">💬 Chat</button>
-            `;
+            actionButtons = '<button class="btn-whatsapp" onclick="resendReceiptById(\'' + b.id + '\')">🧾 Send Receipt</button>' +
+                '<button class="btn-whatsapp" onclick="chatCustomer(\'' + b.id + '\')">💬 Chat</button>';
         } else if (status === 'rejected') {
-            actionButtons = `
-                <button class="btn-whatsapp" onclick="chatCustomer('${b.id}')">💬 Chat</button>
-            };
-        
-           return `
-            <div class="lead-card" style="border-left-color:${isPaid ? '#00C853' : '#FF4757'}">
-                <div class="lead-service">${service}</div>
-                <div class="detail-row"><i class="fas fa-user"></i> ${customerName}</div>
-                <div class="detail-row"><i class="fas fa-phone"></i> ${customerMobile}</div>
-                <div class="detail-row"><i class="fas fa-map-marker-alt"></i> ${address}</div>
-                <div class="detail-row"><i class="fas fa-shopping-cart"></i> Items: ₹${itemsTotal}</div>
-                ${deliveryBox}
-                <div class="detail-row" style="margin-top:6px"><i class="fas fa-rupee-sign" style="color:#00C853"></i> <strong>Total: ₹${amount}</strong></div>
-                <div class="detail-row" style="color:rgba(78,205,196,.9)"><i class="fas fa-wallet"></i> <strong>Aapko: ₹${providerAmount}</strong> (95%)</div>
-                ${notesBox}
-                <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
-                    <span class="status-badge status-${status}">${status.toUpperCase()}</span>
-                    ${paymentBadge}
-                </div>
-                <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
-                    ${actionButtons}
-                </div>
-            </div>
-        `;
-    }).join('');
-    
-    // ✅ Final HTML with search + toggle
-    list.innerHTML = `
-        <input type="text" class="lead-search-box" placeholder="🔍 Search customer, mobile, service..." value="${leadsSearchTerm}" oninput="searchLeads(this.value)" style="width:100%;padding:12px 16px;border:1px solid rgba(255,255,255,.06);border-radius:10px;background:rgba(255,255,255,.03);color:#fff;font-size:13px;outline:none;margin-bottom:12px">
-        
-        <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:8px;font-weight:600">
-            📋 ${leadsExpanded ? 'All' : 'Latest 10'} Leads ${leadsSearchTerm ? `(filtered: ${filtered.length})` : `(${filtered.length} total)`}
-        </div>
-        
-        <div style="max-height:${leadsExpanded ? '600px' : 'none'};overflow-y:${leadsExpanded ? 'auto' : 'visible'};padding:4px;border-radius:12px">
-            ${leadsHtml || '<div class="empty-msg">No leads found</div>'}
-        </div>
-        
-        ${filtered.length > 10 ? `
-            <button onclick="toggleLeads()" style="width:100%;padding:14px;background:linear-gradient(135deg,rgba(78,205,196,.1),rgba(26,35,126,.05));border:1px solid rgba(78,205,196,.2);border-radius:12px;color:#4ECDC4;font-weight:700;font-size:13px;cursor:pointer;margin-top:12px;font-family:inherit">
-                ${leadsExpanded ? '▲ Hide (Show Latest 10)' : `▼ Show All ${filtered.length} Leads`}
-            </button>
-        ` : ''}
-    `;
+            actionButtons = '<button class="btn-whatsapp" onclick="chatCustomer(\'' + b.id + '\')">💬 Chat</button>';
+        }
+
+        leadsHtml += '<div class="lead-card" style="border-left-color:' + (isPaid ? '#00C853' : '#FF4757') + '">' +
+            '<div class="lead-service">' + service + '</div>' +
+            '<div class="detail-row"><i class="fas fa-user"></i> ' + customerName + '</div>' +
+            '<div class="detail-row"><i class="fas fa-phone"></i> ' + customerMobile + '</div>' +
+            '<div class="detail-row"><i class="fas fa-map-marker-alt"></i> ' + address + '</div>' +
+            '<div class="detail-row"><i class="fas fa-shopping-cart"></i> Items: ₹' + itemsTotal + '</div>' +
+            deliveryBox +
+            '<div class="detail-row" style="margin-top:6px"><i class="fas fa-rupee-sign" style="color:#00C853"></i> <strong>Total: ₹' + amount + '</strong></div>' +
+            '<div class="detail-row" style="color:rgba(78,205,196,.9)"><i class="fas fa-wallet"></i> <strong>Aapko: ₹' + providerAmount + '</strong> (95%)</div>' +
+            notesBox +
+            '<div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">' +
+                '<span class="status-badge status-' + status + '">' + status.toUpperCase() + '</span>' +
+                paymentBadge +
+            '</div>' +
+            '<div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">' + actionButtons + '</div>' +
+        '</div>';
+    });
+
+    const toggleBtn = filtered.length > 10
+        ? '<button onclick="toggleLeads()" style="width:100%;padding:14px;background:linear-gradient(135deg,rgba(78,205,196,.1),rgba(26,35,126,.05));border:1px solid rgba(78,205,196,.2);border-radius:12px;color:#4ECDC4;font-weight:700;font-size:13px;cursor:pointer;margin-top:12px;font-family:inherit">' +
+            (leadsExpanded ? '▲ Hide (Show Latest 10)' : '▼ Show All ' + filtered.length + ' Leads') +
+          '</button>'
+        : '';
+
+    list.innerHTML =
+        '<input type="text" placeholder="🔍 Search customer..." value="' + leadsSearchTerm + '" oninput="searchLeads(this.value)" style="width:100%;padding:12px 16px;border:1px solid rgba(255,255,255,.06);border-radius:10px;background:rgba(255,255,255,.03);color:#fff;font-size:13px;outline:none;margin-bottom:12px">' +
+        '<div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:8px;font-weight:600">📋 ' + (leadsExpanded ? 'All' : 'Latest 10') + ' Leads (' + filtered.length + ' total)</div>' +
+        '<div style="max-height:' + (leadsExpanded ? '600px' : 'none') + ';overflow-y:' + (leadsExpanded ? 'auto' : 'visible') + ';padding:4px;border-radius:12px">' +
+            (leadsHtml || '<div class="empty-msg">No leads found</div>') +
+        '</div>' +
+        toggleBtn;
 }
 
 window.toggleLeads = function() {
