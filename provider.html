@@ -696,6 +696,7 @@ window.logout = async function() {
     if (sessionCheckInterval) clearInterval(sessionCheckInterval);
     stopBellLoop();
     hideCallingOverlay();
+    window._leadListenerActive = false;
     location.reload();
 };
 
@@ -708,6 +709,7 @@ function initApp() {
     loadLeads();
     loadOnboarding();
     loadDeliveryPartners();
+    window._leadListenerActive = false;
     loadPincodes();
     startLeadListener();
     startSessionCheck();
