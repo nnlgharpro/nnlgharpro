@@ -1802,7 +1802,7 @@ async function loadPayments() {
         if (bdProviderEl) bdProviderEl.textContent = '₹' + bdProvider;
         if (bdDeliveryPartnerEl) bdDeliveryPartnerEl.textContent = '₹' + bdDeliveryPartner;
         renderPaymentList(recentBookings);
-  wc .      
+        }
     } catch (e) {
         container.innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`;
     }
