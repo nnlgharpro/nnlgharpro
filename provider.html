@@ -952,6 +952,12 @@ function renderItems() {
         ` : ''}
     `;
 }
+function showAddMainForm() {
+    openModal('➕ Add Main Item', `
+        <div class="form-group"><label>Item Name</label><input id="mName" placeholder="e.g. AC Repair"></div>
+        <button class="btn btn-primary" onclick="saveMainItem()" style="width:100%">Save</button>
+    `);
+}
 
 window.toggleItems = function() {
     itemsExpanded = !itemsExpanded;
