@@ -460,6 +460,52 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
                     <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:4px">📊 Paid Orders</div>
                 </div>
             </div>
+                    <!-- ✅ Payment Breakdown -->
+        <div style="background:rgba(255,255,255,.03);border-radius:12px;padding:16px;margin-bottom:12px;border:1px solid rgba(255,255,255,.05)">
+            <div style="font-size:12px;color:rgba(255,255,255,.4);font-weight:600;margin-bottom:10px">📈 PAYMENT BREAKDOWN</div>
+            <div id="paymentBreakdown">
+                <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:rgba(255,255,255,.7);border-bottom:1px solid rgba(255,255,255,.05)">
+                    <span>🛒 Items Total</span>
+                    <strong style="color:#fff" id="bdItems">₹0</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:rgba(255,255,255,.7);border-bottom:1px solid rgba(255,255,255,.05)">
+                    <span>🚚 Delivery Charge</span>
+                    <strong style="color:#FFD93D" id="bdDelivery">₹0</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:rgba(255,255,255,.7);border-bottom:1px solid rgba(255,255,255,.05)">
+                    <span>💰 Grand Total</span>
+                    <strong style="color:#00C853" id="bdGrand">₹0</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:rgba(255,255,255,.7);border-bottom:1px solid rgba(255,255,255,.05)">
+                    <span>💳 Razorpay Fee (2%)</span>
+                    <strong style="color:#FF4757" id="bdRazorpay">-₹0</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:rgba(255,255,255,.7);border-bottom:1px solid rgba(255,255,255,.05)">
+                    <span>💵 Admin Commission (5%)</span>
+                    <strong style="color:#FFD93D" id="bdAdminComm">₹0</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:rgba(255,255,255,.7);border-bottom:1px solid rgba(255,255,255,.05)">
+                    <span>📦 Admin Delivery Income</span>
+                    <strong style="color:#FFD93D" id="bdAdminDelivery">₹0</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:rgba(255,255,255,.7);border-bottom:1px solid rgba(255,255,255,.05)">
+                    <span>💰 Total Admin Income</span>
+                    <strong style="color:#FFD93D" id="bdTotalAdmin">₹0</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:14px;color:#fff;font-weight:700;border-top:2px solid rgba(255,255,255,.1);margin-top:4px">
+                    <span>💎 Net Admin Income</span>
+                    <strong style="color:#00C853" id="bdNetAdmin">₹0</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:rgba(255,255,255,.7);border-bottom:1px solid rgba(255,255,255,.05)">
+                    <span>👤 Provider Payout (95%)</span>
+                    <strong style="color:#4ECDC4" id="bdProvider">₹0</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:rgba(255,255,255,.7)">
+                    <span>🚚 Delivery Partner Payout</span>
+                    <strong style="color:#FF6B35" id="bdDeliveryPartner">₹0</strong>
+                </div>
+            </div>
+        </div>
             <div id="paymentList"><div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading payments...</div></div>
         </div>
     </div>
@@ -1711,9 +1757,52 @@ async function loadPayments() {
         if (unpaidEl) unpaidEl.textContent = recentBookings.length - paid;
         if (revEl) revEl.textContent = '₹' + revenue.toLocaleString();
         if (commEl) commEl.textContent = '₹' + commission.toLocaleString();
+
+                // ✅ Breakdown calculate karo
+        let bdItems = 0, bdDelivery = 0, bdGrand = 0, bdRazorpay = 0;
+        let bdAdminComm = 0, bdAdminDelivery = 0, bdTotalAdmin = 0, bdNetAdmin = 0;
+        let bdProvider = 0, bdDeliveryPartner = 0;
         
+        recentBookings.forEach(d => {
+            if (d.paymentStatus === 'paid') {
+                const a = getBookingAmounts(d);
+                bdItems += a.itemsTotal;
+                bdDelivery += a.deliveryCharge;
+                bdGrand += a.grandTotal;
+                bdRazorpay += a.gatewayFee;
+                bdAdminComm += a.adminCommission;
+                bdAdminDelivery += a.adminDeliveryIncome;
+                bdTotalAdmin += a.totalAdminIncome;
+                bdNetAdmin += Math.max(0, a.netAdminIncome);
+                bdProvider += a.providerAmount;
+                bdDeliveryPartner += a.deliveryPartnerAmount;
+            }
+        });
+        
+        // ✅ Update HTML
+        const bdItemsEl = document.getElementById('bdItems');
+        const bdDeliveryEl = document.getElementById('bdDelivery');
+        const bdGrandEl = document.getElementById('bdGrand');
+        const bdRazorpayEl = document.getElementById('bdRazorpay');
+        const bdAdminCommEl = document.getElementById('bdAdminComm');
+        const bdAdminDeliveryEl = document.getElementById('bdAdminDelivery');
+        const bdTotalAdminEl = document.getElementById('bdTotalAdmin');
+        const bdNetAdminEl = document.getElementById('bdNetAdmin');
+        const bdProviderEl = document.getElementById('bdProvider');
+        const bdDeliveryPartnerEl = document.getElementById('bdDeliveryPartner');
+        
+        if (bdItemsEl) bdItemsEl.textContent = '₹' + bdItems;
+        if (bdDeliveryEl) bdDeliveryEl.textContent = '₹' + bdDelivery;
+        if (bdGrandEl) bdGrandEl.textContent = '₹' + bdGrand;
+        if (bdRazorpayEl) bdRazorpayEl.textContent = '-₹' + bdRazorpay;
+        if (bdAdminCommEl) bdAdminCommEl.textContent = '₹' + bdAdminComm;
+        if (bdAdminDeliveryEl) bdAdminDeliveryEl.textContent = '₹' + bdAdminDelivery;
+        if (bdTotalAdminEl) bdTotalAdminEl.textContent = '₹' + bdTotalAdmin;
+        if (bdNetAdminEl) bdNetAdminEl.textContent = '₹' + bdNetAdmin;
+        if (bdProviderEl) bdProviderEl.textContent = '₹' + bdProvider;
+        if (bdDeliveryPartnerEl) bdDeliveryPartnerEl.textContent = '₹' + bdDeliveryPartner;
         renderPaymentList(recentBookings);
-        
+  wc .      
     } catch (e) {
         container.innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`;
     }
