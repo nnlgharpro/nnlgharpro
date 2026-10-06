@@ -76,6 +76,7 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
 .service-btn:hover { transform: translateY(-3px); }
 .service-btn.active { border-color: #FFD93D; box-shadow: 0 0 20px rgba(255,217,61,0.2); }
 .service-btn i { font-size: 26px; margin-bottom: 8px; }
+.s-recharge { background: linear-gradient(135deg, #5F259F, #8B5CF6); }
 .s-plumbing { background: linear-gradient(135deg, #0077b6, #00b4d8); }
 .s-electrician { background: linear-gradient(135deg, #f77f00, #fcbf49); }
 .s-mobile-laptop { background: linear-gradient(135deg, #2a9d8f, #52b788); }
@@ -328,6 +329,7 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
 
     <div class="section-title"><i class="fas fa-tools" style="color:#FF6B35;"></i> Select Service</div>
     <div class="service-grid">
+         <div class="service-btn s-recharge" onclick="openRechargeModal()"><i class="fas fa-mobile-alt"></i> Recharge</div>
         <div class="service-btn s-plumbing" onclick="selectService('Plumbing')"><i class="fas fa-wrench"></i> Plumbing</div>
         <div class="service-btn s-electrician" onclick="selectService('Electrician')"><i class="fas fa-bolt"></i> Electrician</div>
         <div class="service-btn s-mobile-laptop" onclick="selectService('Mobile & Laptop')"><i class="fas fa-laptop"></i> Mobile & Laptop</div>
@@ -380,6 +382,54 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
     <div class="modal-box">
         <div class="modal-header"><h3><i class="fas fa-store" style="color:#FFD93D;"></i> Partner Stores</h3><button class="close-btn" onclick="closeEcommerceModal()">✕</button></div>
         <div id="ecommerceStoreList"><div style="text-align:center; padding:20px; color:rgba(255,255,255,0.2);"><i class="fas fa-spinner fa-spin"></i> Loading stores...</div></div>
+    </div>
+</div>
+
+<!-- ✅ RECHARGE MODAL -->
+<div class="modal-overlay" id="rechargeModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3><i class="fas fa-mobile-alt"></i> Recharge</h3>
+            <button class="close-btn" onclick="closeRechargeModal()">✕</button>
+        </div>
+        
+        <div style="display:flex;gap:8px;margin-bottom:16px">
+            <button id="mobileRechargeBtn" onclick="switchRechargeType('mobile')" style="flex:1;padding:12px;background:linear-gradient(135deg,#4ECDC4,#44B3A8);color:#fff;border:none;border-radius:12px;font-weight:700;cursor:pointer">
+                📱 Mobile
+            </button>
+            <button id="dthRechargeBtn" onclick="switchRechargeType('dth')" style="flex:1;padding:12px;background:rgba(255,255,255,.05);color:rgba(255,255,255,.5);border:none;border-radius:12px;font-weight:700;cursor:pointer">
+                📺 DTH
+            </button>
+        </div>
+        
+        <div id="rechargeServiceWarning" style="display:none;background:rgba(255,152,0,.1);border:1px solid rgba(255,152,0,.3);border-radius:12px;padding:12px;font-size:13px;color:#FF9800;text-align:center;margin-bottom:14px">
+            🔄 Loading...
+        </div>
+        
+        <div class="form-group">
+            <label id="rechargeLabel">📱 Mobile Number</label>
+            <input type="tel" id="rechargeNumber" maxlength="10" placeholder="Enter 10-digit mobile number">
+        </div>
+        
+        <div class="form-group">
+            <label>📡 Operator</label>
+            <select id="rechargeOperator">
+                <option value="">Select Operator</option>
+                <option value="Jio">Jio</option>
+                <option value="Airtel">Airtel</option>
+                <option value="Vi">Vi</option>
+                <option value="BSNL">BSNL</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>💰 Amount (₹)</label>
+            <input type="number" id="rechargeAmount" placeholder="Enter amount (min ₹10)" min="10">
+        </div>
+        
+        <button id="rechargePayBtn" onclick="processRecharge()" style="width:100%;padding:14px;background:linear-gradient(135deg,#5F259F,#8B5CF6);color:#fff;border:none;border-radius:12px;font-weight:700;font-size:16px;cursor:pointer;margin-top:10px">
+            💳 Pay with Razorpay
+        </button>
     </div>
 </div>
 
@@ -1307,6 +1357,154 @@ console.log('  ✅ Food → "Takeaway" label');
 console.log('  ✅ Other services → "Collect from Store" label');
 console.log('  ✅ Distance based delivery charge');
 console.log('  ✅ Notes + Receipt + Razorpay');
+
+// ═══════════════════════════════════════════════════════════
+// 💰 RECHARGE
+// ═══════════════════════════════════════════════════════════
+let rechargeType = 'mobile';
+let rechargeServiceStatus = { open: true, message: '' };
+
+window.openRechargeModal = function() {
+    if (!currentUser) { showToast('Please login first!', true); return; }
+    document.getElementById('rechargeModal').classList.add('show');
+    checkRechargeService();
+};
+
+window.closeRechargeModal = function() {
+    document.getElementById('rechargeModal').classList.remove('show');
+};
+
+window.switchRechargeType = function(type) {
+    rechargeType = type;
+    const mobileBtn = document.getElementById('mobileRechargeBtn');
+    const dthBtn = document.getElementById('dthRechargeBtn');
+    const label = document.getElementById('rechargeLabel');
+    const numberInput = document.getElementById('rechargeNumber');
+    const operatorSelect = document.getElementById('rechargeOperator');
+    
+    if (type === 'mobile') {
+        mobileBtn.style.background = 'linear-gradient(135deg,#4ECDC4,#44B3A8)';
+        mobileBtn.style.color = '#fff';
+        dthBtn.style.background = 'rgba(255,255,255,.05)';
+        dthBtn.style.color = 'rgba(255,255,255,.5)';
+        label.textContent = '📱 Mobile Number';
+        numberInput.placeholder = 'Enter 10-digit mobile number';
+        numberInput.maxLength = 10;
+        operatorSelect.innerHTML = `
+            <option value="">Select Operator</option>
+            <option value="Jio">Jio</option>
+            <option value="Airtel">Airtel</option>
+            <option value="Vi">Vi</option>
+            <option value="BSNL">BSNL</option>
+        `;
+    } else {
+        dthBtn.style.background = 'linear-gradient(135deg,#4ECDC4,#44B3A8)';
+        dthBtn.style.color = '#fff';
+        mobileBtn.style.background = 'rgba(255,255,255,.05)';
+        mobileBtn.style.color = 'rgba(255,255,255,.5)';
+        label.textContent = '📺 DTH Customer ID';
+        numberInput.placeholder = 'Enter DTH Customer ID';
+        numberInput.maxLength = 15;
+        operatorSelect.innerHTML = `
+            <option value="">Select Operator</option>
+            <option value="Tata Play">Tata Play</option>
+            <option value="Dish TV">Dish TV</option>
+            <option value="Airtel TV">Airtel TV</option>
+            <option value="D2H">D2H</option>
+            <option value="Sun Direct">Sun Direct</option>
+        `;
+    }
+};
+
+function checkRechargeService() {
+    db.collection('settings').doc('rechargeService').onSnapshot(doc => {
+        if (doc.exists) {
+            const data = doc.data();
+            rechargeServiceStatus = {
+                open: data.open !== false,
+                message: data.message || 'Recharge service abhi maintainance mein hai. Kripya thodi der baad try karein. 🙏'
+            };
+        } else {
+            rechargeServiceStatus = { open: true, message: '' };
+        }
+        
+        const warning = document.getElementById('rechargeServiceWarning');
+        const payBtn = document.getElementById('rechargePayBtn');
+        
+        if (!rechargeServiceStatus.open) {
+            warning.style.display = 'block';
+            warning.innerHTML = `🔄 ${rechargeServiceStatus.message}`;
+            payBtn.disabled = true;
+            payBtn.textContent = '⏸️ Service Temporarily Closed';
+            payBtn.style.opacity = '0.5';
+        } else {
+            warning.style.display = 'none';
+            payBtn.disabled = false;
+            payBtn.textContent = '💳 Pay with Razorpay';
+            payBtn.style.opacity = '1';
+        }
+    });
+}
+
+window.processRecharge = async function() {
+    if (!rechargeServiceStatus.open) {
+        showToast('🔄 ' + rechargeServiceStatus.message, true);
+        return;
+    }
+    
+    const number = document.getElementById('rechargeNumber').value.trim();
+    const operator = document.getElementById('rechargeOperator').value;
+    const amount = parseFloat(document.getElementById('rechargeAmount').value);
+    
+    if (!number || !operator || !amount || amount < 10) {
+        showToast('❌ Please fill all fields correctly (min ₹10)', true);
+        return;
+    }
+    
+    const options = {
+        key: RAZORPAY_CONFIG.KEY_ID,
+        amount: amount * 100,
+        currency: 'INR',
+        name: 'NnlGharPro Recharge',
+        description: rechargeType === 'mobile' ? 'Mobile Recharge' : 'DTH Recharge',
+        handler: function(response) {
+            saveRechargeOrder(number, operator, amount, response);
+        },
+        prefill: {
+            email: currentUser?.email || ''
+        },
+        theme: { color: '#4ECDC4' }
+    };
+    
+    new Razorpay(options).open();
+};
+
+async function saveRechargeOrder(number, operator, amount, paymentResponse) {
+    try {
+        await db.collection('rechargeOrders').add({
+            customerId: currentUser.uid,
+            customerEmail: currentUser.email,
+            rechargeType: rechargeType,
+            number: number,
+            operator: operator,
+            amount: amount,
+            paymentId: paymentResponse.razorpay_payment_id || '',
+            paymentStatus: 'paid',
+            status: 'pending',
+            createdAt: new Date().toISOString()
+        });
+        
+        showToast('✅ Recharge request submitted! Admin will process soon.');
+        
+        document.getElementById('rechargeNumber').value = '';
+        document.getElementById('rechargeOperator').value = '';
+        document.getElementById('rechargeAmount').value = '';
+        
+        closeRechargeModal();
+    } catch (error) {
+        showToast('❌ ' + error.message, true);
+    }
+}
 </script>
 </body>
 </html>
