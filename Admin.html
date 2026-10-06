@@ -340,7 +340,10 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
         <button class="admin-tab" data-tab="reports" onclick="switchTab('reports')"><i class="fas fa-file-excel"></i> Reports</button>
         <button class="admin-tab" data-tab="bulkwa" onclick="switchTab('bulkwa')"><i class="fab fa-whatsapp"></i> Bulk WhatsApp</button>
         <button class="admin-tab" data-tab="ecommerce" onclick="switchTab('ecommerce')"><i class="fas fa-shopping-bag"></i> Stores</button>
-        <button class="admin-tab" data-tab="activity" onclick="switchTab('activity')"><i class="fas fa-history"></i> Activity</button>
+         <button class="admin-tab" data-tab="activity" onclick="switchTab('activity')"><i class="fas fa-history"></i> Activity</button>
+        <button class="admin-tab" data-tab="recharge" onclick="switchTab('recharge')"><i class="fas fa-mobile-alt"></i> Recharge</button>
+        <button class="admin-tab" data-tab="dth" onclick="switchTab('dth')"><i class="fas fa-tv"></i> DTH</button>
+        <button class="admin-tab" data-tab="rechargeorders" onclick="switchTab('rechargeorders')"><i class="fas fa-receipt"></i> Orders</button>
     </div>
 
     <div id="tab-dashboard" class="admin-tab-content active">
@@ -624,6 +627,129 @@ Book now: https://nnlgharpro.in</textarea>
         </div>
     </div>
 
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- 📱 RECHARGE TAB                            -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div id="tab-recharge" class="admin-tab-content">
+        <div class="card" style="background:linear-gradient(135deg,rgba(255,217,61,.08),rgba(255,107,53,.04));border:2px solid rgba(255,217,61,.2)">
+            <div class="card-title"><span><i class="fas fa-power-off" style="color:#FFD93D"></i> Recharge Service Control</span><span class="badge" id="serviceStatusBadge">🟢 OPEN</span></div>
+            
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+                <button id="btnServiceOpen" onclick="toggleRechargeService(true)" style="padding:16px;background:linear-gradient(135deg,#00C853,#00E676);border:none;border-radius:12px;color:#fff;font-weight:800;font-size:15px;cursor:pointer;transition:.3s;box-shadow:0 4px 15px rgba(0,200,83,.3)">
+                    <i class="fas fa-play-circle" style="font-size:20px;display:block;margin-bottom:4px"></i> SERVICE OPEN
+                </button>
+                <button id="btnServiceClose" onclick="toggleRechargeService(false)" style="padding:16px;background:linear-gradient(135deg,#FF4757,#FF6B6B);border:none;border-radius:12px;color:#fff;font-weight:800;font-size:15px;cursor:pointer;transition:.3s;box-shadow:0 4px 15px rgba(255,71,87,.3)">
+                    <i class="fas fa-stop-circle" style="font-size:20px;display:block;margin-bottom:4px"></i> SERVICE BAND
+                </button>
+            </div>
+
+            <div style="background:rgba(0,0,0,.2);border-radius:12px;padding:14px;margin-bottom:12px;border:1px solid rgba(255,255,255,.05)">
+                <div style="font-size:13px;font-weight:800;color:#4ECDC4;margin-bottom:10px"><i class="fas fa-clock"></i> Auto ON/OFF Schedule</div>
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+                    <input type="checkbox" id="autoScheduleToggle" onchange="saveAutoSchedule()" style="width:20px;height:20px;cursor:pointer">
+                    <label for="autoScheduleToggle" style="font-size:13px;color:#fff;cursor:pointer;font-weight:600">Auto Schedule Enable Karein</label>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                    <div>
+                        <label style="font-size:11px;color:rgba(255,255,255,.5);font-weight:700;display:block;margin-bottom:4px">🌅 Open Time (Subah)</label>
+                        <input type="time" id="autoOpenTime" value="09:00" onchange="saveAutoSchedule()" style="width:100%;padding:10px;border:1px solid rgba(255,255,255,.1);border-radius:8px;background:rgba(255,255,255,.03);color:#fff;font-size:14px;font-weight:700">
+                    </div>
+                    <div>
+                        <label style="font-size:11px;color:rgba(255,255,255,.5);font-weight:700;display:block;margin-bottom:4px">🌙 Close Time (Raat)</label>
+                        <input type="time" id="autoCloseTime" value="22:00" onchange="saveAutoSchedule()" style="width:100%;padding:10px;border:1px solid rgba(255,255,255,.1);border-radius:8px;background:rgba(255,255,255,.03);color:#fff;font-size:14px;font-weight:700">
+                    </div>
+                </div>
+                <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:8px;line-height:1.5">
+                    ℹ️ Jab Auto Schedule ON hoga, service automatically <strong style="color:#00C853">Open Time</strong> pe start aur <strong style="color:#FF4757">Close Time</strong> pe band ho jayegi.
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label><i class="fas fa-comment"></i> Customer Message (jab service band ho)</label>
+                <textarea id="serviceCloseMessage" rows="2" placeholder="Recharge service 10 PM - 9 AM band rahegi. Subah 9 baje try karein. 🙏" style="width:100%;padding:10px;border:1px solid rgba(255,255,255,.06);border-radius:10px;background:rgba(255,255,255,.03);color:#fff;font-size:13px"></textarea>
+            </div>
+            <button class="btn-primary" onclick="saveServiceSettings()" style="background:linear-gradient(135deg,#4ECDC4,#44B3A8)"><i class="fas fa-save"></i> Settings Save Karein</button>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                <span><i class="fas fa-mobile-alt"></i> Mobile Recharge Plans</span>
+                <button class="btn-primary" style="width:auto;padding:8px 20px;font-size:13px" onclick="showAddRechargePlan('mobile')"><i class="fas fa-plus"></i> Add Plan</button>
+            </div>
+            
+            <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+                <button class="btn-sm" style="background:rgba(78,205,196,.15);color:#4ECDC4;padding:8px 16px" onclick="filterRechargePlans('all')">All</button>
+                <button class="btn-sm" style="background:rgba(10,74,143,.2);color:#1e88e5;padding:8px 16px" onclick="filterRechargePlans('Jio')">Jio</button>
+                <button class="btn-sm" style="background:rgba(198,40,40,.15);color:#e53935;padding:8px 16px" onclick="filterRechargePlans('Airtel')">Airtel</button>
+                <button class="btn-sm" style="background:rgba(106,27,154,.15);color:#ab47bc;padding:8px 16px" onclick="filterRechargePlans('Vi')">Vi</button>
+                <button class="btn-sm" style="background:rgba(46,125,50,.15);color:#43a047;padding:8px 16px" onclick="filterRechargePlans('BSNL')">BSNL</button>
+            </div>
+            
+            <div id="adminRechargePlanList"><div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading plans...</div></div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- 📺 DTH TAB                                 -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div id="tab-dth" class="admin-tab-content">
+        <div class="card">
+            <div class="card-title">
+                <span><i class="fas fa-tv"></i> DTH Recharge Plans</span>
+                <button class="btn-primary" style="width:auto;padding:8px 20px;font-size:13px" onclick="showAddRechargePlan('dth')"><i class="fas fa-plus"></i> Add DTH Plan</button>
+            </div>
+            
+            <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+                <button class="btn-sm" style="background:rgba(78,205,196,.15);color:#4ECDC4;padding:8px 16px" onclick="filterDthPlans('all')">All</button>
+                <button class="btn-sm" style="background:rgba(230,81,0,.15);color:#f57c00;padding:8px 16px" onclick="filterDthPlans('Tata Play')">Tata Play</button>
+                <button class="btn-sm" style="background:rgba(198,40,40,.15);color:#e53935;padding:8px 16px" onclick="filterDthPlans('Airtel DTH')">Airtel DTH</button>
+                <button class="btn-sm" style="background:rgba(13,71,161,.15);color:#1976d2;padding:8px 16px" onclick="filterDthPlans('Dish TV')">Dish TV</button>
+                <button class="btn-sm" style="background:rgba(255,107,53,.15);color:#FF6B35;padding:8px 16px" onclick="filterDthPlans('Sun Direct')">Sun Direct</button>
+                <button class="btn-sm" style="background:rgba(69,90,100,.15);color:#78909c;padding:8px 16px" onclick="filterDthPlans('d2h')">d2h</button>
+            </div>
+            
+            <div id="adminDthPlanList"><div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading DTH plans...</div></div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- 📦 RECHARGE ORDERS TAB                     -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div id="tab-rechargeorders" class="admin-tab-content">
+        <div class="card">
+            <div class="card-title">
+                <span><i class="fas fa-receipt"></i> Recharge Orders</span>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                    <button class="btn-sm" style="background:rgba(255,217,61,.15);color:#FFD93D;padding:8px 16px" onclick="filterRechargeOrders('pending')">⏳ Pending</button>
+                    <button class="btn-sm" style="background:rgba(78,205,196,.15);color:#4ECDC4;padding:8px 16px" onclick="filterRechargeOrders('processing')">🔄 Processing</button>
+                    <button class="btn-sm" style="background:rgba(0,200,83,.15);color:#00C853;padding:8px 16px" onclick="filterRechargeOrders('done')">✅ Done</button>
+                    <button class="btn-sm" style="background:rgba(255,71,87,.15);color:#FF4757;padding:8px 16px" onclick="filterRechargeOrders('failed')">❌ Failed</button>
+                    <button class="btn-sm" style="background:rgba(139,92,246,.15);color:#8B5CF6;padding:8px 16px" onclick="filterRechargeOrders('all')">📋 All</button>
+                </div>
+            </div>
+            
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
+                <div style="background:rgba(255,217,61,.08);border-radius:12px;padding:14px;text-align:center;border:1px solid rgba(255,217,61,.15)">
+                    <div style="font-size:24px;font-weight:900;color:#FFD93D" id="roPending">0</div>
+                    <div style="font-size:10px;color:rgba(255,255,255,.5)">⏳ Pending</div>
+                </div>
+                <div style="background:rgba(78,205,196,.08);border-radius:12px;padding:14px;text-align:center;border:1px solid rgba(78,205,196,.15)">
+                    <div style="font-size:24px;font-weight:900;color:#4ECDC4" id="roProcessing">0</div>
+                    <div style="font-size:10px;color:rgba(255,255,255,.5)">🔄 Processing</div>
+                </div>
+                <div style="background:rgba(0,200,83,.08);border-radius:12px;padding:14px;text-align:center;border:1px solid rgba(0,200,83,.15)">
+                    <div style="font-size:24px;font-weight:900;color:#00C853" id="roDone">0</div>
+                    <div style="font-size:10px;color:rgba(255,255,255,.5)">✅ Done</div>
+                </div>
+                <div style="background:rgba(139,92,246,.08);border-radius:12px;padding:14px;text-align:center;border:1px solid rgba(139,92,246,.15)">
+                    <div style="font-size:24px;font-weight:900;color:#8B5CF6" id="roRevenue">₹0</div>
+                    <div style="font-size:10px;color:rgba(255,255,255,.5)">💰 Revenue</div>
+                </div>
+            </div>
+            
+            <div id="adminRechargeOrderList"><div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading orders...</div></div>
+        </div>
+    </div>
     <div class="footer"><p><i class="fas fa-crown"></i> Managed by <span class="brand-highlight">Randhawa Enterprises</span> <i class="fas fa-crown"></i></p></div>
 </div>
 
@@ -1026,6 +1152,9 @@ window.switchTab = function(tab) {
     else if (tab === 'ecommerce') loadStores();
     else if (tab === 'activity') loadActivityLogs();
     else if (tab === 'bulkwa') { if (whatsappNumbers.length === 0) collectNumbers(); }
+        else if (tab === 'recharge') { loadRechargePlans('mobile'); loadRechargeServiceStatus(); }
+    else if (tab === 'dth') loadRechargePlans('dth');
+    else if (tab === 'rechargeorders') loadRechargeOrders('pending');
 };
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2591,6 +2720,477 @@ console.log('  ✅ Delivery — partner ko poora');
 console.log('  ✅ Memory-safe — 100 leads max');
 console.log('  ✅ 500+ leads/day ready');
 console.log('  ✅ 1.8 lakh leads ready');
+    // ═══════════════════════════════════════════════════════════════════
+// 💰 RECHARGE ADMIN SYSTEM — Complete
+// ═══════════════════════════════════════════════════════════════════
+
+let currentRechargeType = 'mobile';
+let currentRechargeFilter = 'all';
+let currentDthFilter = 'all';
+let currentRechargeOrderFilter = 'pending';
+let rechargeServiceDoc = null;
+let rechargePlansCache = [];
+let rechargeOrdersCache = [];
+
+// ─────────────────────────────────────────
+// SERVICE ON/OFF TOGGLE
+// ─────────────────────────────────────────
+window.toggleRechargeService = async function(open) {
+    if (!confirm(open ? '✅ Recharge service START karein?' : '⏸️ Recharge service BAND karein?')) return;
+    showLoading(true);
+    try {
+        await db.collection('settings').doc('rechargeService').set({
+            open: open,
+            updatedAt: new Date().toISOString(),
+            updatedBy: 'admin'
+        }, { merge: true });
+        showToast(open ? '🟢 Service OPEN' : '🔴 Service BAND');
+        await loadRechargeServiceStatus();
+    } catch(e) {
+        showToast('❌ ' + e.message, true);
+    }
+    showLoading(false);
+};
+
+window.saveAutoSchedule = async function() {
+    const enabled = document.getElementById('autoScheduleToggle').checked;
+    const openTime = document.getElementById('autoOpenTime').value;
+    const closeTime = document.getElementById('autoCloseTime').value;
+    try {
+        await db.collection('settings').doc('rechargeService').set({
+            autoSchedule: enabled,
+            openTime: openTime,
+            closeTime: closeTime,
+            updatedAt: new Date().toISOString()
+        }, { merge: true });
+        showToast(enabled ? `✅ Auto: ${openTime} - ${closeTime}` : '⏸️ Auto Schedule OFF');
+    } catch(e) {
+        showToast('❌ ' + e.message, true);
+    }
+};
+
+window.saveServiceSettings = async function() {
+    const message = document.getElementById('serviceCloseMessage').value.trim();
+    showLoading(true);
+    try {
+        await db.collection('settings').doc('rechargeService').set({
+            message: message || 'Recharge service abhi maintainance mein hai. Kripya thodi der baad try karein. 🙏',
+            updatedAt: new Date().toISOString()
+        }, { merge: true });
+        showToast('✅ Message saved');
+    } catch(e) {
+        showToast('❌ ' + e.message, true);
+    }
+    showLoading(false);
+};
+
+async function loadRechargeServiceStatus() {
+    try {
+        const doc = await db.collection('settings').doc('rechargeService').get();
+        const data = doc.exists ? doc.data() : { open: true, autoSchedule: false, openTime: '09:00', closeTime: '22:00', message: '' };
+        rechargeServiceDoc = data;
+        
+        const isOpen = data.open !== false;
+        const badge = document.getElementById('serviceStatusBadge');
+        if (badge) {
+            badge.textContent = isOpen ? '🟢 OPEN' : '🔴 BAND';
+            badge.style.background = isOpen ? 'rgba(0,200,83,.15)' : 'rgba(255,71,87,.15)';
+            badge.style.color = isOpen ? '#00C853' : '#FF4757';
+        }
+        
+        const btnOpen = document.getElementById('btnServiceOpen');
+        const btnClose = document.getElementById('btnServiceClose');
+        if (btnOpen && btnClose) {
+            btnOpen.style.opacity = isOpen ? '1' : '0.4';
+            btnClose.style.opacity = !isOpen ? '1' : '0.4';
+        }
+        
+        const autoToggle = document.getElementById('autoScheduleToggle');
+        const openTime = document.getElementById('autoOpenTime');
+        const closeTime = document.getElementById('autoCloseTime');
+        const msgInput = document.getElementById('serviceCloseMessage');
+        
+        if (autoToggle) autoToggle.checked = data.autoSchedule === true;
+        if (openTime) openTime.value = data.openTime || '09:00';
+        if (closeTime) closeTime.value = data.closeTime || '22:00';
+        if (msgInput) msgInput.value = data.message || '';
+        
+    } catch(e) { console.log('Service status error:', e); }
+}
+
+// ─────────────────────────────────────────
+// PLANS MANAGEMENT
+// ─────────────────────────────────────────
+async function loadRechargePlans(type = 'mobile') {
+    currentRechargeType = type;
+    const containerId = type === 'mobile' ? 'adminRechargePlanList' : 'adminDthPlanList';
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    container.innerHTML = '<div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading plans...</div>';
+    
+    try {
+        const snapshot = await db.collection('rechargePlans').get();
+        rechargePlansCache = [];
+        snapshot.forEach(doc => rechargePlansCache.push({ id: doc.id, ...doc.data() }));
+        
+        const dthOperators = ['Tata Play', 'Airtel DTH', 'Dish TV', 'Sun Direct', 'd2h'];
+        const mobilePlans = rechargePlansCache.filter(p => !dthOperators.includes(p.operator));
+        const dthPlans = rechargePlansCache.filter(p => dthOperators.includes(p.operator));
+        
+        let filtered = type === 'mobile' ? mobilePlans : dthPlans;
+        const currentFilter = type === 'mobile' ? currentRechargeFilter : currentDthFilter;
+        if (currentFilter !== 'all') filtered = filtered.filter(p => p.operator === currentFilter);
+        
+        filtered.sort((a, b) => (a.amount || 0) - (b.amount || 0));
+        
+        if (filtered.length === 0) {
+            container.innerHTML = '<div class="empty-msg"><i class="fas fa-inbox"></i><br>Koi plan nahi hai. "Add Plan" click karein.</div>';
+            return;
+        }
+        
+        let html = '';
+        filtered.forEach(p => {
+            const opColors = {
+                'Jio': '#1e88e5', 'Airtel': '#e53935', 'Vi': '#ab47bc', 'BSNL': '#43a047',
+                'Tata Play': '#f57c00', 'Airtel DTH': '#e53935', 'Dish TV': '#1976d2',
+                'Sun Direct': '#FF6B35', 'd2h': '#78909c'
+            };
+            const color = opColors[p.operator] || '#4ECDC4';
+            html += `
+                <div class="list-item" style="border-left-color:${color}">
+                    <div class="info">
+                        <div class="name">
+                            <span style="background:${color};padding:2px 8px;border-radius:6px;font-size:10px;color:#fff;margin-right:6px">${p.operator}</span>
+                            ₹${p.amount}
+                            ${p.popular ? '<span style="color:#FF6B35;font-size:10px;font-weight:700">🔥 POPULAR</span>' : ''}
+                        </div>
+                        <div class="detail">📅 ${p.validity || 'N/A'} • ${p.description || ''}</div>
+                        ${p.data ? `<div class="detail" style="font-size:11px;color:rgba(255,255,255,.4)">📊 ${p.data}</div>` : ''}
+                        <div class="detail"><span class="status-badge ${p.active ? 'active' : 'inactive'}">${p.active ? '✅ Active' : '⛔ Inactive'}</span></div>
+                    </div>
+                    <div class="actions">
+                        <button class="btn-sm" style="background:${p.active ? 'rgba(255,71,87,.15);color:#FF4757' : 'rgba(0,200,83,.15);color:#00C853'}" onclick="togglePlanActive('${p.id}', ${!p.active})">${p.active ? '⏸️' : '▶️'}</button>
+                        <button class="btn-sm btn-edit" onclick="editRechargePlan('${p.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn-sm btn-delete" onclick="deleteRechargePlan('${p.id}')"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    } catch(e) {
+        container.innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`;
+    }
+}
+
+window.filterRechargePlans = function(op) {
+    currentRechargeFilter = op;
+    loadRechargePlans('mobile');
+};
+
+window.filterDthPlans = function(op) {
+    currentDthFilter = op;
+    loadRechargePlans('dth');
+};
+
+window.showAddRechargePlan = function(type) {
+    currentRechargeType = type;
+    const isDth = type === 'dth';
+    const operators = isDth 
+        ? ['Tata Play', 'Airtel DTH', 'Dish TV', 'Sun Direct', 'd2h']
+        : ['Jio', 'Airtel', 'Vi', 'BSNL'];
+    
+    openModal(isDth ? '📺 Add DTH Plan' : '📱 Add Recharge Plan', `
+        <div class="form-group">
+            <label>Operator *</label>
+            <select id="fPlanOperator">
+                ${operators.map(o => `<option value="${o}">${o}</option>`).join('')}
+            </select>
+        </div>
+        <div class="form-group"><label>Amount (₹) *</label><input id="fPlanAmount" type="number" placeholder="239" min="1"></div>
+        <div class="form-group"><label>Validity *</label><input id="fPlanValidity" placeholder="28 Days"></div>
+        <div class="form-group"><label>Description *</label><input id="fPlanDesc" placeholder="1.5GB/day + Unlimited Calls"></div>
+        <div class="form-group"><label>Data (Optional)</label><input id="fPlanData" placeholder="1.5GB/day"></div>
+        <div class="form-group">
+            <label>Options</label>
+            <div style="display:flex;gap:16px;margin-top:8px">
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+                    <input type="checkbox" id="fPlanActive" checked> <span style="font-size:12px">✅ Active</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+                    <input type="checkbox" id="fPlanPopular"> <span style="font-size:12px">🔥 Popular</span>
+                </label>
+            </div>
+        </div>
+        <button class="btn-primary" onclick="addRechargePlan()"><i class="fas fa-plus"></i> Save Plan</button>
+    `);
+};
+
+window.addRechargePlan = async function() {
+    const operator = document.getElementById('fPlanOperator').value;
+    const amount = parseInt(document.getElementById('fPlanAmount').value);
+    const validity = document.getElementById('fPlanValidity').value.trim();
+    const description = document.getElementById('fPlanDesc').value.trim();
+    const data = document.getElementById('fPlanData').value.trim();
+    const active = document.getElementById('fPlanActive').checked;
+    const popular = document.getElementById('fPlanPopular').checked;
+    
+    if (!operator || !amount || !validity || !description) {
+        showToast('❌ Sab required fields bharein!', true);
+        return;
+    }
+    
+    showLoading(true);
+    try {
+        await db.collection('rechargePlans').add({
+            operator, amount, validity, description,
+            data: data || '',
+            active, popular,
+            type: currentRechargeType,
+            createdAt: new Date().toISOString(),
+            createdBy: 'admin'
+        });
+        showToast('✅ Plan added!');
+        closeModal();
+        loadRechargePlans(currentRechargeType);
+    } catch(e) {
+        showToast('❌ ' + e.message, true);
+    }
+    showLoading(false);
+};
+
+window.editRechargePlan = async function(id) {
+    const plan = rechargePlansCache.find(p => p.id === id);
+    if (!plan) return;
+    
+    const isDth = ['Tata Play', 'Airtel DTH', 'Dish TV', 'Sun Direct', 'd2h'].includes(plan.operator);
+    const operators = isDth 
+        ? ['Tata Play', 'Airtel DTH', 'Dish TV', 'Sun Direct', 'd2h']
+        : ['Jio', 'Airtel', 'Vi', 'BSNL'];
+    
+    openModal('✏️ Edit Plan', `
+        <div class="form-group">
+            <label>Operator</label>
+            <select id="ePlanOperator">
+                ${operators.map(o => `<option value="${o}" ${o === plan.operator ? 'selected' : ''}>${o}</option>`).join('')}
+            </select>
+        </div>
+        <div class="form-group"><label>Amount (₹)</label><input id="ePlanAmount" type="number" value="${plan.amount || 0}"></div>
+        <div class="form-group"><label>Validity</label><input id="ePlanValidity" value="${plan.validity || ''}"></div>
+        <div class="form-group"><label>Description</label><input id="ePlanDesc" value="${plan.description || ''}"></div>
+        <div class="form-group"><label>Data</label><input id="ePlanData" value="${plan.data || ''}"></div>
+        <div class="form-group">
+            <label>Options</label>
+            <div style="display:flex;gap:16px;margin-top:8px">
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+                    <input type="checkbox" id="ePlanActive" ${plan.active ? 'checked' : ''}> <span style="font-size:12px">✅ Active</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+                    <input type="checkbox" id="ePlanPopular" ${plan.popular ? 'checked' : ''}> <span style="font-size:12px">🔥 Popular</span>
+                </label>
+            </div>
+        </div>
+        <button class="btn-primary" onclick="saveRechargePlan('${id}')"><i class="fas fa-save"></i> Update Plan</button>
+    `);
+};
+
+window.saveRechargePlan = async function(id) {
+    const operator = document.getElementById('ePlanOperator').value;
+    const amount = parseInt(document.getElementById('ePlanAmount').value);
+    const validity = document.getElementById('ePlanValidity').value.trim();
+    const description = document.getElementById('ePlanDesc').value.trim();
+    const data = document.getElementById('ePlanData').value.trim();
+    const active = document.getElementById('ePlanActive').checked;
+    const popular = document.getElementById('ePlanPopular').checked;
+    
+    if (!operator || !amount || !validity || !description) {
+        showToast('❌ Sab required!', true);
+        return;
+    }
+    
+    showLoading(true);
+    try {
+        await db.collection('rechargePlans').doc(id).update({
+            operator, amount, validity, description,
+            data: data || '',
+            active, popular,
+            updatedAt: new Date().toISOString()
+        });
+        showToast('✅ Updated!');
+        closeModal();
+        loadRechargePlans(currentRechargeType);
+    } catch(e) {
+        showToast('❌ ' + e.message, true);
+    }
+    showLoading(false);
+};
+
+window.togglePlanActive = async function(id, newActive) {
+    showLoading(true);
+    try {
+        await db.collection('rechargePlans').doc(id).update({ active: newActive, updatedAt: new Date().toISOString() });
+        showToast(newActive ? '✅ Active' : '⛔ Inactive');
+        loadRechargePlans(currentRechargeType);
+    } catch(e) { showToast('❌ ' + e.message, true); }
+    showLoading(false);
+};
+
+window.deleteRechargePlan = async function(id) {
+    if (!confirm('Delete this plan?')) return;
+    showLoading(true);
+    try {
+        await db.collection('rechargePlans').doc(id).delete();
+        showToast('🗑️ Deleted');
+        loadRechargePlans(currentRechargeType);
+    } catch(e) { showToast('❌ ' + e.message, true); }
+    showLoading(false);
+};
+
+// ─────────────────────────────────────────
+// RECHARGE ORDERS
+// ─────────────────────────────────────────
+async function loadRechargeOrders(filter = 'pending') {
+    currentRechargeOrderFilter = filter;
+    const container = document.getElementById('adminRechargeOrderList');
+    if (!container) return;
+    
+    container.innerHTML = '<div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> Loading orders...</div>';
+    
+    try {
+        const snapshot = await db.collection('rechargeOrders').orderBy('createdAt', 'desc').limit(100).get();
+        rechargeOrdersCache = [];
+        snapshot.forEach(doc => rechargeOrdersCache.push({ id: doc.id, ...doc.data() }));
+        
+        const pending = rechargeOrdersCache.filter(o => o.status === 'pending').length;
+        const processing = rechargeOrdersCache.filter(o => o.status === 'processing').length;
+        const done = rechargeOrdersCache.filter(o => o.status === 'done').length;
+        const revenue = rechargeOrdersCache.filter(o => o.paymentStatus === 'paid').reduce((s, o) => s + (o.amount || 0), 0);
+        
+        document.getElementById('roPending').textContent = pending;
+        document.getElementById('roProcessing').textContent = processing;
+        document.getElementById('roDone').textContent = done;
+        document.getElementById('roRevenue').textContent = '₹' + revenue;
+        
+        let filtered = filter === 'all' ? rechargeOrdersCache : rechargeOrdersCache.filter(o => o.status === filter);
+        
+        if (filtered.length === 0) {
+            container.innerHTML = '<div class="empty-msg"><i class="fas fa-inbox"></i><br>Koi order nahi hai.</div>';
+            return;
+        }
+        
+        let html = '';
+        filtered.forEach(o => {
+            const statusColors = {
+                'pending': { bg: 'rgba(255,217,61,.15)', color: '#FFD93D', label: '⏳ Pending' },
+                'processing': { bg: 'rgba(78,205,196,.15)', color: '#4ECDC4', label: '🔄 Processing' },
+                'done': { bg: 'rgba(0,200,83,.15)', color: '#00C853', label: '✅ Done' },
+                'failed': { bg: 'rgba(255,71,87,.15)', color: '#FF4757', label: '❌ Failed' }
+            };
+            const sc = statusColors[o.status] || statusColors.pending;
+            const date = o.createdAt ? new Date(o.createdAt).toLocaleString('en-IN') : 'N/A';
+            
+            html += `
+                <div class="list-item" style="border-left-color:${sc.color}">
+                    <div class="info">
+                        <div class="name">
+                            ${o.rechargeType === 'mobile' ? '📱' : '📺'} ${o.number} 
+                            <span style="background:${sc.bg};color:${sc.color};padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;margin-left:6px">${sc.label}</span>
+                        </div>
+                        <div class="detail">🏢 ${o.operator} • 💰 ₹${o.amount} • ${o.planValidity || ''}</div>
+                        ${o.planDescription ? `<div class="detail" style="font-size:11px">${o.planDescription}</div>` : ''}
+                        <div class="detail" style="font-size:10px;color:rgba(255,255,255,.3)">📅 ${date} • Payment: ${o.paymentStatus || 'pending'}</div>
+                    </div>
+                    <div class="actions">
+                        ${o.status === 'pending' ? `
+                            <button class="btn-sm" style="background:rgba(78,205,196,.15);color:#4ECDC4;padding:6px 12px" onclick="updateRechargeOrderStatus('${o.id}','processing')">🔄 Start</button>
+                        ` : ''}
+                        ${o.status === 'processing' ? `
+                            <button class="btn-sm" style="background:rgba(0,200,83,.15);color:#00C853;padding:6px 12px" onclick="updateRechargeOrderStatus('${o.id}','done')">✅ Done</button>
+                        ` : ''}
+                        ${o.status !== 'done' && o.status !== 'failed' ? `
+                            <button class="btn-sm" style="background:rgba(255,71,87,.15);color:#FF4757;padding:6px 12px" onclick="updateRechargeOrderStatus('${o.id}','failed')">❌</button>
+                        ` : ''}
+                        <a href="https://wa.me/91${o.number}" target="_blank" class="btn-sm btn-whatsapp" style="padding:6px 10px">💬</a>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    } catch(e) {
+        container.innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`;
+    }
+}
+
+window.filterRechargeOrders = function(filter) {
+    loadRechargeOrders(filter);
+};
+
+window.updateRechargeOrderStatus = async function(id, status) {
+    let notes = '';
+    let operatorRefId = '';
+    
+    if (status === 'done') {
+        operatorRefId = prompt('Operator Reference ID (Optional):') || '';
+    }
+    if (status === 'failed') {
+        notes = prompt('Failure reason (Optional):') || '';
+    }
+    
+    showLoading(true);
+    try {
+        await db.collection('rechargeOrders').doc(id).update({
+            status: status,
+            processedBy: 'admin',
+            processedAt: new Date().toISOString(),
+            adminNotes: notes,
+            operatorRefId: operatorRefId,
+            updatedAt: new Date().toISOString()
+        });
+        showToast(`✅ Order marked as ${status}`);
+        loadRechargeOrders(currentRechargeOrderFilter);
+    } catch(e) {
+        showToast('❌ ' + e.message, true);
+    }
+    showLoading(false);
+};
+    // ═══════════════════════════════════════════════════════════════════
+// ⏰ AUTO SCHEDULER — Recharge Service (10 PM - 9 AM band)
+// ═══════════════════════════════════════════════════════════════════
+setInterval(async function() {
+    try {
+        const doc = await db.collection('settings').doc('rechargeService').get();
+        if (!doc.exists) return;
+        
+        const data = doc.data();
+        if (data.autoSchedule !== true) return;
+        
+        const now = new Date();
+        const currentTime = now.getHours() * 60 + now.getMinutes();
+        
+        const [openH, openM] = (data.openTime || '09:00').split(':').map(Number);
+        const [closeH, closeM] = (data.closeTime || '22:00').split(':').map(Number);
+        const openMin = openH * 60 + openM;
+        const closeMin = closeH * 60 + closeM;
+        
+        let shouldBeOpen;
+        if (openMin < closeMin) {
+            shouldBeOpen = currentTime >= openMin && currentTime < closeMin;
+        } else {
+            shouldBeOpen = currentTime >= openMin || currentTime < closeMin;
+        }
+        
+        if (data.open !== shouldBeOpen) {
+            await db.collection('settings').doc('rechargeService').update({
+                open: shouldBeOpen,
+                autoUpdatedAt: new Date().toISOString()
+            });
+            console.log(`⏰ Auto Schedule: Service ${shouldBeOpen ? 'OPEN' : 'BAND'}`);
+        }
+    } catch(e) { console.log('Scheduler error:', e); }
+}, 60000);
+
+console.log('  ⏰ Auto Scheduler active (60s check)');
+
 console.log('  ✅ Firebase cost ₹0');
 </script>
 </body>
