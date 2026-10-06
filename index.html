@@ -387,33 +387,57 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
 
 <!-- ✅ RECHARGE MODAL -->
 <div class="modal-overlay" id="rechargeModal">
-    <div class="modal-box">
+    <div class="modal-box" style="max-width:440px">
+        <!-- Header -->
         <div class="modal-header">
-            <h3><i class="fas fa-mobile-alt"></i> Recharge</h3>
+            <h3><i class="fas fa-bolt" style="color:#FFD93D"></i> Recharge & Bill Pay</h3>
             <button class="close-btn" onclick="closeRechargeModal()">✕</button>
         </div>
         
+        <!-- Mobile/DTH Tabs -->
         <div style="display:flex;gap:8px;margin-bottom:16px">
-            <button id="mobileRechargeBtn" onclick="switchRechargeType('mobile')" style="flex:1;padding:12px;background:linear-gradient(135deg,#4ECDC4,#44B3A8);color:#fff;border:none;border-radius:12px;font-weight:700;cursor:pointer">
-                📱 Mobile
+            <button id="mobileRechargeBtn" onclick="switchRechargeType('mobile')" style="flex:1;padding:14px;background:linear-gradient(135deg,#4ECDC4,#44B3A8);color:#fff;border:none;border-radius:14px;font-weight:700;font-size:14px;cursor:pointer;box-shadow:0 4px 15px rgba(78,205,196,.3);transition:all .3s">
+                <i class="fas fa-mobile-alt"></i> Mobile
             </button>
-            <button id="dthRechargeBtn" onclick="switchRechargeType('dth')" style="flex:1;padding:12px;background:rgba(255,255,255,.05);color:rgba(255,255,255,.5);border:none;border-radius:12px;font-weight:700;cursor:pointer">
-                📺 DTH
+            <button id="dthRechargeBtn" onclick="switchRechargeType('dth')" style="flex:1;padding:14px;background:rgba(255,255,255,.05);color:rgba(255,255,255,.5);border:none;border-radius:14px;font-weight:700;font-size:14px;cursor:pointer;transition:all .3s">
+                <i class="fas fa-tv"></i> DTH
             </button>
         </div>
         
-        <div id="rechargeServiceWarning" style="display:none;background:rgba(255,152,0,.1);border:1px solid rgba(255,152,0,.3);border-radius:12px;padding:12px;font-size:13px;color:#FF9800;text-align:center;margin-bottom:14px">
-            🔄 Loading...
+        <!-- Service Status Warning -->
+        <div id="rechargeServiceWarning" style="display:none;background:rgba(255,152,0,.1);border:1px solid rgba(255,152,0,.3);border-radius:12px;padding:12px;font-size:13px;color:#FF9800;text-align:center;margin-bottom:14px"></div>
+        
+        <!-- Mobile Number Input -->
+        <div style="margin-bottom:14px">
+            <label style="font-size:11px;font-weight:700;color:rgba(255,255,255,.4);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px" id="rechargeLabel">Mobile Number</label>
+            <div style="position:relative">
+                <input type="tel" id="rechargeNumber" maxlength="10" placeholder="Enter 10-digit mobile number" style="width:100%;padding:16px 16px 16px 48px;border:2px solid rgba(255,255,255,.08);border-radius:14px;background:rgba(255,255,255,.03);color:#fff;font-size:18px;font-weight:600;outline:none;transition:all .3s;letter-spacing:1px">
+                <i class="fas fa-mobile-alt" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);color:#4ECDC4;font-size:20px"></i>
+            </div>
         </div>
         
-        <div class="form-group">
-            <label id="rechargeLabel">📱 Mobile Number</label>
-            <input type="tel" id="rechargeNumber" maxlength="10" placeholder="Enter 10-digit mobile number">
-        </div>
-        
-        <div class="form-group">
-            <label>📡 Operator</label>
-            <select id="rechargeOperator">
+        <!-- Operator Selection - Cards -->
+        <div style="margin-bottom:14px">
+            <label style="font-size:11px;font-weight:700;color:rgba(255,255,255,.4);display:block;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Select Operator</label>
+            <div id="operatorCards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+                <div class="op-card" data-op="Jio" onclick="selectOperator('Jio')" style="background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .3s">
+                    <div style="font-size:24px;margin-bottom:4px">📱</div>
+                    <div style="font-size:10px;font-weight:700;color:#fff">Jio</div>
+                </div>
+                <div class="op-card" data-op="Airtel" onclick="selectOperator('Airtel')" style="background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .3s">
+                    <div style="font-size:24px;margin-bottom:4px">📱</div>
+                    <div style="font-size:10px;font-weight:700;color:#fff">Airtel</div>
+                </div>
+                <div class="op-card" data-op="Vi" onclick="selectOperator('Vi')" style="background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .3s">
+                    <div style="font-size:24px;margin-bottom:4px">📱</div>
+                    <div style="font-size:10px;font-weight:700;color:#fff">Vi</div>
+                </div>
+                <div class="op-card" data-op="BSNL" onclick="selectOperator('BSNL')" style="background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .3s">
+                    <div style="font-size:24px;margin-bottom:4px">📱</div>
+                    <div style="font-size:10px;font-weight:700;color:#fff">BSNL</div>
+                </div>
+            </div>
+            <select id="rechargeOperator" style="display:none">
                 <option value="">Select Operator</option>
                 <option value="Jio">Jio</option>
                 <option value="Airtel">Airtel</option>
@@ -422,17 +446,46 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
             </select>
         </div>
         
-        <div class="form-group">
-            <label>💰 Amount (₹)</label>
-            <input type="number" id="rechargeAmount" placeholder="Enter amount (min ₹10)" min="10">
+        <!-- Amount Input -->
+        <div style="margin-bottom:14px">
+            <label style="font-size:11px;font-weight:700;color:rgba(255,255,255,.4);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">Enter Amount</label>
+            <div style="position:relative">
+                <input type="number" id="rechargeAmount" placeholder="0" min="10" style="width:100%;padding:16px 16px 16px 48px;border:2px solid rgba(255,255,255,.08);border-radius:14px;background:rgba(255,255,255,.03);color:#fff;font-size:22px;font-weight:800;outline:none;transition:all .3s">
+                <i class="fas fa-rupee-sign" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);color:#FFD93D;font-size:20px"></i>
+            </div>
         </div>
         
-        <button id="rechargePayBtn" onclick="processRecharge()" style="width:100%;padding:14px;background:linear-gradient(135deg,#5F259F,#8B5CF6);color:#fff;border:none;border-radius:12px;font-weight:700;font-size:16px;cursor:pointer;margin-top:10px">
-            💳 Pay with Razorpay
+        <!-- Quick Amount Buttons -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">
+            <button onclick="setAmount(10)" class="quick-amt" style="padding:10px;background:rgba(78,205,196,.1);border:1px solid rgba(78,205,196,.2);border-radius:10px;color:#4ECDC4;font-weight:700;font-size:14px;cursor:pointer;transition:all .3s">₹10</button>
+            <button onclick="setAmount(20)" class="quick-amt" style="padding:10px;background:rgba(78,205,196,.1);border:1px solid rgba(78,205,196,.2);border-radius:10px;color:#4ECDC4;font-weight:700;font-size:14px;cursor:pointer;transition:all .3s">₹20</button>
+            <button onclick="setAmount(50)" class="quick-amt" style="padding:10px;background:rgba(78,205,196,.1);border:1px solid rgba(78,205,196,.2);border-radius:10px;color:#4ECDC4;font-weight:700;font-size:14px;cursor:pointer;transition:all .3s">₹50</button>
+            <button onclick="setAmount(100)" class="quick-amt" style="padding:10px;background:rgba(78,205,196,.1);border:1px solid rgba(78,205,196,.2);border-radius:10px;color:#4ECDC4;font-weight:700;font-size:14px;cursor:pointer;transition:all .3s">₹100</button>
+            <button onclick="setAmount(200)" class="quick-amt" style="padding:10px;background:rgba(78,205,196,.1);border:1px solid rgba(78,205,196,.2);border-radius:10px;color:#4ECDC4;font-weight:700;font-size:14px;cursor:pointer;transition:all .3s">₹200</button>
+            <button onclick="setAmount(500)" class="quick-amt" style="padding:10px;background:rgba(78,205,196,.1);border:1px solid rgba(78,205,196,.2);border-radius:10px;color:#4ECDC4;font-weight:700;font-size:14px;cursor:pointer;transition:all .3s">₹500</button>
+            <button onclick="setAmount(1000)" class="quick-amt" style="padding:10px;background:rgba(78,205,196,.1);border:1px solid rgba(78,205,196,.2);border-radius:10px;color:#4ECDC4;font-weight:700;font-size:14px;cursor:pointer;transition:all .3s">₹1000</button>
+            <button onclick="setAmount(2000)" class="quick-amt" style="padding:10px;background:rgba(78,205,196,.1);border:1px solid rgba(78,205,196,.2);border-radius:10px;color:#4ECDC4;font-weight:700;font-size:14px;cursor:pointer;transition:all .3s">₹2000</button>
+        </div>
+        
+        <!-- Popular Plans (Dynamic) -->
+        <div id="popularPlans" style="margin-bottom:16px;display:none">
+            <label style="font-size:11px;font-weight:700;color:rgba(255,255,255,.4);display:block;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">🔥 Popular Plans</label>
+            <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:8px" id="plansList"></div>
+        </div>
+        
+        <!-- Pay Button -->
+        <button id="rechargePayBtn" onclick="processRecharge()" style="width:100%;padding:18px;background:linear-gradient(135deg,#5F259F,#8B5CF6);color:#fff;border:none;border-radius:14px;font-weight:800;font-size:17px;cursor:pointer;box-shadow:0 8px 25px rgba(95,37,159,.4);transition:all .3s;display:flex;align-items:center;justify-content:center;gap:10px">
+            <i class="fas fa-lock"></i> Pay Securely with Razorpay
         </button>
+        
+        <!-- Trust Badge -->
+        <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-top:14px;font-size:10px;color:rgba(255,255,255,.3)">
+            <span><i class="fas fa-shield-alt" style="color:#4ECDC4"></i> 100% Secure</span>
+            <span><i class="fas fa-bolt" style="color:#FFD93D"></i> Instant Recharge</span>
+            <span><i class="fas fa-headset" style="color:#4ECDC4"></i> 24/7 Support</span>
+        </div>
     </div>
 </div>
-
 <!-- BOOKING MODAL -->
 <div class="modal-overlay" id="bookingModal">
     <div class="modal-box">
@@ -1359,10 +1412,32 @@ console.log('  ✅ Distance based delivery charge');
 console.log('  ✅ Notes + Receipt + Razorpay');
 
 // ═══════════════════════════════════════════════════════════
-// 💰 RECHARGE
+// 💰 RECHARGE — Enhanced
 // ═══════════════════════════════════════════════════════════
 let rechargeType = 'mobile';
 let rechargeServiceStatus = { open: true, message: '' };
+let selectedOperator = '';
+
+window.selectOperator = function(op) {
+    selectedOperator = op;
+    document.getElementById('rechargeOperator').value = op;
+    
+    document.querySelectorAll('.op-card').forEach(card => {
+        if (card.dataset.op === op) {
+            card.style.background = 'linear-gradient(135deg,rgba(78,205,196,.2),rgba(78,205,196,.1))';
+            card.style.borderColor = '#4ECDC4';
+            card.style.transform = 'scale(1.05)';
+        } else {
+            card.style.background = 'rgba(255,255,255,.03)';
+            card.style.borderColor = 'rgba(255,255,255,.06)';
+            card.style.transform = 'scale(1)';
+        }
+    });
+};
+
+window.setAmount = function(amt) {
+    document.getElementById('rechargeAmount').value = amt;
+};
 
 window.openRechargeModal = function() {
     if (!currentUser) { showToast('Please login first!', true); return; }
@@ -1380,39 +1455,27 @@ window.switchRechargeType = function(type) {
     const dthBtn = document.getElementById('dthRechargeBtn');
     const label = document.getElementById('rechargeLabel');
     const numberInput = document.getElementById('rechargeNumber');
-    const operatorSelect = document.getElementById('rechargeOperator');
     
     if (type === 'mobile') {
         mobileBtn.style.background = 'linear-gradient(135deg,#4ECDC4,#44B3A8)';
         mobileBtn.style.color = '#fff';
+        mobileBtn.style.boxShadow = '0 4px 15px rgba(78,205,196,.3)';
         dthBtn.style.background = 'rgba(255,255,255,.05)';
         dthBtn.style.color = 'rgba(255,255,255,.5)';
-        label.textContent = '📱 Mobile Number';
+        dthBtn.style.boxShadow = 'none';
+        label.textContent = 'Mobile Number';
         numberInput.placeholder = 'Enter 10-digit mobile number';
         numberInput.maxLength = 10;
-        operatorSelect.innerHTML = `
-            <option value="">Select Operator</option>
-            <option value="Jio">Jio</option>
-            <option value="Airtel">Airtel</option>
-            <option value="Vi">Vi</option>
-            <option value="BSNL">BSNL</option>
-        `;
     } else {
         dthBtn.style.background = 'linear-gradient(135deg,#4ECDC4,#44B3A8)';
         dthBtn.style.color = '#fff';
+        dthBtn.style.boxShadow = '0 4px 15px rgba(78,205,196,.3)';
         mobileBtn.style.background = 'rgba(255,255,255,.05)';
         mobileBtn.style.color = 'rgba(255,255,255,.5)';
-        label.textContent = '📺 DTH Customer ID';
+        mobileBtn.style.boxShadow = 'none';
+        label.textContent = 'DTH Customer ID';
         numberInput.placeholder = 'Enter DTH Customer ID';
         numberInput.maxLength = 15;
-        operatorSelect.innerHTML = `
-            <option value="">Select Operator</option>
-            <option value="Tata Play">Tata Play</option>
-            <option value="Dish TV">Dish TV</option>
-            <option value="Airtel TV">Airtel TV</option>
-            <option value="D2H">D2H</option>
-            <option value="Sun Direct">Sun Direct</option>
-        `;
     }
 };
 
@@ -1440,7 +1503,7 @@ function checkRechargeService() {
         } else {
             warning.style.display = 'none';
             payBtn.disabled = false;
-            payBtn.textContent = '💳 Pay with Razorpay';
+            payBtn.innerHTML = '<i class="fas fa-lock"></i> Pay Securely with Razorpay';
             payBtn.style.opacity = '1';
         }
     });
