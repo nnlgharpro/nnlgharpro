@@ -467,10 +467,17 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
             <button onclick="setAmount(2000)" class="quick-amt" style="padding:10px;background:rgba(78,205,196,.1);border:1px solid rgba(78,205,196,.2);border-radius:10px;color:#4ECDC4;font-weight:700;font-size:14px;cursor:pointer;transition:all .3s">₹2000</button>
         </div>
         
-        <!-- Popular Plans (Dynamic) -->
+              <!-- Popular Plans (Dynamic from Firestore) -->
         <div id="popularPlans" style="margin-bottom:16px;display:none">
-            <label style="font-size:11px;font-weight:700;color:rgba(255,255,255,.4);display:block;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">🔥 Popular Plans</label>
-            <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:8px" id="plansList"></div>
+            <label style="font-size:11px;font-weight:700;color:rgba(255,255,255,.4);display:block;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">
+                <i class="fas fa-fire" style="color:#FF6B35"></i> Popular Plans 
+                <span id="plansLoadingSpinner" style="display:none;margin-left:8px"><i class="fas fa-spinner fa-spin" style="color:#4ECDC4"></i></span>
+                <span id="plansCount" style="color:#4ECDC4;font-size:10px;margin-left:6px"></span>
+            </label>
+            <div id="plansList" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;scrollbar-width:thin;"></div>
+            <div id="noPlansMessage" style="display:none;text-align:center;padding:16px;color:rgba(255,255,255,.3);font-size:12px;background:rgba(255,255,255,.02);border-radius:10px;border:1px dashed rgba(255,255,255,.08)">
+                <i class="fas fa-info-circle"></i> Is operator ke plans abhi available nahi hain
+            </div>
         </div>
         
         <!-- Pay Button -->
@@ -1412,12 +1419,19 @@ console.log('  ✅ Distance based delivery charge');
 console.log('  ✅ Notes + Receipt + Razorpay');
 
 // ═══════════════════════════════════════════════════════════
-// 💰 RECHARGE — Enhanced
+// 💰 RECHARGE — Complete System with Firestore Plans
 // ═══════════════════════════════════════════════════════════
+
 let rechargeType = 'mobile';
 let rechargeServiceStatus = { open: true, message: '' };
 let selectedOperator = '';
+let availablePlans = [];
+let selectedPlanId = null;
+let plansUnsubscribe = null;
 
+// ─────────────────────────────────────────
+// OPERATOR SELECTION
+// ─────────────────────────────────────────
 window.selectOperator = function(op) {
     selectedOperator = op;
     document.getElementById('rechargeOperator').value = op;
@@ -1427,28 +1441,183 @@ window.selectOperator = function(op) {
             card.style.background = 'linear-gradient(135deg,rgba(78,205,196,.2),rgba(78,205,196,.1))';
             card.style.borderColor = '#4ECDC4';
             card.style.transform = 'scale(1.05)';
+            card.style.boxShadow = '0 0 20px rgba(78,205,196,.3)';
         } else {
             card.style.background = 'rgba(255,255,255,.03)';
             card.style.borderColor = 'rgba(255,255,255,.06)';
             card.style.transform = 'scale(1)';
+            card.style.boxShadow = 'none';
         }
+    });
+    
+    loadRechargePlans(op);
+};
+
+// ─────────────────────────────────────────
+// FETCH PLANS FROM FIRESTORE
+// ─────────────────────────────────────────
+async function loadRechargePlans(operator) {
+    const plansContainer = document.getElementById('popularPlans');
+    const plansList = document.getElementById('plansList');
+    const spinner = document.getElementById('plansLoadingSpinner');
+    const noPlans = document.getElementById('noPlansMessage');
+    const plansCount = document.getElementById('plansCount');
+    
+    plansContainer.style.display = 'block';
+    spinner.style.display = 'inline-block';
+    noPlans.style.display = 'none';
+    plansList.innerHTML = '';
+    plansCount.textContent = '';
+    
+    if (plansUnsubscribe) {
+        plansUnsubscribe();
+        plansUnsubscribe = null;
+    }
+    
+    try {
+        const snapshot = await db.collection('rechargePlans')
+            .where('operator', '==', operator)
+            .where('active', '==', true)
+            .get();
+        
+        availablePlans = [];
+        snapshot.forEach(doc => {
+            availablePlans.push({ id: doc.id, ...doc.data() });
+        });
+        
+        availablePlans.sort((a, b) => (a.amount || 0) - (b.amount || 0));
+        
+        spinner.style.display = 'none';
+        
+        if (availablePlans.length === 0) {
+            noPlans.style.display = 'block';
+            plansCount.textContent = '';
+            return;
+        }
+        
+        plansCount.textContent = `(${availablePlans.length} plans)`;
+        renderPlans();
+        
+    } catch (error) {
+        console.error('Error loading plans:', error);
+        spinner.style.display = 'none';
+        noPlans.style.display = 'block';
+        noPlans.innerHTML = `<i class="fas fa-exclamation-triangle" style="color:#FF4757"></i> Plans load nahi ho paye. Try again.`;
+    }
+}
+
+// ─────────────────────────────────────────
+// RENDER PLAN CARDS
+// ─────────────────────────────────────────
+function renderPlans() {
+    const plansList = document.getElementById('plansList');
+    
+    if (availablePlans.length === 0) {
+        plansList.innerHTML = '';
+        return;
+    }
+    
+    let html = '';
+    availablePlans.forEach((plan, index) => {
+        const isPopular = plan.popular === true || index === 0;
+        html += `
+            <div class="plan-card" data-plan-id="${plan.id}" onclick="selectPlan('${plan.id}')" 
+                 style="min-width:130px;max-width:130px;background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 10px;cursor:pointer;transition:all .3s;position:relative;flex-shrink:0">
+                ${isPopular ? `<div style="position:absolute;top:-8px;right:6px;background:linear-gradient(135deg,#FF6B35,#FFD93D);color:#fff;font-size:9px;font-weight:800;padding:2px 8px;border-radius:10px">🔥 POPULAR</div>` : ''}
+                <div style="font-size:22px;font-weight:900;color:#FFD93D;margin-bottom:4px">₹${plan.amount || 0}</div>
+                <div style="font-size:11px;color:#4ECDC4;font-weight:700;margin-bottom:6px">
+                    <i class="fas fa-clock"></i> ${plan.validity || 'N/A'}
+                </div>
+                <div style="font-size:10px;color:rgba(255,255,255,.6);line-height:1.4;min-height:42px">
+                    ${plan.description || plan.desc || ''}
+                </div>
+                ${plan.data ? `<div style="font-size:9px;color:rgba(255,255,255,.4);margin-top:4px"><i class="fas fa-database"></i> ${plan.data}</div>` : ''}
+            </div>
+        `;
+    });
+    
+    plansList.innerHTML = html;
+}
+
+// ─────────────────────────────────────────
+// SELECT PLAN → AUTO-FILL AMOUNT
+// ─────────────────────────────────────────
+window.selectPlan = function(planId) {
+    const plan = availablePlans.find(p => p.id === planId);
+    if (!plan) return;
+    
+    selectedPlanId = planId;
+    
+    document.querySelectorAll('.plan-card').forEach(card => {
+        if (card.dataset.planId === planId) {
+            card.style.borderColor = '#4ECDC4';
+            card.style.background = 'linear-gradient(135deg,rgba(78,205,196,.15),rgba(78,205,196,.05))';
+            card.style.transform = 'scale(1.03)';
+            card.style.boxShadow = '0 0 25px rgba(78,205,196,.25)';
+        } else {
+            card.style.borderColor = 'rgba(255,255,255,.06)';
+            card.style.background = 'rgba(255,255,255,.03)';
+            card.style.transform = 'scale(1)';
+            card.style.boxShadow = 'none';
+        }
+    });
+    
+    document.getElementById('rechargeAmount').value = plan.amount || 0;
+    
+    showToast(`✅ ₹${plan.amount} plan selected (${plan.validity || ''})`);
+};
+
+// ─────────────────────────────────────────
+// SET AMOUNT (Quick buttons)
+// ─────────────────────────────────────────
+window.setAmount = function(amt) {
+    document.getElementById('rechargeAmount').value = amt;
+    selectedPlanId = null;
+    document.querySelectorAll('.plan-card').forEach(card => {
+        card.style.borderColor = 'rgba(255,255,255,.06)';
+        card.style.background = 'rgba(255,255,255,.03)';
+        card.style.transform = 'scale(1)';
+        card.style.boxShadow = 'none';
     });
 };
 
-window.setAmount = function(amt) {
-    document.getElementById('rechargeAmount').value = amt;
-};
-
+// ─────────────────────────────────────────
+// OPEN / CLOSE MODAL
+// ─────────────────────────────────────────
 window.openRechargeModal = function() {
     if (!currentUser) { showToast('Please login first!', true); return; }
     document.getElementById('rechargeModal').classList.add('show');
     checkRechargeService();
+    resetRechargeForm();
 };
 
 window.closeRechargeModal = function() {
     document.getElementById('rechargeModal').classList.remove('show');
+    if (plansUnsubscribe) {
+        plansUnsubscribe();
+        plansUnsubscribe = null;
+    }
 };
 
+function resetRechargeForm() {
+    document.getElementById('rechargeNumber').value = '';
+    document.getElementById('rechargeAmount').value = '';
+    document.getElementById('rechargeOperator').value = '';
+    selectedOperator = '';
+    selectedPlanId = null;
+    availablePlans = [];
+    document.getElementById('popularPlans').style.display = 'none';
+    document.querySelectorAll('.op-card').forEach(card => {
+        card.style.background = 'rgba(255,255,255,.03)';
+        card.style.borderColor = 'rgba(255,255,255,.06)';
+        card.style.transform = 'scale(1)';
+        card.style.boxShadow = 'none';
+    });
+}
+
+// ─────────────────────────────────────────
+// SWITCH MOBILE / DTH
+// ─────────────────────────────────────────
 window.switchRechargeType = function(type) {
     rechargeType = type;
     const mobileBtn = document.getElementById('mobileRechargeBtn');
@@ -1466,6 +1635,7 @@ window.switchRechargeType = function(type) {
         label.textContent = 'Mobile Number';
         numberInput.placeholder = 'Enter 10-digit mobile number';
         numberInput.maxLength = 10;
+        numberInput.setAttribute('inputmode', 'numeric');
     } else {
         dthBtn.style.background = 'linear-gradient(135deg,#4ECDC4,#44B3A8)';
         dthBtn.style.color = '#fff';
@@ -1476,9 +1646,16 @@ window.switchRechargeType = function(type) {
         label.textContent = 'DTH Customer ID';
         numberInput.placeholder = 'Enter DTH Customer ID';
         numberInput.maxLength = 15;
+        numberInput.removeAttribute('inputmode');
     }
+    
+    selectedPlanId = null;
+    if (selectedOperator) loadRechargePlans(selectedOperator);
 };
 
+// ─────────────────────────────────────────
+// SERVICE STATUS CHECK
+// ─────────────────────────────────────────
 function checkRechargeService() {
     db.collection('settings').doc('rechargeService').onSnapshot(doc => {
         if (doc.exists) {
@@ -1509,6 +1686,9 @@ function checkRechargeService() {
     });
 }
 
+// ─────────────────────────────────────────
+// PROCESS RECHARGE PAYMENT
+// ─────────────────────────────────────────
 window.processRecharge = async function() {
     if (!rechargeServiceStatus.open) {
         showToast('🔄 ' + rechargeServiceStatus.message, true);
@@ -1519,55 +1699,182 @@ window.processRecharge = async function() {
     const operator = document.getElementById('rechargeOperator').value;
     const amount = parseFloat(document.getElementById('rechargeAmount').value);
     
-    if (!number || !operator || !amount || amount < 10) {
-        showToast('❌ Please fill all fields correctly (min ₹10)', true);
-        return;
-    }
+    if (!number) { showToast('❌ Enter mobile number / DTH ID', true); return; }
+    if (rechargeType === 'mobile' && number.length !== 10) { showToast('❌ Enter valid 10-digit mobile number', true); return; }
+    if (!operator) { showToast('❌ Select operator', true); return; }
+    if (!amount || amount < 10) { showToast('❌ Enter amount (min ₹10)', true); return; }
+    if (amount > 10000) { showToast('❌ Max amount ₹10,000', true); return; }
+    
+    showLoading(true);
+    
+    const selectedPlan = selectedPlanId ? availablePlans.find(p => p.id === selectedPlanId) : null;
     
     const options = {
         key: RAZORPAY_CONFIG.KEY_ID,
-        amount: amount * 100,
+        amount: Math.round(amount * 100),
         currency: 'INR',
         name: 'NnlGharPro Recharge',
-        description: rechargeType === 'mobile' ? 'Mobile Recharge' : 'DTH Recharge',
+        description: `${rechargeType === 'mobile' ? 'Mobile' : 'DTH'} Recharge - ${operator}`,
+        image: 'https://nnlgharpro.in/logo.png',
         handler: function(response) {
-            saveRechargeOrder(number, operator, amount, response);
+            saveRechargeOrder(number, operator, amount, selectedPlan, response);
         },
         prefill: {
-            email: currentUser?.email || ''
+            email: currentUser?.email || '',
+            contact: rechargeType === 'mobile' ? number : ''
         },
-        theme: { color: '#4ECDC4' }
+        notes: {
+            rechargeType: rechargeType,
+            operator: operator,
+            customerId: currentUser?.uid || '',
+            customerEmail: currentUser?.email || ''
+        },
+        theme: { color: '#4ECDC4' },
+        modal: {
+            ondismiss: function() {
+                showToast('⚠️ Payment cancelled', true);
+                showLoading(false);
+            }
+        }
     };
     
-    new Razorpay(options).open();
+    try {
+        const rzp = new Razorpay(options);
+        rzp.on('payment.failed', function(response) {
+            showToast('❌ Payment failed: ' + (response.error?.description || 'Unknown'), true);
+            showLoading(false);
+        });
+        rzp.open();
+        showLoading(false);
+    } catch (error) {
+        showToast('❌ ' + error.message, true);
+        showLoading(false);
+    }
 };
 
-async function saveRechargeOrder(number, operator, amount, paymentResponse) {
+// ─────────────────────────────────────────
+// SAVE ORDER TO FIRESTORE
+// ─────────────────────────────────────────
+async function saveRechargeOrder(number, operator, amount, plan, paymentResponse) {
+    showLoading(true);
+    
     try {
-        await db.collection('rechargeOrders').add({
+        const orderData = {
             customerId: currentUser.uid,
             customerEmail: currentUser.email,
+            customerUid: currentUser.uid,
+            
             rechargeType: rechargeType,
             number: number,
             operator: operator,
             amount: amount,
+            
+            planId: plan ? plan.id : '',
+            planValidity: plan ? (plan.validity || '') : '',
+            planDescription: plan ? (plan.description || plan.desc || '') : '',
+            planData: plan ? (plan.data || '') : '',
+            
             paymentId: paymentResponse.razorpay_payment_id || '',
             paymentStatus: 'paid',
+            paymentMethod: 'Razorpay',
+            paidAt: new Date().toISOString(),
+            
             status: 'pending',
-            createdAt: new Date().toISOString()
-        });
+            processedBy: '',
+            processedAt: '',
+            adminNotes: '',
+            operatorRefId: '',
+            
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            
+            source: 'customer_portal',
+            platform: 'web'
+        };
         
-        showToast('✅ Recharge request submitted! Admin will process soon.');
+        const docRef = await db.collection('rechargeOrders').add(orderData);
         
-        document.getElementById('rechargeNumber').value = '';
-        document.getElementById('rechargeOperator').value = '';
-        document.getElementById('rechargeAmount').value = '';
+        console.log('✅ Recharge order saved:', docRef.id);
         
-        closeRechargeModal();
+        showToast(`✅ Recharge request submitted! Order #${docRef.id.slice(0,8).toUpperCase()}`);
+        
+        showRechargeSuccess(docRef.id, number, operator, amount, plan);
+        
+        resetRechargeForm();
+        
     } catch (error) {
-        showToast('❌ ' + error.message, true);
+        console.error('Error saving recharge order:', error);
+        showToast('❌ Order save failed: ' + error.message, true);
     }
+    
+    showLoading(false);
 }
+
+// ─────────────────────────────────────────
+// SUCCESS SCREEN
+// ─────────────────────────────────────────
+function showRechargeSuccess(orderId, number, operator, amount, plan) {
+    const receiptDetails = document.getElementById('receiptDetails');
+    const orderIdShort = orderId.slice(0, 8).toUpperCase();
+    
+    receiptDetails.innerHTML = `
+        <div style="text-align:center;padding:10px 0 16px">
+            <div style="font-size:48px;margin-bottom:8px">✅</div>
+            <div style="font-size:16px;font-weight:800;color:#00C853">Payment Successful!</div>
+            <div style="font-size:12px;color:#666;margin-top:4px">Aapka recharge request submit ho gaya hai</div>
+        </div>
+        <div class="receipt-row"><span class="label">Order ID</span><span class="value">#${orderIdShort}</span></div>
+        <div class="receipt-row"><span class="label">Type</span><span class="value">${rechargeType === 'mobile' ? '📱 Mobile' : '📺 DTH'}</span></div>
+        <div class="receipt-row"><span class="label">Number</span><span class="value">${number}</span></div>
+        <div class="receipt-row"><span class="label">Operator</span><span class="value">${operator}</span></div>
+        ${plan ? `<div class="receipt-row"><span class="label">Plan</span><span class="value">${plan.validity || ''} - ${plan.description || plan.desc || ''}</span></div>` : ''}
+        <div class="receipt-row"><span class="label">Amount</span><span class="value" style="color:#1a237e;font-weight:800">₹${amount}</span></div>
+        <div class="receipt-row"><span class="label">Status</span><span class="value" style="color:#FF9800;font-weight:700">⏳ Processing</span></div>
+        <div style="background:rgba(255,152,0,.08);border-left:3px solid #FF9800;padding:10px 12px;border-radius:8px;margin-top:12px;font-size:11px;color:#666;line-height:1.6">
+            <strong style="color:#FF9800">ℹ️ Note:</strong> Aapka recharge 5-30 minute mein process ho jayega. 
+            Koi problem ho toh <strong>+91 95885 62553</strong> pe contact karein.
+        </div>
+    `;
+    
+    document.getElementById('receiptTotal').textContent = '₹' + amount;
+    
+    const statusEl = document.getElementById('receiptPaymentStatus');
+    statusEl.textContent = '✅ PAID';
+    statusEl.style.color = '#00C853';
+    statusEl.style.background = 'rgba(0,200,83,0.1)';
+    
+    document.getElementById('receiptContainer').classList.add('show');
+    
+    setTimeout(() => {
+        closeRechargeModal();
+    }, 500);
+}
+
+// ─────────────────────────────────────────
+// INPUT VALIDATION
+// ─────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+    const numberInput = document.getElementById('rechargeNumber');
+    if (numberInput) {
+        numberInput.addEventListener('input', function(e) {
+            if (rechargeType === 'mobile') {
+                this.value = this.value.replace(/\D/g, '').slice(0, 10);
+            }
+        });
+    }
+    
+    const amountInput = document.getElementById('rechargeAmount');
+    if (amountInput) {
+        amountInput.addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+    }
+});
+
+console.log('✅ Recharge System v2.0 loaded');
+console.log('  📋 Plans fetched from: rechargePlans collection');
+console.log('  📦 Orders saved to: rechargeOrders collection');
+
 </script>
 </body>
 </html>
