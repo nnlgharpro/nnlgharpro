@@ -419,30 +419,58 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
         <!-- Operator Selection - Cards -->
         <div style="margin-bottom:14px">
             <label style="font-size:11px;font-weight:700;color:rgba(255,255,255,.4);display:block;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Select Operator</label>
-            <div id="operatorCards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
-                <div class="op-card" data-op="Jio" onclick="selectOperator('Jio')" style="background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .3s">
-                    <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0a4a8f,#1e88e5);margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff">J</div>
-                    <div style="font-size:10px;font-weight:700;color:#fff">Jio</div>
+                            <div id="operatorCards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+                    <!-- Mobile operators -->
+                    <div class="op-card mobile-op" data-op="Jio" onclick="selectOperator('Jio')" style="background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .3s">
+                        <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0a4a8f,#1e88e5);margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff">J</div>
+                        <div style="font-size:10px;font-weight:700;color:#fff">Jio</div>
+                    </div>
+                    <div class="op-card mobile-op" data-op="Airtel" onclick="selectOperator('Airtel')" style="background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .3s">
+                        <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#c62828,#e53935);margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff">A</div>
+                        <div style="font-size:10px;font-weight:700;color:#fff">Airtel</div>
+                    </div>
+                    <div class="op-card mobile-op" data-op="Vi" onclick="selectOperator('Vi')" style="background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .3s">
+                        <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#6a1b9a,#ab47bc);margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff">V</div>
+                        <div style="font-size:10px;font-weight:700;color:#fff">Vi</div>
+                    </div>
+                    <div class="op-card mobile-op" data-op="BSNL" onclick="selectOperator('BSNL')" style="background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .3s">
+                        <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#2e7d32,#43a047);margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff">B</div>
+                        <div style="font-size:10px;font-weight:700;color:#fff">BSNL</div>
+                    </div>
+                    
+                    <!-- DTH operators (hidden by default) -->
+                    <div class="op-card dth-op" data-op="Tata Play" onclick="selectOperator('Tata Play')" style="display:none;background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .3s">
+                        <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#e65100,#f57c00);margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff">T</div>
+                        <div style="font-size:10px;font-weight:700;color:#fff">Tata Play</div>
+                    </div>
+                    <div class="op-card dth-op" data-op="Airtel DTH" onclick="selectOperator('Airtel DTH')" style="display:none;background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .3s">
+                        <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#c62828,#e53935);margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff">A</div>
+                        <div style="font-size:10px;font-weight:700;color:#fff">Airtel DTH</div>
+                    </div>
+                    <div class="op-card dth-op" data-op="Dish TV" onclick="selectOperator('Dish TV')" style="display:none;background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .3s">
+                        <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0d47a1,#1976d2);margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff">D</div>
+                        <div style="font-size:10px;font-weight:700;color:#fff">Dish TV</div>
+                    </div>
+                    <div class="op-card dth-op" data-op="Sun Direct" onclick="selectOperator('Sun Direct')" style="display:none;background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .3s">
+                        <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#e65100,#FF6B35);margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff">S</div>
+                        <div style="font-size:10px;font-weight:700;color:#fff">Sun Direct</div>
+                    </div>
+                    <div class="op-card dth-op" data-op="d2h" onclick="selectOperator('d2h')" style="display:none;background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .3s">
+                        <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#455a64,#78909c);margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff">d</div>
+                        <div style="font-size:10px;font-weight:700;color:#fff">d2h</div>
+                    </div>
                 </div>
-                <div class="op-card" data-op="Airtel" onclick="selectOperator('Airtel')" style="background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .3s">
-                     <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#c62828,#e53935);margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff">A</div>
-                    <div style="font-size:10px;font-weight:700;color:#fff">Airtel</div>
-                </div>
-                <div class="op-card" data-op="Vi" onclick="selectOperator('Vi')" style="background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .3s">
-                    <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#6a1b9a,#ab47bc);margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff">V</div>
-                    <div style="font-size:10px;font-weight:700;color:#fff">Vi</div>
-                </div>
-                <div class="op-card" data-op="BSNL" onclick="selectOperator('BSNL')" style="background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .3s">
-                     <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#2e7d32,#43a047);margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff">B</div>
-                    <div style="font-size:10px;font-weight:700;color:#fff">BSNL</div>
-                </div>
-            </div>
             <select id="rechargeOperator" style="display:none">
                 <option value="">Select Operator</option>
                 <option value="Jio">Jio</option>
                 <option value="Airtel">Airtel</option>
                 <option value="Vi">Vi</option>
                 <option value="BSNL">BSNL</option>
+                <option value="Tata Play">Tata Play</option>
+                <option value="Airtel DTH">Airtel DTH</option>
+                <option value="Dish TV">Dish TV</option>
+                <option value="Sun Direct">Sun Direct</option>
+                <option value="d2h">d2h</option>
             </select>
         </div>
         
@@ -1637,6 +1665,25 @@ window.switchRechargeType = function(type) {
         numberInput.maxLength = 15;
         numberInput.removeAttribute('inputmode');
     }
+    
+       // 🔥 Show/Hide operators based on type
+    document.querySelectorAll('.mobile-op').forEach(el => {
+        el.style.display = type === 'mobile' ? 'block' : 'none';
+    });
+    document.querySelectorAll('.dth-op').forEach(el => {
+        el.style.display = type === 'dth' ? 'block' : 'none';
+    });
+    
+    // Reset operator selection
+    document.querySelectorAll('.op-card').forEach(card => {
+        card.style.background = 'rgba(255,255,255,.03)';
+        card.style.borderColor = 'rgba(255,255,255,.06)';
+        card.style.transform = 'scale(1)';
+        card.style.boxShadow = 'none';
+    });
+    selectedOperator = '';
+    document.getElementById('rechargeOperator').value = '';
+    document.getElementById('popularPlans').style.display = 'none';
     
     selectedPlanId = null;
     if (selectedOperator) loadRechargePlans(selectedOperator);
