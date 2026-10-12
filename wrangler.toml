@@ -1,0 +1,12 @@
+name = "nnlgharpro-ondc"
+main = "src/index.js"
+compatibility_date = "2024-10-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+ENVIRONMENT = "production"
+ONDC_DOMAIN = "ONDC:SRV11"
+
+# Secrets (Cloudflare Dashboard se set karenge)
+# ONDC_PRIVATE_KEY
+# TURTLEMINT_POSP_CODE
