@@ -232,6 +232,95 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
 .receipt-wrapper .receipt-footer { text-align: center; font-size: 9px; color: #888; border-top: 2px dashed #333; padding-top: 8px; margin-top: 8px; }
 .receipt-wrapper .receipt-footer .print-btn { padding: 6px 16px; background: linear-gradient(135deg, #1a237e, #283593); border: none; border-radius: 8px; color: #fff; font-weight: 700; font-size: 12px; cursor: pointer; margin-top: 4px; }
 
+/* ═══════════════════════════════════════════════════════ */
+/* 🛡️ INSURANCE SUB-TABS STYLING                           */
+/* ═══════════════════════════════════════════════════════ */
+
+.ins-subtab {
+    flex: 1;
+    padding: 12px 16px;
+    background: transparent;
+    border: none;
+    border-radius: 10px;
+    color: rgba(255,255,255,.5);
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all .3s;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.ins-subtab:hover {
+    color: #fff;
+    background: rgba(255,255,255,.05);
+}
+
+.ins-subtab.active {
+    background: linear-gradient(135deg, #4ECDC4, #44B3A8);
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(78,205,196,.3);
+}
+
+.ins-category {
+    margin-bottom: 14px;
+}
+
+.ins-cat-title {
+    font-size: 12px;
+    font-weight: 800;
+    color: #4ECDC4;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ins-cat-title i { color: #FF6B35; }
+
+.ins-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+}
+
+.ins-card {
+    background: linear-gradient(135deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 10px;
+    padding: 10px 4px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.ins-card:hover {
+    border-color: #4ECDC4;
+    background: linear-gradient(135deg, rgba(78,205,196,.1), rgba(78,205,196,.03));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(78,205,196,.15);
+}
+
+.ins-card:active { transform: scale(0.98); }
+
+.ins-icon {
+    font-size: 22px;
+    margin-bottom: 4px;
+    display: block;
+}
+
+.ins-name {
+    font-size: 9px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+}
+
+Step 3: Ctrl + S save karo
+Step 4: Screenshot bhejo
 /* ITEMS POPUP */
 .popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 10001; padding: 16px; }
 .popup-overlay.show { display: flex; }
@@ -345,7 +434,7 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
         <div class="service-btn s-lab" onclick="selectService('Lab')"><i class="fas fa-flask"></i> Lab</div>
         <div class="service-btn s-school" onclick="selectService('School')"><i class="fas fa-school"></i> School</div>
         <div class="service-btn s-hotel" onclick="selectService('Hotel')"><i class="fas fa-hotel"></i> Hotel</div>
-        <div class="service-btn s-insurance" onclick="selectService('Insurance')"><i class="fas fa-shield-alt"></i> Insurance</div>
+        <div class="service-btn s-insurance" onclick="openInsuranceSection()"><i class="fas fa-shield-alt"></i> Insurance</div>
         <div class="service-btn s-ecommerce" onclick="openEcommerceModal()"><i class="fas fa-store"></i> E-Commerce</div>
         <div class="service-btn s-tv" onclick="selectService('TV Repair')"><i class="fas fa-tv"></i> TV Repair</div>
         <div class="service-btn s-local-bazar" onclick="selectService('Local Bazar')"><i class="fas fa-shopping-basket"></i> Local Bazar</div>
@@ -366,6 +455,125 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
             📱 <a href="tel:+919588562553">+91 95885 62553</a> • 📧 <a href="mailto:nnlgharpro@gmail.com">nnlgharpro@gmail.com</a><br>
             🌐 <a href="https://www.nnlgharpro.in" target="_blank">www.nnlgharpro.in</a>
         </div>
+    </div>
+</div>
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- 🛡️ INSURANCE MODAL — Sub-tabs with Turtlemint         -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="insuranceSectionModal">
+    <div class="modal-box" style="max-width:520px;">
+
+        <!-- Header -->
+        <div class="modal-header">
+            <h3><i class="fas fa-shield-alt" style="color:#FF6B35;"></i> Insurance Services</h3>
+            <button class="close-btn" onclick="closeInsuranceSection()">✕</button>
+        </div>
+
+        <!-- Sub-Tabs -->
+        <div style="display:flex;gap:6px;background:rgba(255,255,255,.03);border-radius:14px;padding:6px;margin-bottom:16px;border:1px solid rgba(255,255,255,.05);">
+            <button class="ins-subtab active" data-subtab="my-insurance" onclick="switchInsuranceSubTab('my-insurance')">
+                <i class="fas fa-list"></i> My Insurance
+            </button>
+            <button class="ins-subtab" data-subtab="turtlemint" onclick="switchInsuranceSubTab('turtlemint')">
+                <i class="fas fa-shield-alt"></i> Turtlemint
+                <span style="font-size:9px;background:#25D366;color:#fff;padding:2px 6px;border-radius:6px;margin-left:4px;">NEW</span>
+            </button>
+        </div>
+
+        <!-- TAB 1: MY INSURANCE -->
+        <div id="subTab-my-insurance" class="ins-subtab-content" style="display:block;">
+            <div style="text-align:center;padding:30px 10px;background:rgba(255,255,255,.02);border-radius:12px;border:1px dashed rgba(255,255,255,.08);">
+                <i class="fas fa-clipboard-list" style="font-size:36px;color:#4ECDC4;margin-bottom:12px;display:block;"></i>
+                <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;">Coming Soon</div>
+                <div style="font-size:12px;color:rgba(255,255,255,.5);line-height:1.5;">
+                    NnlGharPro ki apni insurance services jald hi aa rahi hain.<br>
+                    Tab tak <strong style="color:#4ECDC4;">Turtlemint</strong> tab se insurance kharidein.
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: TURTLEMINT -->
+        <div id="subTab-turtlemint" class="ins-subtab-content" style="display:none;">
+
+            <!-- Chrome Warning -->
+            <div id="chromeWarning" style="background:linear-gradient(135deg,rgba(255,217,61,.1),rgba(255,107,53,.05));border:2px solid rgba(255,217,61,.3);border-radius:14px;padding:12px 14px;margin-bottom:14px;display:none;align-items:center;gap:10px;font-size:11px;color:#FFD93D;">
+                <i class="fas fa-exclamation-triangle" style="font-size:20px;"></i>
+                <div style="flex:1;">
+                    <strong>Chrome Browser Recommended</strong><br>
+                    <a href="https://www.google.com/chrome/" target="_blank" style="color:#4ECDC4;">Chrome download karo</a>
+                </div>
+            </div>
+
+            <!-- Turtlemint Header -->
+            <div style="background:linear-gradient(135deg,rgba(37,211,102,.08),rgba(78,205,196,.04));border:2px solid rgba(37,211,102,.2);border-radius:14px;padding:14px;margin-bottom:14px;display:flex;align-items:center;gap:12px;">
+                <img src="https://www.turtlemint.com/images/turtlemint-logo.png" alt="Turtlemint" style="height:40px;width:auto;" onerror="this.outerHTML='<div style=\'font-size:20px;font-weight:900;color:#25D366\'>Turtlemint</div>'">
+                <div style="flex:1;">
+                    <div style="font-size:14px;font-weight:800;color:#fff;">Insurance Services</div>
+                    <div style="font-size:10px;color:rgba(255,255,255,.5);">Powered by <strong style="color:#25D366;">Turtlemint</strong> • IRDAI Authorized</div>
+                </div>
+                <div style="background:rgba(37,211,102,.15);color:#25D366;padding:6px 10px;border-radius:8px;font-size:9px;font-weight:800;text-align:center;line-height:1.2;">✅<br>IRDAI</div>
+            </div>
+
+            <!-- Motor -->
+            <div class="ins-category">
+                <div class="ins-cat-title"><i class="fas fa-motorcycle"></i> Motor Insurance</div>
+                <div class="ins-grid">
+                    <div class="ins-card" onclick="buyInsuranceTurtlemint('bike')"><div class="ins-icon">🏍️</div><div class="ins-name">Bike</div></div>
+                    <div class="ins-card" onclick="buyInsuranceTurtlemint('car')"><div class="ins-icon">🚗</div><div class="ins-name">Car</div></div>
+                    <div class="ins-card" onclick="buyInsuranceTurtlemint('commercial')"><div class="ins-icon">🚚</div><div class="ins-name">Commercial</div></div>
+                </div>
+            </div>
+
+            <!-- Health & Life -->
+            <div class="ins-category">
+                <div class="ins-cat-title"><i class="fas fa-heartbeat"></i> Health & Life</div>
+                <div class="ins-grid">
+                    <div class="ins-card" onclick="buyInsuranceTurtlemint('health')"><div class="ins-icon">❤️</div><div class="ins-name">Health</div></div>
+                    <div class="ins-card" onclick="buyInsuranceTurtlemint('life')"><div class="ins-icon">☂️</div><div class="ins-name">Life</div></div>
+                    <div class="ins-card" onclick="buyInsuranceTurtlemint('personal-accident')"><div class="ins-icon">🤕</div><div class="ins-name">Personal Accident</div></div>
+                    <div class="ins-card" onclick="buyInsuranceTurtlemint('payment-fraud')"><div class="ins-icon">📱</div><div class="ins-name">Payment Fraud</div></div>
+                </div>
+            </div>
+
+            <!-- Loans -->
+            <div class="ins-category">
+                <div class="ins-cat-title"><i class="fas fa-hand-holding-usd"></i> Loans & Credit</div>
+                <div class="ins-grid">
+                    <div class="ins-card" onclick="buyInsuranceTurtlemint('personal-loan')"><div class="ins-icon">💵</div><div class="ins-name">Personal Loan</div></div>
+                    <div class="ins-card" onclick="buyInsuranceTurtlemint('business-loan')"><div class="ins-icon">🏢</div><div class="ins-name">Business Loan</div></div>
+                    <div class="ins-card" onclick="buyInsuranceTurtlemint('credit-card')"><div class="ins-icon">💳</div><div class="ins-name">Credit Card</div></div>
+                    <div class="ins-card" onclick="buyInsuranceTurtlemint('home-loan')"><div class="ins-icon">🏠</div><div class="ins-name">Home Loan</div></div>
+                    <div class="ins-card" onclick="buyInsuranceTurtlemint('credit-score')"><div class="ins-icon">📊</div><div class="ins-name">Credit Score</div></div>
+                    <div class="ins-card" onclick="buyInsuranceTurtlemint('loan-mf')"><div class="ins-icon">💰</div><div class="ins-name">Loan vs MF</div></div>
+                </div>
+            </div>
+
+            <!-- Investment -->
+            <div class="ins-category">
+                <div class="ins-cat-title"><i class="fas fa-chart-line"></i> Investment</div>
+                <div class="ins-grid">
+                    <div class="ins-card" onclick="buyInsuranceTurtlemint('mutual-funds')"><div class="ins-icon">📈</div><div class="ins-name">Mutual Funds</div></div>
+                </div>
+            </div>
+
+            <!-- SME -->
+            <div class="ins-category">
+                <div class="ins-cat-title"><i class="fas fa-building"></i> SME & Commercial</div>
+                <div class="ins-grid">
+                    <div class="ins-card" onclick="buyInsuranceTurtlemint('fire')"><div class="ins-icon">🔥</div><div class="ins-name">Fire</div></div>
+                    <div class="ins-card" onclick="buyInsuranceTurtlemint('marine')"><div class="ins-icon">🛡️</div><div class="ins-name">Marine</div></div>
+                    <div class="ins-card" onclick="buyInsuranceTurtlemint('workmen')"><div class="ins-icon">👷</div><div class="ins-name">Workmen's Comp.</div></div>
+                </div>
+            </div>
+
+            <!-- Turtlemint Footer -->
+            <div style="margin-top:16px;padding:12px;background:linear-gradient(135deg,rgba(37,211,102,.05),rgba(78,205,196,.02));border:1px solid rgba(37,211,102,.15);border-radius:10px;text-align:center;">
+                <div style="font-size:10px;color:rgba(255,255,255,.5);line-height:1.5;">🔒 IRDAI Authorized Agent • 💰 Instant Policy</div>
+                <div style="font-size:8px;color:rgba(255,255,255,.25);margin-top:6px;">© 2026 Turtlemint Insurance Broking Pvt. Ltd.</div>
+            </div>
+
+        </div>
+
     </div>
 </div>
 
@@ -1911,6 +2119,114 @@ console.log('✅ Recharge System v2.0 loaded');
 console.log('  📋 Plans fetched from: rechargePlans collection');
 console.log('  📦 Orders saved to: rechargeOrders collection');
 
+// ═══════════════════════════════════════════════════════════
+// 🛡️ INSURANCE SECTION — Modal + Sub-tabs + Turtlemint
+// ═══════════════════════════════════════════════════════════
+
+// ⚠️ IMPORTANT: Apna POSP code yahan daalo (Turtlemint se milega)
+const TURTLEMINT_POSP_CODE = 'YOUR_POSP_CODE_HERE';
+
+const TURTLEMINT_URLS = {
+    // Motor
+    'bike':              `https://pro.turtlemintinsurance.com/v2/two-wheeler-insurance/create?posp=${TURTLEMINT_POSP_CODE}`,
+    'car':               `https://pro.turtlemintinsurance.com/v2/car-insurance/create?posp=${TURTLEMINT_POSP_CODE}`,
+    'commercial':        `https://pro.turtlemintinsurance.com/v2/commercial-vehicle-insurance/create?posp=${TURTLEMINT_POSP_CODE}`,
+    // Health & Life
+    'health':            `https://pro.turtlemintinsurance.com/health-insurance/health?posp=${TURTLEMINT_POSP_CODE}`,
+    'life':              `https://pro.turtlemintinsurance.com/life-insurance/life?posp=${TURTLEMINT_POSP_CODE}`,
+    'personal-accident': `https://pro.turtlemintinsurance.com/insurance/personal-accident/v1/basic-pa?posp=${TURTLEMINT_POSP_CODE}`,
+    'payment-fraud':     `https://app.turtlefin.com/products/cyber-insurance?posp=${TURTLEMINT_POSP_CODE}`,
+    // Loans
+    'personal-loan':     `https://app.turtlefin.com/products/personal-loan?posp=${TURTLEMINT_POSP_CODE}`,
+    'business-loan':     `https://app.turtlefin.com/products/business-loans?posp=${TURTLEMINT_POSP_CODE}`,
+    'credit-card':       `https://app.turtlefin.com/products/credit-card?posp=${TURTLEMINT_POSP_CODE}`,
+    'home-loan':         `https://app.turtlefin.com/products/home-loan?posp=${TURTLEMINT_POSP_CODE}`,
+    'credit-score':      `https://app.turtlefin.com/credit-score?posp=${TURTLEMINT_POSP_CODE}`,
+    'loan-mf':           `https://app.turtlefin.com/products/lamf?posp=${TURTLEMINT_POSP_CODE}`,
+    // Investment
+    'mutual-funds':      `https://pro.turtlemintmoney.com/home?posp=${TURTLEMINT_POSP_CODE}`,
+    // SME
+    'fire':              `https://pro.turtlemintinsurance.com/insurance/fire?posp=${TURTLEMINT_POSP_CODE}`,
+    'marine':            `https://pro.turtlemintinsurance.com/insurance/marine?posp=${TURTLEMINT_POSP_CODE}`,
+    'workmen':           `https://pro.turtlemintinsurance.com/products/workmen-compensation?posp=${TURTLEMINT_POSP_CODE}`
+};
+
+// Modal kholo
+window.openInsuranceSection = function() {
+    if (!currentUser) { showToast('Please login first!', true); return; }
+    document.getElementById('insuranceSectionModal').classList.add('show');
+};
+
+window.closeInsuranceSection = function() {
+    document.getElementById('insuranceSectionModal').classList.remove('show');
+};
+
+// Sub-tab switch
+window.switchInsuranceSubTab = function(tabName) {
+    document.querySelectorAll('.ins-subtab').forEach(t => t.classList.remove('active'));
+    document.querySelector(`.ins-subtab[data-subtab="${tabName}"]`).classList.add('active');
+    
+    document.querySelectorAll('.ins-subtab-content').forEach(c => c.style.display = 'none');
+    document.getElementById(`subTab-${tabName}`).style.display = 'block';
+    
+    if (tabName === 'turtlemint') {
+        checkChromeBrowser();
+    }
+};
+
+// Chrome check
+function checkChromeBrowser() {
+    const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+    const isEdge = /Edg/.test(navigator.userAgent);
+    
+    const warning = document.getElementById('chromeWarning');
+    if (warning) {
+        warning.style.display = (!isChrome || isEdge) ? 'flex' : 'none';
+    }
+}
+
+// Turtlemint buy
+window.buyInsuranceTurtlemint = function(serviceType) {
+    const url = TURTLEMINT_URLS[serviceType];
+    
+    if (!url) {
+        showToast('❌ Service not available', true);
+        return;
+    }
+    
+    // Chrome check
+    const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+    const isEdge = /Edg/.test(navigator.userAgent);
+    
+    if (!isChrome || isEdge) {
+        const proceed = window.confirm(
+            '⚠️ Chrome browser recommended for insurance payment.\n\n' +
+            'OK = Continue anyway\n' +
+            'Cancel = Download Chrome'
+        );
+        
+        if (!proceed) {
+            window.open('https://www.google.com/chrome/', '_blank');
+            return;
+        }
+    }
+    
+    // Open Turtlemint in new tab
+    window.open(url, '_blank');
+    showToast('🛡️ Turtlemint opening...');
+    
+    // Log click
+    if (typeof db !== 'undefined') {
+        db.collection('insurance_clicks').add({
+            serviceType: serviceType,
+            customerId: currentUser ? currentUser.uid : 'guest',
+            customerEmail: currentUser ? currentUser.email : '',
+            timestamp: new Date().toISOString()
+        }).catch(err => console.log('Log error:', err));
+    }
+};
+
+console.log('✅ Insurance Section loaded');
 </script>
 </body>
 </html>
