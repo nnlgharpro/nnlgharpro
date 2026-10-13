@@ -238,7 +238,9 @@ async function handleOutgoingRequest(action, request, env) {
     );
   }
   
-  const workbenchUrl = `https://workbench.ondc.tech/api-service/${domain}/1.2.5/seller/${action}`;
+ // ONDC Staging Gateway URL (Asli Network)
+const gatewayUrl = env.ONDC_GATEWAY_URL || 'https://staging.gateway.proteantech.in';
+const workbenchUrl = `${gatewayUrl}/${action}`;
   
   try {
     const response = await fetch(workbenchUrl, {
