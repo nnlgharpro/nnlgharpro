@@ -10,3 +10,6 @@ ONDC_DOMAIN = "ONDC:SRV11"
 # Secrets (Cloudflare Dashboard se set karenge)
 # ONDC_PRIVATE_KEY
 # TURTLEMINT_POSP_CODE
+[[kv_namespaces]]
+binding = "ONDC_DATA"
+id = "2a7cea28b17f448eb9477bbe6df4e646"
