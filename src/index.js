@@ -84,7 +84,14 @@ async function generateOndcSignature(body, env) {
   // 3. Private Key को Import करें (Ed25519)
   // ध्यान दें: ONDC_SIGNING_PRIVATE_KEY base64 format में होनी चाहिए
   // Key ko saaf karein (quotes, spaces, newlines hata dein)
-const cleanKey = env.ONDC_SIGNING_PRIVATE_KEY.replace(/['"]/g, '').replace(/\\n/g, '').replace(/\s/g, '');
+const cleanKey = env.ONDC_SIGNING_PRIVATE_KEY
+    .replace(/-----BEGIN PRIVATE KEY-----/g, '')
+    .replace(/-----END PRIVATE KEY-----/g, '')
+    .replace(/-----BEGIN PUBLIC KEY-----/g, '')
+    .replace(/-----END PUBLIC KEY-----/g, '')
+    .replace(/['"]/g, '')
+    .replace(/\\n/g, '')
+    .replace(/\s/g, '');
 const binaryDer = Uint8Array.from(atob(cleanKey), c => c.charCodeAt(0));
 
   const privateKey = await crypto.subtle.importKey(
