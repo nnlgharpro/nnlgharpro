@@ -6,10 +6,22 @@ compatibility_flags = ["nodejs_compat"]
 [vars]
 ENVIRONMENT = "production"
 ONDC_DOMAIN = "ONDC:SRV11"
+ONDC_BAP_ID = "nnlgharpro-ret11.nnlgharpro.workers.dev"
+ONDC_BAP_URI = "https://nnlgharpro-ret11.nnlgharpro.workers.dev"
+ONDC_GATEWAY_URL = "https://staging.gateway.proteantech.in"
 
-# Secrets (Cloudflare Dashboard se set karenge)
-# ONDC_PRIVATE_KEY
-# TURTLEMINT_POSP_CODE
+# Secrets (Cloudflare Dashboard se set karenge - ye wrangler.toml me nahi dalne)
+# ONDC_SIGNING_PRIVATE_KEY
+# ONDC_SIGNING_PUBLIC_KEY
+# ONDC_UK_ID
+
 [[kv_namespaces]]
 binding = "ONDC_DATA"
 id = "2a7cea28b17f448eb9477bbe6df4e646"
+
+[observability]
+enabled = true
+
+[observability.logs]
+enabled = true
+invocation_logs = true
