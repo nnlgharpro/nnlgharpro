@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC API — Universal (With Signature) - FINAL
+// 🚀 NNLGHARPRO ONDC API — Universal (With KV & Signature) - FINAL
 // ═══════════════════════════════════════════════════════════
 
 export default {
@@ -20,15 +20,17 @@ export default {
     console.log(`📥 ${request.method} ${path}`);
     
     try {
+      // 1. HEALTH CHECK
       if (path === '/' || path === '/api/health') {
         return jsonResponse({
           status: 'active',
           service: 'NnlGharPro ONDC Universal API (Secure)',
-          version: '4.0.0',
+          version: '5.0.0',
           timestamp: new Date().toISOString()
         }, corsHeaders);
       }
       
+      // 2. OUTGOING REQUESTS (Frontend -> ONDC)
       const outgoingActions = ['search', 'select', 'init', 'confirm', 'status', 'cancel', 'update', 'track', 'support', 'rating'];
       const action = path.replace('/', '');
       
@@ -36,6 +38,13 @@ export default {
         return await handleOutgoingRequest(action, request, env);
       }
       
+      // 3. GET RESULTS (Frontend polls here to check for on_search data)
+      if (path.startsWith('/get-results/')) {
+        const txnId = path.split('/')[2];
+        return await handleGetResults(txnId, env, corsHeaders);
+      }
+      
+      // 4. INCOMING WEBHOOKS (ONDC -> Our App)
       if (path.startsWith('/on_')) {
         return await handleIncomingWebhook(path, request, env);
       }
@@ -71,26 +80,18 @@ async function generateOndcSignature(body, env) {
   const created = Math.floor(Date.now() / 1000);
   const expires = created + 3600; // 1 घंटे के लिए valid
 
-  // 1. Body का SHA-256 Digest बनाएँ
   const encoder = new TextEncoder();
   const data = encoder.encode(JSON.stringify(body));
   const hashBuffer = await crypto.subtle.digest("SHA-256", data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   const digest = btoa(String.fromCharCode(...hashArray));
 
-  // 2. Signing String बनाएँ
   const signingString = `(created): ${created}\n(expires): ${expires}\ndigest: SHA-256=${digest}`;
 
-  // 3. Private Key को Import करें (Ed25519) - Smart Format Detection
   let rawKey = env.ONDC_SIGNING_PRIVATE_KEY || "";
-
-  // सफाई: quotes, spaces, newlines हटाएँ
   rawKey = rawKey.replace(/['"]/g, '').replace(/\\n/g, '').replace(/\s/g, '');
-
-  // URL-safe Base64 को सामान्य Base64 में बदलें (- को +, _ को /)
   rawKey = rawKey.replace(/-/g, '+').replace(/_/g, '/');
 
-  // Base64 Padding (=) जोड़ें अगर मिसिंग है
   while (rawKey.length % 4) {
     rawKey += '=';
   }
@@ -98,9 +99,7 @@ async function generateOndcSignature(body, env) {
   const rawBinary = Uint8Array.from(atob(rawKey), c => c.charCodeAt(0));
   let binaryDer;
 
-  // 🌟 असली फिक्स: अगर Key 32 बाइट की है (Raw Ed25519 Key), तो उसे PKCS8 में लपेटें
   if (rawBinary.length === 32) {
-    // Ed25519 के लिए PKCS8 Header
     const pkcs8Prefix = new Uint8Array([
       0x30, 0x2e, 0x02, 0x01, 0x00, 0x30, 0x05, 
       0x06, 0x03, 0x2b, 0x65, 0x70, 0x04, 0x22, 
@@ -109,9 +108,7 @@ async function generateOndcSignature(body, env) {
     binaryDer = new Uint8Array(pkcs8Prefix.length + rawBinary.length);
     binaryDer.set(pkcs8Prefix);
     binaryDer.set(rawBinary, pkcs8Prefix.length);
-  } 
-  // अगर Key 64 बाइट की है (Seed + Public Key), तो सिर्फ पहले 32 बाइट्स लें और लपेटें
-  else if (rawBinary.length === 64) {
+  } else if (rawBinary.length === 64) {
     const pkcs8Prefix = new Uint8Array([
       0x30, 0x2e, 0x02, 0x01, 0x00, 0x30, 0x05, 
       0x06, 0x03, 0x2b, 0x65, 0x70, 0x04, 0x22, 
@@ -120,9 +117,7 @@ async function generateOndcSignature(body, env) {
     binaryDer = new Uint8Array(pkcs8Prefix.length + 32);
     binaryDer.set(pkcs8Prefix);
     binaryDer.set(rawBinary.slice(0, 32), pkcs8Prefix.length);
-  } 
-  // अगर Key पहले से ही PKCS8 फॉर्मेट में है (जैसे MC4CAQAw...)
-  else {
+  } else {
     binaryDer = rawBinary;
   }
 
@@ -134,7 +129,6 @@ async function generateOndcSignature(body, env) {
     ["sign"]
   );
 
-  // 4. Signature बनाएँ
   const signatureBuffer = await crypto.subtle.sign(
     { name: "Ed25519" },
     privateKey,
@@ -143,7 +137,6 @@ async function generateOndcSignature(body, env) {
   const signatureArray = Array.from(new Uint8Array(signatureBuffer));
   const signature = btoa(String.fromCharCode(...signatureArray));
 
-  // 5. Authorization Header Format तैयार करें
   const ukId = env.ONDC_UK_ID || "1"; 
   const keyId = `${env.ONDC_BAP_ID}|${ukId}|ed25519`; 
   
@@ -174,7 +167,7 @@ function buildPayload(action, domain, body, env) {
         message: {
           intent: {
             item: { descriptor: { name: body.query || 'Plumber' } },
-            fulfillment: { type: 'SERVICE' },
+            fulfillment: { type: 'SERVICE', end: { location: { gps: '28.0444,76.1084', address: { area_code: body.pincode || '123001' } } } },
             payment: { '@ondc/org/buyer_app_finder_fee_type': 'percent', '@ondc/org/buyer_app_finder_fee_amount': '3' }
           }
         }
@@ -201,7 +194,7 @@ function buildPayload(action, domain, body, env) {
         message: {
           intent: {
             category: { descriptor: { name: body.category || 'Food' } },
-            fulfillment: { type: 'Delivery' },
+            fulfillment: { type: 'Delivery', end: { location: { gps: '28.0444,76.1084', address: { area_code: body.pincode || '123001' } } } },
             payment: { '@ondc/org/buyer_app_finder_fee_type': 'percent', '@ondc/org/buyer_app_finder_fee_amount': '3' }
           }
         }
@@ -225,7 +218,7 @@ function buildPayload(action, domain, body, env) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// 📤 OUTGOING HANDLER (With Signature Integration + CORS Fix)
+// 📤 OUTGOING HANDLER (With Signature + CORS Fix)
 // ═══════════════════════════════════════════════════════════
 
 async function handleOutgoingRequest(action, request, env) {
@@ -263,6 +256,7 @@ async function handleOutgoingRequest(action, request, env) {
       success: true, 
       action: action,
       domain: domain,
+      transaction_id: payload.context.transaction_id,
       workbenchResponse: data, 
       sentPayload: payload 
     }, { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' });
@@ -277,18 +271,49 @@ async function handleOutgoingRequest(action, request, env) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// 📥 INCOMING WEBHOOK HANDLER
+// 📥 INCOMING WEBHOOK HANDLER (Saves Data to KV)
 // ═══════════════════════════════════════════════════════════
 
 async function handleIncomingWebhook(path, request, env) {
   const body = await request.json();
   const action = path.replace('/on_', '');
+  const txnId = body.context?.transaction_id;
   
-  console.log(`📥 [WEBHOOK] on_${action} received for TXN: ${body.context?.transaction_id}`);
+  console.log(`📥 [WEBHOOK] on_${action} received for TXN: ${txnId}`);
+
+  if (action === 'search' && txnId && env.ONDC_DATA) {
+    try {
+      await env.ONDC_DATA.put(`txn_${txnId}`, JSON.stringify(body), { expirationTtl: 900 }); 
+      console.log(`✅ Saved on_search data to KV for TXN: ${txnId}`);
+    } catch (err) {
+      console.error(`❌ Failed to save to KV:`, err.message);
+    }
+  }
 
   return jsonResponse({
     message: { ack: { status: 'ACK' } }
   }, { 'Content-Type': 'application/json' });
 }
 
-console.log('✅ NnlGharPro ONDC Universal API (Secure) loaded');
+// ═══════════════════════════════════════════════════════════
+// 🔄 GET RESULTS HANDLER (Frontend polls this)
+// ═══════════════════════════════════════════════════════════
+
+async function handleGetResults(txnId, env, corsHeaders) {
+  if (!txnId || !env.ONDC_DATA) {
+    return jsonResponse({ success: false, message: 'Invalid request or Database not configured' }, corsHeaders);
+  }
+
+  try {
+    const data = await env.ONDC_DATA.get(`txn_${txnId}`);
+    if (data) {
+      return jsonResponse({ success: true, status: 'ready', results: JSON.parse(data) }, corsHeaders);
+    } else {
+      return jsonResponse({ success: false, status: 'pending', message: 'Data not ready yet' }, corsHeaders);
+    }
+  } catch (err) {
+    return jsonResponse({ success: false, message: err.message }, corsHeaders, 500);
+  }
+}
+
+console.log('✅ NnlGharPro ONDC Universal API (Secure + KV) loaded');
