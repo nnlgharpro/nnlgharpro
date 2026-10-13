@@ -225,7 +225,7 @@ function buildPayload(action, domain, body, env) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// 📤 OUTGOING HANDLER (With Signature Integration)
+// 📤 OUTGOING HANDLER (With Signature Integration + CORS Fix)
 // ═══════════════════════════════════════════════════════════
 
 async function handleOutgoingRequest(action, request, env) {
@@ -234,29 +234,46 @@ async function handleOutgoingRequest(action, request, env) {
   
   const payload = buildPayload(action, domain, body, env);
   
-  // 🔐 Signature बनाएँ
-  const authHeader = await generateOndcSignature(payload, env);
+  let authHeader;
+  try {
+    authHeader = await generateOndcSignature(payload, env);
+  } catch (error) {
+    return jsonResponse(
+      { error: "Signature Error: " + error.message }, 
+      { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' }, 
+      500
+    );
+  }
   
   const workbenchUrl = `https://workbench.ondc.tech/api-service/${domain}/1.2.5/seller/${action}`;
   
-  const response = await fetch(workbenchUrl, {
-    method: 'POST',
-    headers: { 
-      'Content-Type': 'application/json',
-      'Authorization': authHeader
-    },
-    body: JSON.stringify(payload)
-  });
-  
-  const data = await response.json().catch(() => ({}));
-  
-  return jsonResponse({ 
-    success: true, 
-    action: action,
-    domain: domain,
-    workbenchResponse: data, 
-    sentPayload: payload 
-  }, { 'Content-Type': 'application/json' });
+  try {
+    const response = await fetch(workbenchUrl, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': authHeader
+      },
+      body: JSON.stringify(payload)
+    });
+    
+    const data = await response.json().catch(() => ({}));
+    
+    return jsonResponse({ 
+      success: true, 
+      action: action,
+      domain: domain,
+      workbenchResponse: data, 
+      sentPayload: payload 
+    }, { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' });
+
+  } catch (error) {
+    return jsonResponse(
+      { error: "Fetch Error: " + error.message }, 
+      { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' }, 
+      500
+    );
+  }
 }
 
 // ═══════════════════════════════════════════════════════════
