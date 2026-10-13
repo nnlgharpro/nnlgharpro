@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC API — Universal Multi-Domain Backend
+// 🚀 NNLGHARPRO ONDC API — Universal (With Signature)
 // ═══════════════════════════════════════════════════════════
 
 export default {
@@ -7,7 +7,6 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
     
-    // CORS Headers (ताकि आपका फ्रंटएंड आसानी से बात कर सके)
     const corsHeaders = {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
@@ -21,32 +20,22 @@ export default {
     console.log(`📥 ${request.method} ${path}`);
     
     try {
-      // ═══════════════════════════════════════════════════
-      // HEALTH CHECK
-      // ═══════════════════════════════════════════════════
       if (path === '/' || path === '/api/health') {
         return jsonResponse({
           status: 'active',
-          service: 'NnlGharPro ONDC Universal API',
-          supported_domains: ['ONDC:RET10', 'ONDC:RET11', 'ONDC:SRV11', 'ONDC:SRV13', 'ONDC:TRV10'],
-          version: '3.0.0',
+          service: 'NnlGharPro ONDC Universal API (Secure)',
+          version: '3.1.0',
           timestamp: new Date().toISOString()
         }, corsHeaders);
       }
       
-      // ═══════════════════════════════════════════════════
-      // OUTGOING REQUESTS (Frontend -> ONDC)
-      // ═══════════════════════════════════════════════════
       const outgoingActions = ['search', 'select', 'init', 'confirm', 'status', 'cancel', 'update', 'track', 'support', 'rating'];
-      const action = path.replace('/', ''); // e.g., '/search' -> 'search'
+      const action = path.replace('/', '');
       
       if (outgoingActions.includes(action)) {
         return await handleOutgoingRequest(action, request, env);
       }
       
-      // ═══════════════════════════════════════════════════
-      // INCOMING WEBHOOKS (ONDC -> Frontend)
-      // ═══════════════════════════════════════════════════
       if (path.startsWith('/on_')) {
         return await handleIncomingWebhook(path, request, env);
       }
@@ -75,11 +64,57 @@ function generateUUID() { return crypto.randomUUID(); }
 function getTimestamp() { return new Date().toISOString(); }
 
 // ═══════════════════════════════════════════════════════════
-// 🧠 UNIVERSAL PAYLOAD BUILDER (Domain ke hisaab se badalta hai)
+// 🔐 SIGNATURE GENERATOR (ONDC Authorization Header)
+// ═══════════════════════════════════════════════════════════
+
+async function generateOndcSignature(body, env) {
+  const created = Math.floor(Date.now() / 1000);
+  const expires = created + 3600; // 1 घंटे के लिए valid
+
+  // 1. Body का SHA-256 Digest बनाएँ
+  const encoder = new TextEncoder();
+  const data = encoder.encode(JSON.stringify(body));
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const digest = btoa(String.fromCharCode(...hashArray));
+
+  // 2. Signing String बनाएँ
+  const signingString = `(created): ${created}\n(expires): ${expires}\ndigest: SHA-256=${digest}`;
+
+  // 3. Private Key को Import करें (Ed25519)
+  // ध्यान दें: ONDC_SIGNING_PRIVATE_KEY base64 format में होनी चाहिए
+  const privateKeyBase64 = env.ONDC_SIGNING_PRIVATE_KEY;
+  const binaryDer = Uint8Array.from(atob(privateKeyBase64), c => c.charCodeAt(0));
+
+  const privateKey = await crypto.subtle.importKey(
+    "pkcs8",
+    binaryDer.buffer,
+    { name: "Ed25519" },
+    false,
+    ["sign"]
+  );
+
+  // 4. Signature बनाएँ
+  const signatureBuffer = await crypto.subtle.sign(
+    { name: "Ed25519" },
+    privateKey,
+    encoder.encode(signingString)
+  );
+  const signatureArray = Array.from(new Uint8Array(signatureBuffer));
+  const signature = btoa(String.fromCharCode(...signatureArray));
+
+  // 5. Authorization Header Format तैयार करें
+  const ukId = env.ONDC_UK_ID || "1"; // ONDC keys file mein aksar ukId "1" hota hai
+  const keyId = `${env.ONDC_BAP_ID}|${ukId}|ed25519`; 
+  
+  return `Signature keyId="${keyId}",algorithm="ed25519",created="${created}",expires="${expires}",headers="(created) (expires) digest",signature="${signature}"`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// 🧠 UNIVERSAL PAYLOAD BUILDER
 // ═══════════════════════════════════════════════════════════
 
 function buildPayload(action, domain, body, env) {
-  // Common Context
   const context = {
     domain: domain,
     action: action,
@@ -92,7 +127,6 @@ function buildPayload(action, domain, body, env) {
     ttl: 'PT30S'
   };
 
-  // 1. SERVICE DOMAINS (Plumber, Electrician, Home Cleaning)
   if (domain.startsWith('ONDC:SRV')) {
     if (action === 'search') {
       return {
@@ -106,7 +140,6 @@ function buildPayload(action, domain, body, env) {
         }
       };
     }
-    // Default Service Order Structure
     return {
       context,
       message: {
@@ -121,8 +154,6 @@ function buildPayload(action, domain, body, env) {
     };
   }
 
-  // 2. RETAIL DOMAINS (Food, Grocery, Home Decor, Beauty)
-  // Includes: RET10, RET11, RET12, RET13, RET14, RET15
   if (domain.startsWith('ONDC:RET')) {
     if (action === 'search') {
       return {
@@ -136,7 +167,6 @@ function buildPayload(action, domain, body, env) {
         }
       };
     }
-    // Default Retail Order Structure
     return {
       context,
       message: {
@@ -151,39 +181,30 @@ function buildPayload(action, domain, body, env) {
     };
   }
 
-  // 3. TRAVEL & MOBILITY (Cab, Bus)
-  if (domain.startsWith('ONDC:TRV')) {
-    return {
-      context,
-      message: { 
-        intent: body.intent || {},
-        order: body.order || {}
-      }
-    };
-  }
-
-  // Fallback (Agar koi naya domain aaye)
   return { context, message: { intent: body.intent || {}, order: body.order || {} } };
 }
 
 // ═══════════════════════════════════════════════════════════
-// 📤 OUTGOING HANDLER (Universal)
+// 📤 OUTGOING HANDLER (With Signature Integration)
 // ═══════════════════════════════════════════════════════════
 
 async function handleOutgoingRequest(action, request, env) {
   const body = await request.json().catch(() => ({}));
-  
-  // Default domain RET11 (Food) agar frontend se nahi aaya
   const domain = body.domain || env.ONDC_DOMAIN || 'ONDC:RET11'; 
   
   const payload = buildPayload(action, domain, body, env);
   
-  // Workbench URL (Testing ke liye)
+  // 🔐 Signature बनाएँ
+  const authHeader = await generateOndcSignature(payload, env);
+  
   const workbenchUrl = `https://workbench.ondc.tech/api-service/${domain}/1.2.5/seller/${action}`;
   
   const response = await fetch(workbenchUrl, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' }, // TODO: Add Authorization Signature here
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': authHeader // 👈 Signature लगा दिया
+    },
     body: JSON.stringify(payload)
   });
   
@@ -199,22 +220,18 @@ async function handleOutgoingRequest(action, request, env) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// 📥 INCOMING WEBHOOK HANDLER (Universal)
+// 📥 INCOMING WEBHOOK HANDLER
 // ═══════════════════════════════════════════════════════════
 
 async function handleIncomingWebhook(path, request, env) {
   const body = await request.json();
-  const action = path.replace('/on_', ''); // e.g., '/on_search' -> 'search'
+  const action = path.replace('/on_', '');
   
   console.log(`📥 [WEBHOOK] on_${action} received for TXN: ${body.context?.transaction_id}`);
-  
-  // यहाँ आप Database (Cloudflare D1/KV) में डेटा सेव कर सकते हैं
-  // उदाहरण: await env.DB.prepare("INSERT INTO orders ...").bind(...).run();
 
-  // ONDC को हमेशा ACK भेजना ज़रूरी है
   return jsonResponse({
     message: { ack: { status: 'ACK' } }
   }, { 'Content-Type': 'application/json' });
 }
 
-console.log('✅ NnlGharPro ONDC Universal API (v3.0.0) loaded');
+console.log('✅ NnlGharPro ONDC Universal API (Secure) loaded');
