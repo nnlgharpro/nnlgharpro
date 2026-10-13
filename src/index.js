@@ -98,27 +98,23 @@ while (rawKey.length % 4) {
 }
 
 console.log("🔑 DEBUG - Key Length:", rawKey.length);
-
 let binaryDer;
+const rawBinary = Uint8Array.from(atob(rawKey), c => c.charCodeAt(0));
 
-// Format A: Base64 encoded PEM (LS0t...)
-if (rawKey.startsWith('LS0t')) {
-    const decodedPem = atob(rawKey);
-    const pemBody = decodedPem
-        .replace(/-----BEGIN PRIVATE KEY-----/g, '')
-        .replace(/-----END PRIVATE KEY-----/g, '')
-        .replace(/\s/g, '');
-    
-    // PEM body को भी साफ़ करें
-    let cleanPemBody = pemBody.replace(/-/g, '+').replace(/_/g, '/');
-    while (cleanPemBody.length % 4) {
-        cleanPemBody += '=';
-    }
-    
-    binaryDer = Uint8Array.from(atob(cleanPemBody), c => c.charCodeAt(0));
+// Format A: Agar key 32 bytes ki hai (Raw Ed25519 Key)
+if (rawBinary.length === 32) {
+    // PKCS8 Header for Ed25519 (302e020100300506032b657004220420)
+    const pkcs8Prefix = new Uint8Array([
+        0x30, 0x2e, 0x02, 0x01, 0x00, 0x30, 0x05, 
+        0x06, 0x03, 0x2b, 0x65, 0x70, 0x04, 0x22, 
+        0x04, 0x20
+    ]);
+    binaryDer = new Uint8Array(pkcs8Prefix.length + rawBinary.length);
+    binaryDer.set(pkcs8Prefix);
+    binaryDer.set(rawBinary, pkcs8Prefix.length);
 } else {
-    // Format B: सीधा Base64 DER (MIIE...)
-    binaryDer = Uint8Array.from(atob(rawKey), c => c.charCodeAt(0));
+    // Format B: Agar pehle se hi PKCS8 DER format hai (MC4CAQAw...)
+    binaryDer = rawBinary;
 }
 
 // 4. Debug: DER के पहले 10 बाइट्स देखें
