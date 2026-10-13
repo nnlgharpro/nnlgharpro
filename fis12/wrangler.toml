@@ -1,8 +1,0 @@
-name = "nnlgharpro-fis12"
-main = "src/index.js"
-compatibility_date = "2024-10-01"
-
-[vars]
-ENVIRONMENT = "production"
-ONDC_DOMAIN = "ONDC:FIS12"
-ONDC_VERSION = "2.0.0"
