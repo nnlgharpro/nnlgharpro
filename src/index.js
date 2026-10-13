@@ -83,24 +83,35 @@ async function generateOndcSignature(body, env) {
 
   // 3. Private Key को Import करें (Ed25519)
   // ध्यान दें: ONDC_SIGNING_PRIVATE_KEY base64 format में होनी चाहिए
-  // Key ko saaf karein (quotes, spaces, newlines hata dein)
-const cleanKey = env.ONDC_SIGNING_PRIVATE_KEY
-    .replace(/-----BEGIN PRIVATE KEY-----/g, '')
-    .replace(/-----END PRIVATE KEY-----/g, '')
-    .replace(/-----BEGIN PUBLIC KEY-----/g, '')
-    .replace(/-----END PUBLIC KEY-----/g, '')
-    .replace(/['"]/g, '')
-    .replace(/\\n/g, '')
-    .replace(/\s/g, '');
-const binaryDer = Uint8Array.from(atob(cleanKey), c => c.charCodeAt(0));
+// 3. Private Key को Import करें (Ed25519) - Smart Detection
+let rawKey = env.ONDC_SIGNING_PRIVATE_KEY || "";
 
-  const privateKey = await crypto.subtle.importKey(
-    "pkcs8",
-    binaryDer.buffer,
-    { name: "Ed25519" },
-    false,
-    ["sign"]
-  );
+// सारी फालतू चीज़ें हटाएँ (quotes, spaces, newlines)
+rawKey = rawKey.replace(/['"]/g, '').replace(/\\n/g, '').replace(/\s/g, '');
+
+let binaryDer;
+
+// अगर Key "LS0t" से शुरू होती है, तो इसका मतलब यह Base64 में लिपटी PEM फ़ाइल है
+if (rawKey.startsWith('LS0t')) {
+  const decodedPem = atob(rawKey);
+  const pemBody = decodedPem
+      .replace(/-----BEGIN PRIVATE KEY-----/, '')
+      .replace(/-----END PRIVATE KEY-----/, '')
+      .replace(/\s/g, '');
+  binaryDer = Uint8Array.from(atob(pemBody), c => c.charCodeAt(0));
+} else {
+  // यह पहले से ही Base64 DER फॉर्मेट में है
+  binaryDer = Uint8Array.from(atob(rawKey), c => c.charCodeAt(0));
+}
+
+// अब privateKey को import करें
+const privateKey = await crypto.subtle.importKey(
+  "pkcs8",
+  binaryDer.buffer,
+  { name: "Ed25519" },
+  false,
+  ["sign"]
+);
 
   // 4. Signature बनाएँ
   const signatureBuffer = await crypto.subtle.sign(
