@@ -83,28 +83,48 @@ async function generateOndcSignature(body, env) {
 
   // 3. Private Key को Import करें (Ed25519)
   // ध्यान दें: ONDC_SIGNING_PRIVATE_KEY base64 format में होनी चाहिए
-// 3. Private Key को Import करें (Ed25519) - Smart Detection
+// 3. Private Key को Import करें (Ed25519) - Universal Fix v3
 let rawKey = env.ONDC_SIGNING_PRIVATE_KEY || "";
 
-// सारी फालतू चीज़ें हटाएँ (quotes, spaces, newlines)
+// 1. सफाई: quotes, spaces, newlines हटाएँ
 rawKey = rawKey.replace(/['"]/g, '').replace(/\\n/g, '').replace(/\s/g, '');
+
+// 2. URL-safe Base64 को सामान्य Base64 में बदलें (- को +, _ को /)
+rawKey = rawKey.replace(/-/g, '+').replace(/_/g, '/');
+
+// 3. Base64 Padding (=) जोड़ें अगर मिसिंग है
+while (rawKey.length % 4) {
+    rawKey += '=';
+}
+
+console.log("🔑 DEBUG - Key Length:", rawKey.length);
 
 let binaryDer;
 
-// अगर Key "LS0t" से शुरू होती है, तो इसका मतलब यह Base64 में लिपटी PEM फ़ाइल है
+// Format A: Base64 encoded PEM (LS0t...)
 if (rawKey.startsWith('LS0t')) {
-  const decodedPem = atob(rawKey);
-  const pemBody = decodedPem
-      .replace(/-----BEGIN PRIVATE KEY-----/, '')
-      .replace(/-----END PRIVATE KEY-----/, '')
-      .replace(/\s/g, '');
-  binaryDer = Uint8Array.from(atob(pemBody), c => c.charCodeAt(0));
+    const decodedPem = atob(rawKey);
+    const pemBody = decodedPem
+        .replace(/-----BEGIN PRIVATE KEY-----/g, '')
+        .replace(/-----END PRIVATE KEY-----/g, '')
+        .replace(/\s/g, '');
+    
+    // PEM body को भी साफ़ करें
+    let cleanPemBody = pemBody.replace(/-/g, '+').replace(/_/g, '/');
+    while (cleanPemBody.length % 4) {
+        cleanPemBody += '=';
+    }
+    
+    binaryDer = Uint8Array.from(atob(cleanPemBody), c => c.charCodeAt(0));
 } else {
-  // यह पहले से ही Base64 DER फॉर्मेट में है
-  binaryDer = Uint8Array.from(atob(rawKey), c => c.charCodeAt(0));
+    // Format B: सीधा Base64 DER (MIIE...)
+    binaryDer = Uint8Array.from(atob(rawKey), c => c.charCodeAt(0));
 }
 
-// अब privateKey को import करें
+// 4. Debug: DER के पहले 10 बाइट्स देखें
+const firstBytes = Array.from(binaryDer.slice(0, 10)).map(b => b.toString(16).padStart(2, '0')).join(' ');
+console.log("🔑 DEBUG - DER First 10 Bytes:", firstBytes);
+
 const privateKey = await crypto.subtle.importKey(
   "pkcs8",
   binaryDer.buffer,
@@ -112,7 +132,6 @@ const privateKey = await crypto.subtle.importKey(
   false,
   ["sign"]
 );
-
   // 4. Signature बनाएँ
   const signatureBuffer = await crypto.subtle.sign(
     { name: "Ed25519" },
