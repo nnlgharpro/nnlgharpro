@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC API — Universal (With Signature)
+// 🚀 NNLGHARPRO ONDC API — Universal (With Signature) - FINAL
 // ═══════════════════════════════════════════════════════════
 
 export default {
@@ -24,7 +24,7 @@ export default {
         return jsonResponse({
           status: 'active',
           service: 'NnlGharPro ONDC Universal API (Secure)',
-          version: '3.1.0',
+          version: '4.0.0',
           timestamp: new Date().toISOString()
         }, corsHeaders);
       }
@@ -81,53 +81,59 @@ async function generateOndcSignature(body, env) {
   // 2. Signing String बनाएँ
   const signingString = `(created): ${created}\n(expires): ${expires}\ndigest: SHA-256=${digest}`;
 
-  // 3. Private Key को Import करें (Ed25519)
-  // ध्यान दें: ONDC_SIGNING_PRIVATE_KEY base64 format में होनी चाहिए
-// 3. Private Key को Import करें (Ed25519) - Universal Fix v3
-let rawKey = env.ONDC_SIGNING_PRIVATE_KEY || "";
+  // 3. Private Key को Import करें (Ed25519) - Smart Format Detection
+  let rawKey = env.ONDC_SIGNING_PRIVATE_KEY || "";
 
-// 1. सफाई: quotes, spaces, newlines हटाएँ
-rawKey = rawKey.replace(/['"]/g, '').replace(/\\n/g, '').replace(/\s/g, '');
+  // सफाई: quotes, spaces, newlines हटाएँ
+  rawKey = rawKey.replace(/['"]/g, '').replace(/\\n/g, '').replace(/\s/g, '');
 
-// 2. URL-safe Base64 को सामान्य Base64 में बदलें (- को +, _ को /)
-rawKey = rawKey.replace(/-/g, '+').replace(/_/g, '/');
+  // URL-safe Base64 को सामान्य Base64 में बदलें (- को +, _ को /)
+  rawKey = rawKey.replace(/-/g, '+').replace(/_/g, '/');
 
-// 3. Base64 Padding (=) जोड़ें अगर मिसिंग है
-while (rawKey.length % 4) {
+  // Base64 Padding (=) जोड़ें अगर मिसिंग है
+  while (rawKey.length % 4) {
     rawKey += '=';
-}
+  }
 
-console.log("🔑 DEBUG - Key Length:", rawKey.length);
-let binaryDer;
-const rawBinary = Uint8Array.from(atob(rawKey), c => c.charCodeAt(0));
+  const rawBinary = Uint8Array.from(atob(rawKey), c => c.charCodeAt(0));
+  let binaryDer;
 
-// Format A: Agar key 32 bytes ki hai (Raw Ed25519 Key)
-if (rawBinary.length === 32) {
-    // PKCS8 Header for Ed25519 (302e020100300506032b657004220420)
+  // 🌟 असली फिक्स: अगर Key 32 बाइट की है (Raw Ed25519 Key), तो उसे PKCS8 में लपेटें
+  if (rawBinary.length === 32) {
+    // Ed25519 के लिए PKCS8 Header
     const pkcs8Prefix = new Uint8Array([
-        0x30, 0x2e, 0x02, 0x01, 0x00, 0x30, 0x05, 
-        0x06, 0x03, 0x2b, 0x65, 0x70, 0x04, 0x22, 
-        0x04, 0x20
+      0x30, 0x2e, 0x02, 0x01, 0x00, 0x30, 0x05, 
+      0x06, 0x03, 0x2b, 0x65, 0x70, 0x04, 0x22, 
+      0x04, 0x20
     ]);
     binaryDer = new Uint8Array(pkcs8Prefix.length + rawBinary.length);
     binaryDer.set(pkcs8Prefix);
     binaryDer.set(rawBinary, pkcs8Prefix.length);
-} else {
-    // Format B: Agar pehle se hi PKCS8 DER format hai (MC4CAQAw...)
+  } 
+  // अगर Key 64 बाइट की है (Seed + Public Key), तो सिर्फ पहले 32 बाइट्स लें और लपेटें
+  else if (rawBinary.length === 64) {
+    const pkcs8Prefix = new Uint8Array([
+      0x30, 0x2e, 0x02, 0x01, 0x00, 0x30, 0x05, 
+      0x06, 0x03, 0x2b, 0x65, 0x70, 0x04, 0x22, 
+      0x04, 0x20
+    ]);
+    binaryDer = new Uint8Array(pkcs8Prefix.length + 32);
+    binaryDer.set(pkcs8Prefix);
+    binaryDer.set(rawBinary.slice(0, 32), pkcs8Prefix.length);
+  } 
+  // अगर Key पहले से ही PKCS8 फॉर्मेट में है (जैसे MC4CAQAw...)
+  else {
     binaryDer = rawBinary;
-}
+  }
 
-// 4. Debug: DER के पहले 10 बाइट्स देखें
-const firstBytes = Array.from(binaryDer.slice(0, 10)).map(b => b.toString(16).padStart(2, '0')).join(' ');
-console.log("🔑 DEBUG - DER First 10 Bytes:", firstBytes);
+  const privateKey = await crypto.subtle.importKey(
+    "pkcs8",
+    binaryDer.buffer,
+    { name: "Ed25519" },
+    false,
+    ["sign"]
+  );
 
-const privateKey = await crypto.subtle.importKey(
-  "pkcs8",
-  binaryDer.buffer,
-  { name: "Ed25519" },
-  false,
-  ["sign"]
-);
   // 4. Signature बनाएँ
   const signatureBuffer = await crypto.subtle.sign(
     { name: "Ed25519" },
@@ -138,7 +144,7 @@ const privateKey = await crypto.subtle.importKey(
   const signature = btoa(String.fromCharCode(...signatureArray));
 
   // 5. Authorization Header Format तैयार करें
-  const ukId = env.ONDC_UK_ID || "1"; // ONDC keys file mein aksar ukId "1" hota hai
+  const ukId = env.ONDC_UK_ID || "1"; 
   const keyId = `${env.ONDC_BAP_ID}|${ukId}|ed25519`; 
   
   return `Signature keyId="${keyId}",algorithm="ed25519",created="${created}",expires="${expires}",headers="(created) (expires) digest",signature="${signature}"`;
@@ -237,7 +243,7 @@ async function handleOutgoingRequest(action, request, env) {
     method: 'POST',
     headers: { 
       'Content-Type': 'application/json',
-      'Authorization': authHeader // 👈 Signature लगा दिया
+      'Authorization': authHeader
     },
     body: JSON.stringify(payload)
   });
