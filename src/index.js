@@ -175,7 +175,7 @@ const digest = btoa(String.fromCharCode(...hashBuffer));
   const signatureArray = Array.from(new Uint8Array(signatureBuffer));
   const signature = btoa(String.fromCharCode(...signatureArray));
 
-  const ukId = env.ONDC_UK_ID || "1"; 
+  const ukId = env.ONDC_UK_ID || "fe215f60-64c4-4e9a-8153-1b221773777b";
   const keyId = `${env.ONDC_BAP_ID}|${ukId}|ed25519`; 
   
   return `Signature keyId="${keyId}",algorithm="ed25519",created="${created}",expires="${expires}",headers="(created) (expires) digest",signature="${signature}"`;
