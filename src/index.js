@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC API — Universal (With KV & Signature) - FINAL
+// 🚀 NNLGHARPRO ONDC API — Universal (With KV & Signature) - FINAL v5.2
 // ═══════════════════════════════════════════════════════════
 
 export default {
@@ -20,17 +20,16 @@ export default {
     console.log(`📥 ${request.method} ${path}`);
     
     try {
-      // 1. HEALTH CHECK
       if (path === '/' || path === '/api/health') {
         return jsonResponse({
           status: 'active',
           service: 'NnlGharPro ONDC Universal API (Secure)',
-          version: '5.1.0',
+          version: '5.2.0',
           timestamp: new Date().toISOString()
         }, corsHeaders);
       }
       
-      // 🔍 ONDC Registry Lookup Endpoint (With Signature)
+      // Registry Lookup
       if (path === '/registry-lookup') {
         const bapId = env.ONDC_BAP_ID || "nnlgharpro-ret11.nnlgharpro.workers.dev";
         const lookupBody = {
@@ -42,35 +41,20 @@ export default {
 
         try {
           const authHeader = await generateOndcSignature(lookupBody, env);
-          console.log("🔐 Auth Header:", authHeader.substring(0, 80) + "...");
-
           const regResponse = await fetch('https://preprod.registry.ondc.org/v2.0/lookup', {
             method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json',
-              'Authorization': authHeader
-            },
+            headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
             body: JSON.stringify(lookupBody),
             cf: { insecureSkipVerify: true }
           });
-          
           const regData = await regResponse.json();
-          return jsonResponse({ 
-            success: true, 
-            sentBody: lookupBody,
-            authHeaderPreview: authHeader.substring(0, 100),
-            registryResponse: regData 
-          }, corsHeaders);
+          return jsonResponse({ success: true, sentBody: lookupBody, authHeaderPreview: authHeader.substring(0, 100), registryResponse: regData }, corsHeaders);
         } catch (regError) {
-          console.error("❌ Registry Lookup Error:", regError.message);
-          return jsonResponse({ 
-            success: false, 
-            error: regError.message 
-          }, corsHeaders, 500);
+          return jsonResponse({ success: false, error: regError.message }, corsHeaders, 500);
         }
       }
       
-      // 2. OUTGOING REQUESTS (Frontend -> ONDC)
+      // Outgoing
       const outgoingActions = ['search', 'select', 'init', 'confirm', 'status', 'cancel', 'update', 'track', 'support', 'rating'];
       const action = path.replace('/', '');
       
@@ -78,13 +62,13 @@ export default {
         return await handleOutgoingRequest(action, request, env, ctx);
       }
       
-      // 3. GET RESULTS (Frontend polls here)
+      // Get results
       if (path.startsWith('/get-results/')) {
         const txnId = path.split('/')[2];
         return await handleGetResults(txnId, env, corsHeaders);
       }
       
-      // 4. INCOMING WEBHOOKS (ONDC -> Our App)   ✅ FIX: ctx added
+      // Incoming webhooks
       if (path.startsWith('/on_')) {
         return await handleIncomingWebhook(path, request, env, ctx);
       }
@@ -99,7 +83,7 @@ export default {
 };
 
 // ═══════════════════════════════════════════════════════════
-// 🔧 HELPERS
+// HELPERS
 // ═══════════════════════════════════════════════════════════
 
 function jsonResponse(data, headers, status = 200) {
@@ -113,7 +97,7 @@ function generateUUID() { return crypto.randomUUID(); }
 function getTimestamp() { return new Date().toISOString(); }
 
 // ═══════════════════════════════════════════════════════════
-// 🔐 SIGNATURE GENERATOR (ONDC Authorization Header)
+// SIGNATURE GENERATOR
 // ═══════════════════════════════════════════════════════════
 
 async function generateOndcSignature(body, env) {
@@ -131,28 +115,22 @@ async function generateOndcSignature(body, env) {
   rawKey = rawKey.replace(/['"]/g, '').replace(/\\n/g, '').replace(/\s/g, '');
   rawKey = rawKey.replace(/-/g, '+').replace(/_/g, '/');
 
-  while (rawKey.length % 4) {
-    rawKey += '=';
-  }
+  while (rawKey.length % 4) { rawKey += '='; }
 
   const rawBinary = Uint8Array.from(atob(rawKey), c => c.charCodeAt(0));
   let binaryDer;
 
+  const pkcs8Prefix = new Uint8Array([
+    0x30, 0x2e, 0x02, 0x01, 0x00, 0x30, 0x05, 
+    0x06, 0x03, 0x2b, 0x65, 0x70, 0x04, 0x22, 
+    0x04, 0x20
+  ]);
+
   if (rawBinary.length === 32) {
-    const pkcs8Prefix = new Uint8Array([
-      0x30, 0x2e, 0x02, 0x01, 0x00, 0x30, 0x05, 
-      0x06, 0x03, 0x2b, 0x65, 0x70, 0x04, 0x22, 
-      0x04, 0x20
-    ]);
-    binaryDer = new Uint8Array(pkcs8Prefix.length + rawBinary.length);
+    binaryDer = new Uint8Array(pkcs8Prefix.length + 32);
     binaryDer.set(pkcs8Prefix);
     binaryDer.set(rawBinary, pkcs8Prefix.length);
   } else if (rawBinary.length === 64) {
-    const pkcs8Prefix = new Uint8Array([
-      0x30, 0x2e, 0x02, 0x01, 0x00, 0x30, 0x05, 
-      0x06, 0x03, 0x2b, 0x65, 0x70, 0x04, 0x22, 
-      0x04, 0x20
-    ]);
     binaryDer = new Uint8Array(pkcs8Prefix.length + 32);
     binaryDer.set(pkcs8Prefix);
     binaryDer.set(rawBinary.slice(0, 32), pkcs8Prefix.length);
@@ -160,21 +138,10 @@ async function generateOndcSignature(body, env) {
     binaryDer = rawBinary;
   }
 
-  const privateKey = await crypto.subtle.importKey(
-    "pkcs8",
-    binaryDer.buffer,
-    { name: "Ed25519" },
-    false,
-    ["sign"]
-  );
+  const privateKey = await crypto.subtle.importKey("pkcs8", binaryDer.buffer, { name: "Ed25519" }, false, ["sign"]);
 
-  const signatureBuffer = await crypto.subtle.sign(
-    { name: "Ed25519" },
-    privateKey,
-    encoder.encode(signingString)
-  );
-  const signatureArray = Array.from(new Uint8Array(signatureBuffer));
-  const signature = btoa(String.fromCharCode(...signatureArray));
+  const signatureBuffer = await crypto.subtle.sign({ name: "Ed25519" }, privateKey, encoder.encode(signingString));
+  const signature = btoa(String.fromCharCode(...new Uint8Array(signatureBuffer)));
 
   const ukId = env.ONDC_UK_ID || "fe215f60-64c4-4e9a-8153-1b221773777b";
   const keyId = `${env.ONDC_BAP_ID}|${ukId}|ed25519`; 
@@ -183,7 +150,7 @@ async function generateOndcSignature(body, env) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// 🧠 UNIVERSAL PAYLOAD BUILDER
+// PAYLOAD BUILDER
 // ═══════════════════════════════════════════════════════════
 
 function buildPayload(action, domain, body, env) {
@@ -257,7 +224,7 @@ function buildPayload(action, domain, body, env) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// 📤 OUTGOING HANDLER (With Signature + CORS Fix)
+// OUTGOING HANDLER
 // ═══════════════════════════════════════════════════════════
 
 async function handleOutgoingRequest(action, request, env, ctx) {
@@ -270,11 +237,7 @@ async function handleOutgoingRequest(action, request, env, ctx) {
   try {
     authHeader = await generateOndcSignature(payload, env);
   } catch (error) {
-    return jsonResponse(
-      { error: "Signature Error: " + error.message }, 
-      { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' }, 
-      500
-    );
+    return jsonResponse({ error: "Signature Error: " + error.message }, { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' }, 500);
   }
   
   const gatewayUrl = env.ONDC_GATEWAY_URL || 'https://preprod.gateway.ondc.org';
@@ -283,19 +246,21 @@ async function handleOutgoingRequest(action, request, env, ctx) {
   try {
     const response = await fetch(workbenchUrl, {
       method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': authHeader
-      },
+      headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
       body: JSON.stringify(payload)
     });
     
     const data = await response.json().catch(() => ({}));
     
-    // 📊 Observability: request + response दोनों push करें
+    // 📊 Observability: Request + Response दोनों push करें
     if (ctx && ctx.waitUntil) {
-      ctx.waitUntil(pushToObservability(action, payload, {}, env));
-      ctx.waitUntil(pushToObservability(action + '_response', {}, data, env));
+      // Request push: type = action (e.g., "init"), context + message from payload
+      ctx.waitUntil(pushToObservability(action, payload.context, payload.message, env));
+      
+      // Response push: type = action + "_response" (e.g., "init_response"), 
+      // context वही payload.context से, message response data से
+      const responseMessage = data?.message || { ack: { status: 'NACK' } };
+      ctx.waitUntil(pushToObservability(action + '_response', payload.context, responseMessage, env));
     }
     
     return jsonResponse({ 
@@ -308,26 +273,23 @@ async function handleOutgoingRequest(action, request, env, ctx) {
     }, { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' });
 
   } catch (error) {
-    return jsonResponse(
-      { error: "Fetch Error: " + error.message }, 
-      { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' }, 
-      500
-    );
+    return jsonResponse({ error: "Fetch Error: " + error.message }, { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' }, 500);
   }
 }
 
 // ═══════════════════════════════════════════════════════════
-// 📥 INCOMING WEBHOOK HANDLER (Saves Data to KV)
+// INCOMING WEBHOOK HANDLER
 // ═══════════════════════════════════════════════════════════
 
 async function handleIncomingWebhook(path, request, env, ctx) {
   const body = await request.json();
-  const action = path.replace('/on_', '');
+  // 👇 FIX: on_init, on_confirm, on_status - पूरा action name रखें
+  const action = path.replace('/', '');  // "on_init", "on_confirm", etc.
   const txnId = body.context?.transaction_id;
   
-  console.log(`📥 [WEBHOOK] on_${action} received for TXN: ${txnId}`);
+  console.log(`📥 [WEBHOOK] ${action} received for TXN: ${txnId}`);
 
-  if (action === 'search' && txnId && env.ONDC_DATA) {
+  if (action === 'on_search' && txnId && env.ONDC_DATA) {
     try {
       await env.ONDC_DATA.put(`txn_${txnId}`, JSON.stringify(body), { expirationTtl: 900 }); 
       console.log(`✅ Saved on_search data to KV for TXN: ${txnId}`);
@@ -336,26 +298,26 @@ async function handleIncomingWebhook(path, request, env, ctx) {
     }
   }
 
-  // 📊 Observability को log भेजें
+  // 📊 Observability
   if (ctx && ctx.waitUntil) {
-    ctx.waitUntil(pushToObservability(action, body, {}, env));
-    ctx.waitUntil(pushToObservability(action + '_response', {}, { message: { ack: { status: 'ACK' } } }, env));
+    // on_XXX request push: type = "on_init", context + message from body
+    ctx.waitUntil(pushToObservability(action, body.context, body.message, env));
+    
+    // on_XXX_response push: type = "on_init_response", context same, message = our ACK
+    ctx.waitUntil(pushToObservability(action + '_response', body.context, { ack: { status: 'ACK' } }, env));
   }
 
-  return jsonResponse({
-    message: { ack: { status: 'ACK' } }
-  }, { 'Content-Type': 'application/json' });
+  return jsonResponse({ message: { ack: { status: 'ACK' } } }, { 'Content-Type': 'application/json' });
 }
 
 // ═══════════════════════════════════════════════════════════
-// 🔄 GET RESULTS HANDLER (Frontend polls this)
+// GET RESULTS HANDLER
 // ═══════════════════════════════════════════════════════════
 
 async function handleGetResults(txnId, env, corsHeaders) {
   if (!txnId || !env.ONDC_DATA) {
     return jsonResponse({ success: false, message: 'Invalid request or Database not configured' }, corsHeaders);
   }
-
   try {
     const data = await env.ONDC_DATA.get(`txn_${txnId}`);
     if (data) {
@@ -369,7 +331,7 @@ async function handleGetResults(txnId, env, corsHeaders) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// 🔐 BLAKE2b-512 Implementation (Cloudflare Workers compatible)
+// BLAKE2b-512 Implementation
 // ═══════════════════════════════════════════════════════════
 
 const BLAKE2B_IV = new Uint32Array([
@@ -394,28 +356,21 @@ const BLAKE2B_SIGMA = [
   [14,10,4,8,9,15,13,6,1,12,0,2,11,7,5,3]
 ];
 
-function rotr64(x, n) {
-  return (x >>> n) | (x << (32 - n));
-}
+function rotr64(x, n) { return (x >>> n) | (x << (32 - n)); }
 
 function blake2b512(input) {
   const inputBytes = new Uint8Array(input);
   const out = new Uint8Array(64);
   const h = new Uint32Array(BLAKE2B_IV);
   h[0] ^= 0x01010040;
-
   const blockBytes = 128;
   let t = 0;
   let pos = 0;
-
   const m = new Uint32Array(32);
   const v = new Uint32Array(32);
 
   function compress(last) {
-    for (let i = 0; i < 16; i++) {
-      v[i] = h[i];
-      v[i + 16] = BLAKE2B_IV[i];
-    }
+    for (let i = 0; i < 16; i++) { v[i] = h[i]; v[i + 16] = BLAKE2B_IV[i]; }
     v[24] ^= t & 0xffffffff;
     v[25] ^= Math.floor(t / 0x100000000) & 0xffffffff;
     if (last) v[28] = ~v[28];
@@ -432,14 +387,10 @@ function blake2b512(input) {
         v[c] = (v[c] + v[d]) | 0;
         v[b] = rotr64(v[b] ^ v[c], 7);
       };
-      G(0,4,8,12, m[s[0]], m[s[1]]);
-      G(1,5,9,13, m[s[2]], m[s[3]]);
-      G(2,6,10,14, m[s[4]], m[s[5]]);
-      G(3,7,11,15, m[s[6]], m[s[7]]);
-      G(0,5,10,15, m[s[8]], m[s[9]]);
-      G(1,6,11,12, m[s[10]], m[s[11]]);
-      G(2,7,8,13, m[s[12]], m[s[13]]);
-      G(3,4,9,14, m[s[14]], m[s[15]]);
+      G(0,4,8,12, m[s[0]], m[s[1]]); G(1,5,9,13, m[s[2]], m[s[3]]);
+      G(2,6,10,14, m[s[4]], m[s[5]]); G(3,7,11,15, m[s[6]], m[s[7]]);
+      G(0,5,10,15, m[s[8]], m[s[9]]); G(1,6,11,12, m[s[10]], m[s[11]]);
+      G(2,7,8,13, m[s[12]], m[s[13]]); G(3,4,9,14, m[s[14]], m[s[15]]);
     }
     for (let i = 0; i < 16; i++) h[i] ^= v[i] ^ v[i + 16];
   }
@@ -457,7 +408,7 @@ function blake2b512(input) {
   }
 
   for (let i = 0; i < 16; i++) {
-    out[i*4]   = h[i] & 0xff;
+    out[i*4] = h[i] & 0xff;
     out[i*4+1] = (h[i] >>> 8) & 0xff;
     out[i*4+2] = (h[i] >>> 16) & 0xff;
     out[i*4+3] = (h[i] >>> 24) & 0xff;
@@ -466,15 +417,13 @@ function blake2b512(input) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// 📊 NETWORK OBSERVABILITY - Auto Log Pusher
+// 📊 NETWORK OBSERVABILITY - Fixed Version
 // ═══════════════════════════════════════════════════════════
 
 function anonymizePayload(obj) {
   if (!obj || typeof obj !== 'object') return obj;
-  
   const sensitiveKeys = ['name', 'phone', 'email', 'building', 'locality', 'person'];
   const result = Array.isArray(obj) ? [] : {};
-  
   for (const key in obj) {
     if (sensitiveKeys.includes(key.toLowerCase()) && typeof obj[key] === 'string') {
       result[key] = '****';
@@ -487,21 +436,28 @@ function anonymizePayload(obj) {
   return result;
 }
 
-async function pushToObservability(action, requestBody, responseBody, env) {
+// 👇 नया pushToObservability — direct context + message लेता है
+async function pushToObservability(action, context, message, env) {
   if (!env.ONDC_NO_TOKEN) {
-    console.log("⚠️ NO Token not configured, skipping Observability");
+    console.log("⚠️ [NO] Token not configured");
     return;
   }
 
   try {
-    const anonymizedRequest = anonymizePayload(requestBody);
-    const anonymizedResponse = anonymizePayload(responseBody);
+    // अगर context ही खाली है, तो push मत करो
+    if (!context || Object.keys(context).length === 0) {
+      console.log(`⚠️ [NO] Skipping ${action} - empty context`);
+      return;
+    }
+
+    const anonymizedContext = anonymizePayload(context);
+    const anonymizedMessage = anonymizePayload(message || {});
 
     const logPayload = {
       type: action,
       data: {
-        context: anonymizedRequest?.context || anonymizedResponse?.context || {},
-        message: anonymizedRequest?.message || anonymizedResponse?.message || {}
+        context: anonymizedContext,
+        message: anonymizedMessage
       }
     };
 
@@ -516,12 +472,12 @@ async function pushToObservability(action, requestBody, responseBody, env) {
       body: JSON.stringify(logPayload)
     });
 
-    const result = await response.json().catch(() => ({}));
-    console.log(`📊 [NO] Pushed ${action} - Status: ${response.status}`, JSON.stringify(result).substring(0, 150));
+    const resultText = await response.text();
+    console.log(`📊 [NO] Pushed ${action} - Status: ${response.status} - Response: ${resultText.substring(0, 200)}`);
 
   } catch (err) {
     console.error(`❌ [NO] Failed to push ${action}:`, err.message);
   }
 }
 
-console.log('✅ NnlGharPro ONDC Universal API (Secure + KV) loaded');
+console.log('✅ NnlGharPro ONDC Universal API (Secure + KV) v5.2 loaded');
