@@ -74,7 +74,7 @@ export default {
       const action = path.replace('/', '');
       
       if (outgoingActions.includes(action)) {
-        return await handleOutgoingRequest(action, request, env);
+      return await handleOutgoingRequest(action, request, env, ctx);
       }
       
       // 3. GET RESULTS (Frontend polls here to check for on_search data)
@@ -259,7 +259,7 @@ function buildPayload(action, domain, body, env) {
 // 📤 OUTGOING HANDLER (With Signature + CORS Fix)
 // ═══════════════════════════════════════════════════════════
 
-async function handleOutgoingRequest(action, request, env) {
+async function handleOutgoingRequest(action, request, env, ctx) {
   const body = await request.json().catch(() => ({}));
   const domain = body.domain || env.ONDC_DOMAIN || 'ONDC:RET11'; 
   
@@ -292,6 +292,10 @@ const workbenchUrl = `${gatewayUrl}/${action}`;
     
     const data = await response.json().catch(() => ({}));
     
+    // 📊 Observability को log भेजें (background में)
+    if (ctx && ctx.waitUntil) {
+      ctx.waitUntil(pushToObservability(action, payload, data, env));
+    }
     return jsonResponse({ 
       success: true, 
       action: action,
@@ -314,7 +318,7 @@ const workbenchUrl = `${gatewayUrl}/${action}`;
 // 📥 INCOMING WEBHOOK HANDLER (Saves Data to KV)
 // ═══════════════════════════════════════════════════════════
 
-async function handleIncomingWebhook(path, request, env) {
+async function handleIncomingWebhook(path, request, env, ctx) {
   const body = await request.json();
   const action = path.replace('/on_', '');
   const txnId = body.context?.transaction_id;
@@ -328,6 +332,11 @@ async function handleIncomingWebhook(path, request, env) {
     } catch (err) {
       console.error(`❌ Failed to save to KV:`, err.message);
     }
+  }
+
+  // 📊 Observability को log भेजें
+  if (ctx && ctx.waitUntil) {
+    ctx.waitUntil(pushToObservability(action, body, { message: { ack: { status: 'ACK' } } }, env));
   }
 
   return jsonResponse({
@@ -451,5 +460,66 @@ function blake2b512(input) {
     out[i*4+3] = (h[i] >>> 24) & 0xff;
   }
   return out;
+}
+// ═══════════════════════════════════════════════════════════
+// 📊 NETWORK OBSERVABILITY - Auto Log Pusher
+// ═══════════════════════════════════════════════════════════
+
+function anonymizePayload(obj) {
+  if (!obj || typeof obj !== 'object') return obj;
+  
+  const sensitiveKeys = ['name', 'phone', 'email', 'building', 'locality', 'person'];
+  const result = Array.isArray(obj) ? [] : {};
+  
+  for (const key in obj) {
+    if (sensitiveKeys.includes(key.toLowerCase()) && typeof obj[key] === 'string') {
+      result[key] = '****';
+    } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+      result[key] = anonymizePayload(obj[key]);
+    } else {
+      result[key] = obj[key];
+    }
+  }
+  return result;
+}
+
+async function pushToObservability(action, requestBody, responseBody, env) {
+  if (!env.ONDC_NO_TOKEN) {
+    console.log("⚠️ NO Token not configured, skipping Observability");
+    return;
+  }
+
+  try {
+    const anonymizedRequest = anonymizePayload(requestBody);
+    const anonymizedResponse = anonymizePayload(responseBody);
+
+    const isAckNack = action.endsWith('_response');
+    const typeValue = isAckNack ? `${action}` : action;
+
+    const logPayload = {
+      type: typeValue,
+      data: {
+        context: anonymizedRequest?.context || anonymizedResponse?.context || {},
+        message: anonymizedRequest?.message || anonymizedResponse?.message || {}
+      }
+    };
+
+    const noEndpoint = 'https://analytics-api-pre-prod.aws.ondc.org/v1/api/push-txn-logs';
+
+    const response = await fetch(noEndpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${env.ONDC_NO_TOKEN}`
+      },
+      body: JSON.stringify(logPayload)
+    });
+
+    const result = await response.json().catch(() => ({}));
+    console.log(`📊 [NO] Pushed ${action} - Status: ${response.status}`, JSON.stringify(result).substring(0, 100));
+
+  } catch (err) {
+    console.error(`❌ [NO] Failed to push ${action}:`, err.message);
+  }
 }
 console.log('✅ NnlGharPro ONDC Universal API (Secure + KV) loaded');
