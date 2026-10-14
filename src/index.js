@@ -30,6 +30,45 @@ export default {
         }, corsHeaders);
       }
       
+      // 🔍 ONDC Registry Lookup Endpoint (With Signature)
+      if (path === '/registry-lookup') {
+        const bapId = env.ONDC_BAP_ID || "nnlgharpro-ret11.nnlgharpro.workers.dev";
+        const lookupBody = {
+          subscriber_id: bapId,
+          domain: env.ONDC_DOMAIN || "ONDC:SRV11"
+        };
+        
+        console.log("🔍 Registry Lookup Body:", JSON.stringify(lookupBody));
+
+        try {
+          const authHeader = await generateOndcSignature(lookupBody, env);
+          console.log("🔐 Auth Header:", authHeader.substring(0, 80) + "...");
+
+          const regResponse = await fetch('https://preprod.registry.ondc.org/v2.0/lookup', {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': authHeader
+            },
+            body: JSON.stringify(lookupBody),
+            cf: { insecureSkipVerify: true }
+          });
+          
+          const regData = await regResponse.json();
+          return jsonResponse({ 
+            success: true, 
+            sentBody: lookupBody,
+            authHeaderPreview: authHeader.substring(0, 100),
+            registryResponse: regData 
+          }, corsHeaders);
+        } catch (regError) {
+          console.error("❌ Registry Lookup Error:", regError.message);
+          return jsonResponse({ 
+            success: false, 
+            error: regError.message 
+          }, corsHeaders, 500);
+        }
+      }
       // 2. OUTGOING REQUESTS (Frontend -> ONDC)
       const outgoingActions = ['search', 'select', 'init', 'confirm', 'status', 'cancel', 'update', 'track', 'support', 'rating'];
       const action = path.replace('/', '');
