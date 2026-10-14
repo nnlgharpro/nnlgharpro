@@ -25,7 +25,7 @@ export default {
         return jsonResponse({
           status: 'active',
           service: 'NnlGharPro ONDC Universal API (Secure)',
-          version: '5.0.0',
+          version: '5.1.0',
           timestamp: new Date().toISOString()
         }, corsHeaders);
       }
@@ -69,23 +69,24 @@ export default {
           }, corsHeaders, 500);
         }
       }
+      
       // 2. OUTGOING REQUESTS (Frontend -> ONDC)
       const outgoingActions = ['search', 'select', 'init', 'confirm', 'status', 'cancel', 'update', 'track', 'support', 'rating'];
       const action = path.replace('/', '');
       
       if (outgoingActions.includes(action)) {
-      return await handleOutgoingRequest(action, request, env, ctx);
+        return await handleOutgoingRequest(action, request, env, ctx);
       }
       
-      // 3. GET RESULTS (Frontend polls here to check for on_search data)
+      // 3. GET RESULTS (Frontend polls here)
       if (path.startsWith('/get-results/')) {
         const txnId = path.split('/')[2];
         return await handleGetResults(txnId, env, corsHeaders);
       }
       
-      // 4. INCOMING WEBHOOKS (ONDC -> Our App)
+      // 4. INCOMING WEBHOOKS (ONDC -> Our App)   ✅ FIX: ctx added
       if (path.startsWith('/on_')) {
-        return await handleIncomingWebhook(path, request, env);
+        return await handleIncomingWebhook(path, request, env, ctx);
       }
       
       return jsonResponse({ error: 'Not found', path: path }, corsHeaders, 404);
@@ -117,14 +118,14 @@ function getTimestamp() { return new Date().toISOString(); }
 
 async function generateOndcSignature(body, env) {
   const created = Math.floor(Date.now() / 1000);
-  const expires = created + 3600; // 1 घंटे के लिए valid
+  const expires = created + 3600;
 
   const encoder = new TextEncoder();
   const data = encoder.encode(JSON.stringify(body));
- const hashBuffer = blake2b512(data);
-const digest = btoa(String.fromCharCode(...hashBuffer));
+  const hashBuffer = blake2b512(data);
+  const digest = btoa(String.fromCharCode(...hashBuffer));
 
- const signingString = `(created): ${created}\n(expires): ${expires}\ndigest: BLAKE-512=${digest}`;
+  const signingString = `(created): ${created}\n(expires): ${expires}\ndigest: BLAKE-512=${digest}`;
 
   let rawKey = env.ONDC_SIGNING_PRIVATE_KEY || "";
   rawKey = rawKey.replace(/['"]/g, '').replace(/\\n/g, '').replace(/\s/g, '');
@@ -276,9 +277,8 @@ async function handleOutgoingRequest(action, request, env, ctx) {
     );
   }
   
- // ONDC Staging Gateway URL (Asli Network)
-const gatewayUrl = env.ONDC_GATEWAY_URL || 'https://preprod.gateway.ondc.org';
-const workbenchUrl = `${gatewayUrl}/${action}`;
+  const gatewayUrl = env.ONDC_GATEWAY_URL || 'https://preprod.gateway.ondc.org';
+  const workbenchUrl = `${gatewayUrl}/${action}`;
   
   try {
     const response = await fetch(workbenchUrl, {
@@ -292,10 +292,12 @@ const workbenchUrl = `${gatewayUrl}/${action}`;
     
     const data = await response.json().catch(() => ({}));
     
-    // 📊 Observability को log भेजें (background में)
+    // 📊 Observability: request + response दोनों push करें
     if (ctx && ctx.waitUntil) {
-      ctx.waitUntil(pushToObservability(action, payload, data, env));
+      ctx.waitUntil(pushToObservability(action, payload, {}, env));
+      ctx.waitUntil(pushToObservability(action + '_response', {}, data, env));
     }
+    
     return jsonResponse({ 
       success: true, 
       action: action,
@@ -336,7 +338,8 @@ async function handleIncomingWebhook(path, request, env, ctx) {
 
   // 📊 Observability को log भेजें
   if (ctx && ctx.waitUntil) {
-    ctx.waitUntil(pushToObservability(action, body, { message: { ack: { status: 'ACK' } } }, env));
+    ctx.waitUntil(pushToObservability(action, body, {}, env));
+    ctx.waitUntil(pushToObservability(action + '_response', {}, { message: { ack: { status: 'ACK' } } }, env));
   }
 
   return jsonResponse({
@@ -461,6 +464,7 @@ function blake2b512(input) {
   }
   return out;
 }
+
 // ═══════════════════════════════════════════════════════════
 // 📊 NETWORK OBSERVABILITY - Auto Log Pusher
 // ═══════════════════════════════════════════════════════════
@@ -493,11 +497,8 @@ async function pushToObservability(action, requestBody, responseBody, env) {
     const anonymizedRequest = anonymizePayload(requestBody);
     const anonymizedResponse = anonymizePayload(responseBody);
 
-    const isAckNack = action.endsWith('_response');
-    const typeValue = isAckNack ? `${action}` : action;
-
     const logPayload = {
-      type: typeValue,
+      type: action,
       data: {
         context: anonymizedRequest?.context || anonymizedResponse?.context || {},
         message: anonymizedRequest?.message || anonymizedResponse?.message || {}
@@ -516,10 +517,11 @@ async function pushToObservability(action, requestBody, responseBody, env) {
     });
 
     const result = await response.json().catch(() => ({}));
-    console.log(`📊 [NO] Pushed ${action} - Status: ${response.status}`, JSON.stringify(result).substring(0, 100));
+    console.log(`📊 [NO] Pushed ${action} - Status: ${response.status}`, JSON.stringify(result).substring(0, 150));
 
   } catch (err) {
     console.error(`❌ [NO] Failed to push ${action}:`, err.message);
   }
 }
+
 console.log('✅ NnlGharPro ONDC Universal API (Secure + KV) loaded');
