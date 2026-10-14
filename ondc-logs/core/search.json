@@ -1,0 +1,24 @@
+{
+  "request": {
+    "context": {
+      "domain": "ONDC:SRV11",
+      "action": "search",
+      "version": "1.2.5",
+      "bap_id": "nnlgharpro-ret11.nnlgharpro.workers.dev",
+      "bap_uri": "https://nnlgharpro-ret11.nnlgharpro.workers.dev",
+      "transaction_id": "e2bf264c-5431-46ca-a0e7-bcc120cc968e",
+      "message_id": "cb613d11-de23-4866-9214-a59bfa1d2208",
+      "timestamp": "2026-10-14T07:15:06.023Z",
+      "ttl": "PT30S"
+    },
+    "message": {
+      "intent": {
+        "item": { "descriptor": { "name": "Plumber" } },
+        "fulfillment": { "type": "SERVICE" }
+      }
+    }
+  },
+  "response": {
+    "message": { "ack": { "status": "ACK" } }
+  }
+}
