@@ -32,16 +32,16 @@ export default {
       
       // 🔍 ONDC Registry Lookup Endpoint (With Signature)
       if (path === '/registry-lookup') {
-        const bapId = env.ONDC_BAP_ID || "nnlgharpro-ret11.nnlgharpro.workers.dev";
+        const bapId = env2.ONDC_BAP_ID || "nnlgharpro-ret11.nnlgharpro.workers.dev";
         const lookupBody = {
           subscriber_id: bapId,
-          domain: env.ONDC_DOMAIN || "ONDC:SRV11"
+          domain: env2.ONDC_DOMAIN || "ONDC:SRV11"
         };
         
         console.log("🔍 Registry Lookup Body:", JSON.stringify(lookupBody));
 
         try {
-          const authHeader = await generateOndcSignature(lookupBody, env);
+          const authHeader = await generateOndcSignature(lookupBody, env2);
           console.log("🔐 Auth Header:", authHeader.substring(0, 80) + "...");
 
           const regResponse = await fetch('https://preprod.registry.ondc.org/v2.0/lookup', {
