@@ -1,0 +1,9 @@
+{
+  "request": {
+    "context": { "action": "recon", "domain": "ONDC:SRV11" },
+    "message": { "order_id": "order_id_123", "settlement_id": "stl_123" }
+  },
+  "response": {
+    "message": { "ack": { "status": "ACK" } }
+  }
+}
