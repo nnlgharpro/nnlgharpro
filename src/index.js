@@ -82,11 +82,10 @@ async function generateOndcSignature(body, env) {
 
   const encoder = new TextEncoder();
   const data = encoder.encode(JSON.stringify(body));
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const digest = btoa(String.fromCharCode(...hashArray));
+ const hashBuffer = blake2b512(data);
+const digest = btoa(String.fromCharCode(...hashBuffer));
 
-  const signingString = `(created): ${created}\n(expires): ${expires}\ndigest: SHA-256=${digest}`;
+ const signingString = `(created): ${created}\n(expires): ${expires}\ndigest: BLAKE-512=${digest}`;
 
   let rawKey = env.ONDC_SIGNING_PRIVATE_KEY || "";
   rawKey = rawKey.replace(/['"]/g, '').replace(/\\n/g, '').replace(/\s/g, '');
