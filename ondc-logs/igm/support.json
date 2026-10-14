@@ -1,0 +1,9 @@
+{
+  "request": {
+    "context": { "action": "support", "domain": "ONDC:SRV11" },
+    "message": { "ref_id": "order_id_123", "issue": { "category": "ITEM", "description": "Service not provided" } }
+  },
+  "response": {
+    "message": { "ack": { "status": "ACK" } }
+  }
+}
