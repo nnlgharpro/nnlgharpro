@@ -5,10 +5,10 @@ compatibility_flags = ["nodejs_compat"]
 
 [vars]
 ENVIRONMENT = "production"
-ONDC_DOMAIN = "ONDC:SRV11"
+ONDC_DOMAIN = "ONDC:RET11" 
 ONDC_BAP_ID = "nnlgharpro-ret11.nnlgharpro.workers.dev"
 ONDC_BAP_URI = "https://nnlgharpro-ret11.nnlgharpro.workers.dev"
-ONDC_GATEWAY_URL = "https://staging.gateway.proteantech.in"
+OONDC_GATEWAY_URL = "https://preprod.gateway.ondc.org"
 
 # Secrets (Cloudflare Dashboard se set karenge - ye wrangler.toml me nahi dalne)
 # ONDC_SIGNING_PRIVATE_KEY
