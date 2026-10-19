@@ -110,7 +110,8 @@ function buildPayload(action, domain, body, env) {
   const config = DOMAIN_CONFIG[domain] || DOMAIN_CONFIG['ONDC:RET11'];
 
   // --- SEARCH ---
-  if (action === 'search') {
+   // 👇 Cache ko Workbench testing ke liye disable kar rahe hain
+  if (action === 'search' && !env.ONDC_GATEWAY_URL.includes('workbench')) { 
     return {
       context,
       message: {
