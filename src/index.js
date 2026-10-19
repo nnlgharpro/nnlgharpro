@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC API — Universal (With KV & Signature) - v6.6 (Select Flow)
+// 🚀 NNLGHARPRO ONDC API — Ultra Fast (Cached) - v7.0
 // ═══════════════════════════════════════════════════════════
 
 import { blake2b } from 'blakejs'; 
@@ -24,37 +24,7 @@ export default {
     
     try {
       if (path === '/' || path === '/api/health') {
-        return jsonResponse({
-          status: 'active',
-          service: 'NnlGharPro ONDC Universal API (TweetNaCl)',
-          version: '6.6.0',
-          timestamp: new Date().toISOString()
-        }, corsHeaders);
-      }
-      
-      // Registry Lookup (Test Endpoint)
-      if (path === '/registry-lookup') {
-        const bapId = env.ONDC_BAP_ID || "nnlgharpro-ret11.nnlgharpro.workers.dev";
-        const lookupBody = {
-          subscriber_id: bapId,
-          domain: env.ONDC_DOMAIN || "ONDC:RET11"
-        };
-        
-        console.log("🔍 Registry Lookup Body:", JSON.stringify(lookupBody));
-
-        try {
-          const authHeader = await generateOndcSignature(lookupBody, env);
-          const regResponse = await fetch('https://preprod.registry.ondc.org/v2.0/lookup', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
-            body: JSON.stringify(lookupBody),
-            cf: { insecureSkipVerify: true }
-          });
-          const regData = await regResponse.json();
-          return jsonResponse({ success: true, sentBody: lookupBody, authHeaderPreview: authHeader.substring(0, 100), registryResponse: regData }, corsHeaders);
-        } catch (regError) {
-          return jsonResponse({ success: false, error: regError.message }, corsHeaders, 500);
-        }
+        return jsonResponse({ status: 'active', version: '7.0.0' }, corsHeaders);
       }
       
       // Outgoing Actions
@@ -71,12 +41,11 @@ export default {
         return await handleGetResults(txnId, env, corsHeaders);
       }
 
-      // 👇 NAYA: Get Select (Menu) Results 👇
+      // Get Select (Menu) Results
       if (path.startsWith('/get-select/')) {
         const txnId = path.split('/')[2];
         return await handleGetSelect(txnId, env, corsHeaders);
       }
-      // 👆 NAYA ENDPOINT KHATAM 👆
       
       // Incoming Webhooks
       if (path.startsWith('/on_')) {
@@ -92,10 +61,6 @@ export default {
   }
 };
 
-// ═══════════════════════════════════════════════════════════
-// HELPERS
-// ═══════════════════════════════════════════════════════════
-
 function jsonResponse(data, headers, status = 200) {
   return new Response(JSON.stringify(data), {
     status: status,
@@ -106,20 +71,14 @@ function jsonResponse(data, headers, status = 200) {
 function generateUUID() { return crypto.randomUUID(); }
 function getTimestamp() { return new Date().toISOString(); }
 
-// ═══════════════════════════════════════════════════════════
-// SIGNATURE GENERATOR (FIXED WITH TWEETNACL)
-// ═══════════════════════════════════════════════════════════
-
 async function generateOndcSignature(body, env) {
   const created = Math.floor(Date.now() / 1000);
   const expires = created + 3600;
-
   const encoder = new TextEncoder();
   
   const data = encoder.encode(JSON.stringify(body));
   const hashBuffer = blake2b(data, null, 64);
   const digest = btoa(String.fromCharCode(...hashBuffer));
-
   const signingString = `(created): ${created}\n(expires): ${expires}\ndigest: BLAKE-512=${digest}`;
 
   let rawKey = env.ONDC_SIGNING_PRIVATE_KEY || "";
@@ -128,27 +87,19 @@ async function generateOndcSignature(body, env) {
   while (rawKey.length % 4) { rawKey += '='; }
   
   const privateKeyBytes = Uint8Array.from(atob(rawKey), c => c.charCodeAt(0));
-
   let secretKey = privateKeyBytes;
   if (privateKeyBytes.length === 32) {
       secretKey = nacl.sign.keyPair.fromSeed(privateKeyBytes).secretKey;
   } else if (privateKeyBytes.length !== 64) {
-      throw new Error(`Invalid private key length: ${privateKeyBytes.length}. Must be 32 (seed) or 64 (full key) bytes.`);
+      throw new Error(`Invalid private key length.`);
   }
 
   const messageBytes = encoder.encode(signingString);
   const signatureBytes = nacl.sign.detached(messageBytes, secretKey);
   const signature = btoa(String.fromCharCode(...signatureBytes));
-
-  const ukId = env.ONDC_UK_ID;
-  const keyId = `${env.ONDC_BAP_ID}|${ukId}|ed25519`; 
   
-  return `Signature keyId="${keyId}",algorithm="ed25519",created="${created}",expires="${expires}",headers="(created) (expires) digest",signature="${signature}"`;
+  return `Signature keyId="${env.ONDC_BAP_ID}|${env.ONDC_UK_ID}|ed25519",algorithm="ed25519",created="${created}",expires="${expires}",headers="(created) (expires) digest",signature="${signature}"`;
 }
-
-// ═══════════════════════════════════════════════════════════
-// PAYLOAD BUILDER (UPDATED FOR SELECT)
-// ═══════════════════════════════════════════════════════════
 
 function buildPayload(action, domain, body, env) {
   let cityCode = "std:011"; 
@@ -175,90 +126,61 @@ function buildPayload(action, domain, body, env) {
         message: {
           intent: {
             item: { descriptor: { name: body.category || 'Food' } },
-            fulfillment: {
-              type: 'Delivery',
-              end: {
-                location: {
-                  gps: "28.0444,76.1084",
-                  address: { area_code: body.pincode || "123001" }
-                }
-              }
-            },
-            payment: {
-              "@ondc/org/buyer_app_finder_fee_type": "percent",
-              "@ondc/org/buyer_app_finder_fee_amount": "3.0"
-            }
+            fulfillment: { type: 'Delivery', end: { location: { gps: "28.0444,76.1084", address: { area_code: body.pincode || "123001" } } } },
+            payment: { "@ondc/org/buyer_app_finder_fee_type": "percent", "@ondc/org/buyer_app_finder_fee_amount": "3.0" }
           }
         }
       };
     }
-    
-    // 👇 NAYA: Select Flow ke liye payload 👇
     if (action === 'select') {
       return {
         context,
         message: {
           order: {
             provider: { id: body.providerId || 'provider_1' },
-            items: [
-              { 
-                id: body.itemId || 'item_1', 
-                quantity: { count: 1 } 
-              }
-            ],
-            fulfillments: [
-              { 
-                type: 'Delivery',
-                end: {
-                  location: { gps: "28.0444,76.1084", address: { area_code: body.pincode || "123001" } }
-                }
-              }
-            ]
+            items: [{ id: body.itemId || 'item_1', quantity: { count: 1 } }],
+            fulfillments: [{ type: 'Delivery', end: { location: { gps: "28.0444,76.1084", address: { area_code: body.pincode || "123001" } } } }]
           }
         }
       };
     }
-    // 👆 NAYA CODE KHATAM 👆
-
-    return {
-      context,
-      message: {
-        order: {
-          provider: { id: body.providerId || 'provider_1' },
-          items: body.items || [{ id: 'item_1', quantity: { count: 1 } }],
-          fulfillment: { type: 'Delivery' },
-          billing: body.billing,
-          payment: body.payment
-        }
-      }
-    };
   }
-
   return { context, message: { intent: body.intent || {}, order: body.order || {} } };
 }
 
 // ═══════════════════════════════════════════════════════════
-// OUTGOING HANDLER
+// 🚀 OUTGOING HANDLER (WITH CACHE)
 // ═══════════════════════════════════════════════════════════
-
 async function handleOutgoingRequest(action, request, env, ctx) {
   const body = await request.json().catch(() => ({}));
   const domain = body.domain || env.ONDC_DOMAIN || 'ONDC:RET11'; 
   
-  const payload = buildPayload(action, domain, body, env);
-  
-  let authHeader;
-  try {
-    authHeader = await generateOndcSignature(payload, env);
-  } catch (error) {
-    return jsonResponse({ error: "Signature Error: " + error.message }, { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' }, 500);
+  // 🚀 CACHING LOGIC FOR SEARCH
+  let cacheKey = null;
+  if (action === 'search') {
+    cacheKey = `cache_search_${domain}_${body.pincode || '110001'}_${body.category || 'Food'}`;
+    
+    if (env.ONDC_DATA) {
+      const cached = await env.ONDC_DATA.get(cacheKey);
+      if (cached) {
+        console.log(`⚡ Serving from CACHE: ${cacheKey}`);
+        return jsonResponse({ 
+          success: true, 
+          cached: true, 
+          action: action,
+          transaction_id: generateUUID(),
+          cachedData: JSON.parse(cached) // Frontend ko direct data bhej rahe hain
+        }, { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' });
+      }
+    }
   }
-  
+
+  const payload = buildPayload(action, domain, body, env);
+  const authHeader = await generateOndcSignature(payload, env);
   const gatewayUrl = env.ONDC_GATEWAY_URL || 'https://preprod.gateway.ondc.org';
-  const workbenchUrl = `${gatewayUrl}/${action}`;
   
   try {
-    const response = await fetch(workbenchUrl, {
+    const response = await fetch(`${gatewayUrl}/${action}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
       body: JSON.stringify(payload)
@@ -266,19 +188,15 @@ async function handleOutgoingRequest(action, request, env, ctx) {
     
     const data = await response.json().catch(() => ({}));
     
-    if (ctx && ctx.waitUntil) {
-      ctx.waitUntil(pushToObservability(action, payload.context, payload.message, env));
-      const responseMessage = data?.message || { ack: { status: 'NACK' } };
-      ctx.waitUntil(pushToObservability(action + '_response', payload.context, responseMessage, env));
+    // Save TXN map for webhook to know which cache to update
+    if (ctx && ctx.waitUntil && action === 'search' && cacheKey) {
+        ctx.waitUntil(env.ONDC_DATA.put(`txn_map_${payload.context.transaction_id}`, cacheKey, { expirationTtl: 600 }));
     }
     
     return jsonResponse({ 
-      success: true, 
-      action: action,
-      domain: domain,
+      success: true, action: action, domain: domain,
       transaction_id: payload.context.transaction_id,
-      workbenchResponse: data, 
-      sentPayload: payload 
+      workbenchResponse: data 
     }, { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' });
 
   } catch (error) {
@@ -287,9 +205,8 @@ async function handleOutgoingRequest(action, request, env, ctx) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// INCOMING WEBHOOK HANDLER (UPDATED FOR ON_SELECT)
+// 🚀 INCOMING WEBHOOK HANDLER (SAVES TO CACHE)
 // ═══════════════════════════════════════════════════════════
-
 async function handleIncomingWebhook(path, request, env, ctx) {
   const body = await request.json();
   const action = path.replace('/', '');
@@ -300,127 +217,41 @@ async function handleIncomingWebhook(path, request, env, ctx) {
   if (action === 'on_search' && txnId && env.ONDC_DATA) {
     try {
       await env.ONDC_DATA.put(`txn_${txnId}`, JSON.stringify(body), { expirationTtl: 900 }); 
-      console.log(`✅ Saved on_search data to KV for TXN: ${txnId}`);
-    } catch (err) {
-      console.error(`❌ Failed to save to KV:`, err.message);
-    }
+      
+      // 🚀 SAVE TO CACHE FOR 5 MINUTES (300 seconds)
+      const cacheKey = await env.ONDC_DATA.get(`txn_map_${txnId}`);
+      if (cacheKey) {
+          await env.ONDC_DATA.put(cacheKey, JSON.stringify(body), { expirationTtl: 300 });
+          console.log(`✅ Cached data for: ${cacheKey}`);
+      }
+    } catch (err) { console.error(`❌ KV Error:`, err.message); }
   }
 
-  // 👇 NAYA: on_select ka data save karne ke liye 👇
   if (action === 'on_select' && txnId && env.ONDC_DATA) {
     try {
       await env.ONDC_DATA.put(`select_${txnId}`, JSON.stringify(body), { expirationTtl: 900 }); 
-      console.log(`✅ Saved on_select data to KV for TXN: ${txnId}`);
-    } catch (err) {
-      console.error(`❌ Failed to save to KV:`, err.message);
-    }
-  }
-  // 👆 NAYA CODE KHATAM 👆
-
-  if (ctx && ctx.waitUntil) {
-    ctx.waitUntil(pushToObservability(action, body.context, body.message, env));
-    ctx.waitUntil(pushToObservability(action + '_response', body.context, { ack: { status: 'ACK' } }, env));
+    } catch (err) { console.error(`❌ KV Error:`, err.message); }
   }
 
   return jsonResponse({ message: { ack: { status: 'ACK' } } }, { 'Content-Type': 'application/json' });
 }
 
-// ═══════════════════════════════════════════════════════════
-// GET RESULTS HANDLERS
-// ═══════════════════════════════════════════════════════════
-
 async function handleGetResults(txnId, env, corsHeaders) {
-  if (!txnId || !env.ONDC_DATA) {
-    return jsonResponse({ success: false, message: 'Invalid request or Database not configured' }, corsHeaders);
-  }
+  if (!txnId || !env.ONDC_DATA) return jsonResponse({ success: false }, corsHeaders);
   try {
     const data = await env.ONDC_DATA.get(`txn_${txnId}`);
-    if (data) {
-      return jsonResponse({ success: true, status: 'ready', results: JSON.parse(data) }, corsHeaders);
-    } else {
-      return jsonResponse({ success: false, status: 'pending', message: 'Data not ready yet' }, corsHeaders);
-    }
-  } catch (err) {
-    return jsonResponse({ success: false, message: err.message }, corsHeaders, 500);
-  }
+    if (data) return jsonResponse({ success: true, status: 'ready', results: JSON.parse(data) }, corsHeaders);
+    return jsonResponse({ success: false, status: 'pending' }, corsHeaders);
+  } catch (err) { return jsonResponse({ success: false, message: err.message }, corsHeaders, 500); }
 }
 
-// 👇 NAYA: Menu fetch karne ke liye handler 👇
 async function handleGetSelect(txnId, env, corsHeaders) {
-  if (!txnId || !env.ONDC_DATA) {
-    return jsonResponse({ success: false, message: 'Invalid request or Database not configured' }, corsHeaders);
-  }
+  if (!txnId || !env.ONDC_DATA) return jsonResponse({ success: false }, corsHeaders);
   try {
     const data = await env.ONDC_DATA.get(`select_${txnId}`);
-    if (data) {
-      return jsonResponse({ success: true, status: 'ready', results: JSON.parse(data) }, corsHeaders);
-    } else {
-      return jsonResponse({ success: false, status: 'pending', message: 'Data not ready yet' }, corsHeaders);
-    }
-  } catch (err) {
-    return jsonResponse({ success: false, message: err.message }, corsHeaders, 500);
-  }
-}
-// 👆 NAYA CODE KHATAM 👆
-
-// ═══════════════════════════════════════════════════════════
-// 📊 NETWORK OBSERVABILITY
-// ═══════════════════════════════════════════════════════════
-
-function anonymizePayload(obj) {
-  if (!obj || typeof obj !== 'object') return obj;
-  const sensitiveKeys = ['name', 'phone', 'email', 'building', 'locality', 'person'];
-  const result = Array.isArray(obj) ? [] : {};
-  for (const key in obj) {
-    if (sensitiveKeys.includes(key.toLowerCase()) && typeof obj[key] === 'string') {
-      result[key] = '****';
-    } else if (typeof obj[key] === 'object' && obj[key] !== null) {
-      result[key] = anonymizePayload(obj[key]);
-    } else {
-      result[key] = obj[key];
-    }
-  }
-  return result;
+    if (data) return jsonResponse({ success: true, status: 'ready', results: JSON.parse(data) }, corsHeaders);
+    return jsonResponse({ success: false, status: 'pending' }, corsHeaders);
+  } catch (err) { return jsonResponse({ success: false, message: err.message }, corsHeaders, 500); }
 }
 
-async function pushToObservability(action, context, message, env) {
-  if (!env.ONDC_NO_TOKEN) {
-    return;
-  }
-
-  try {
-    if (!context || Object.keys(context).length === 0) {
-      return;
-    }
-
-    const anonymizedContext = anonymizePayload(context);
-    const anonymizedMessage = anonymizePayload(message || {});
-
-    const logPayload = {
-      type: action,
-      data: {
-        context: anonymizedContext,
-        message: anonymizedMessage
-      }
-    };
-
-    const noEndpoint = 'https://analytics-api-pre-prod.aws.ondc.org/v1/api/push-txn-logs';
-
-    const response = await fetch(noEndpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${env.ONDC_NO_TOKEN}`
-      },
-      body: JSON.stringify(logPayload)
-    });
-
-    const resultText = await response.text();
-    console.log(`📊 [NO] Pushed ${action} - Status: ${response.status}`);
-
-  } catch (err) {
-    console.error(`❌ [NO] Failed to push ${action}:`, err.message);
-  }
-}
-
-console.log('✅ NnlGharPro ONDC Universal API (TweetNaCl Edition) v6.6 loaded');
+console.log('✅ NnlGharPro ONDC Ultra Fast API v7.0 loaded');
