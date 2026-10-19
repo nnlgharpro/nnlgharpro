@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC API — Universal (With KV & Signature) - v6.0 (TweetNaCl Fix)
+// 🚀 NNLGHARPRO ONDC API — Universal (With KV & Signature) - v6.1 (Location Fix)
 // ═══════════════════════════════════════════════════════════
 
 import { blake2b } from 'blakejs'; 
@@ -27,7 +27,7 @@ export default {
         return jsonResponse({
           status: 'active',
           service: 'NnlGharPro ONDC Universal API (TweetNaCl)',
-          version: '6.0.0',
+          version: '6.1.0',
           timestamp: new Date().toISOString()
         }, corsHeaders);
       }
@@ -44,7 +44,7 @@ export default {
 
         try {
           const authHeader = await generateOndcSignature(lookupBody, env);
-          console.log("🔐 Generated Auth Header:", authHeader); // Debugging ke liye
+          console.log("🔐 Generated Auth Header:", authHeader);
 
           const regResponse = await fetch('https://preprod.registry.ondc.org/v2.0/lookup', {
             method: 'POST',
@@ -130,7 +130,6 @@ async function generateOndcSignature(body, env) {
   // 4. TweetNaCl ke liye Secret Key tayar karein (64 bytes required)
   let secretKey = privateKeyBytes;
   if (privateKeyBytes.length === 32) {
-      // Agar seed (32 bytes) hai, toh keypair generate karein
       secretKey = nacl.sign.keyPair.fromSeed(privateKeyBytes).secretKey;
   } else if (privateKeyBytes.length !== 64) {
       throw new Error(`Invalid private key length: ${privateKeyBytes.length}. Must be 32 (seed) or 64 (full key) bytes.`);
@@ -149,10 +148,15 @@ async function generateOndcSignature(body, env) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// PAYLOAD BUILDER
+// PAYLOAD BUILDER (UPDATED WITH LOCATION)
 // ═══════════════════════════════════════════════════════════
 
 function buildPayload(action, domain, body, env) {
+  // 📍 Pincode to City Code mapping (Required for ONDC Context)
+  // Agar aapka pincode 123001 (Narnaul) hai toh std:01282, warna default std:011 (Delhi) use hoga
+  let cityCode = "std:011"; 
+  if (body.pincode === "123001") cityCode = "std:01282";
+
   const context = {
     domain: domain,
     action: action,
@@ -162,7 +166,12 @@ function buildPayload(action, domain, body, env) {
     transaction_id: body.transactionId || generateUUID(),
     message_id: generateUUID(),
     timestamp: getTimestamp(),
-    ttl: 'PT30S'
+    ttl: 'PT30S',
+    // 👇 YEH NAYI LOCATION ADD KI GAYI HAI (REF-09 FIX)
+    location: {
+      city: { code: cityCode },
+      country: { code: "IND" }
+    }
   };
 
   if (domain.startsWith('ONDC:SRV')) {
@@ -199,6 +208,7 @@ function buildPayload(action, domain, body, env) {
         message: {
           intent: {
             category: { descriptor: { name: body.category || 'Food' } },
+            // Customer dwara diya gaya pincode area_code mein jayega
             fulfillment: { type: 'Delivery', end: { location: { gps: '28.0444,76.1084', address: { area_code: body.pincode || '123001' } } } },
             payment: { '@ondc/org/buyer_app_finder_fee_type': 'percent', '@ondc/org/buyer_app_finder_fee_amount': '3' }
           }
@@ -379,4 +389,4 @@ async function pushToObservability(action, context, message, env) {
   }
 }
 
-console.log('✅ NnlGharPro ONDC Universal API (TweetNaCl Edition) v6.0 loaded');
+console.log('✅ NnlGharPro ONDC Universal API (TweetNaCl Edition) v6.1 loaded');
