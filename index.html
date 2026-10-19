@@ -1091,49 +1091,96 @@ window.selectService = function(service) {
 };
 
 // SEARCH SERVICES
+// SEARCH SERVICES (ONDC REPLACEMENT)
 window.searchServices = async function() {
     if (!selectedService) { showToast('Select service first!', true); return; }
     const pincode = document.getElementById('pincode').value.trim();
     if (!pincode || pincode.length !== 6) { showToast('Valid pincode!', true); return; }
 
     document.getElementById('bookingModal').classList.add('show');
-    document.getElementById('providerList').innerHTML = '<div style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
+    document.getElementById('providerList').innerHTML = '<div style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin"></i> Searching on ONDC Network...</div>';
     document.getElementById('modalServiceName').textContent = selectedService;
     document.getElementById('modalPincode').textContent = pincode;
     document.getElementById('bookingForm').style.display = 'none';
     document.getElementById('providerListContainer').style.display = 'block';
 
+    // Domain Mapping
+    let domain = "ONDC:RET11"; // Default Food
+    let category = "Food";
+    if (selectedService === 'Grocery') { domain = "ONDC:RET10"; category = "Grocery"; }
+    
     try {
-        const snapshot = await db.collection('providers').where('status', '==', 'active').get();
-        allProviders = [];
-        snapshot.forEach(doc => allProviders.push({ id: doc.id, ...doc.data() }));
-
-        const pincodeMatched = allProviders.filter(p => 
-            (p.pincode && p.pincode === pincode) ||
-            (p.pincodes && Array.isArray(p.pincodes) && p.pincodes.includes(pincode))
-        );
-
-        const serviceLower = selectedService.toLowerCase().trim();
-        const filtered = pincodeMatched.filter(p => {
-            if (!p.services) return true;
-            if (Array.isArray(p.services)) return p.services.some(s => s.toLowerCase().includes(serviceLower));
-            return (p.services || "").toString().toLowerCase().includes(serviceLower);
+        // 1. Send Request to Cloudflare Worker
+        const response = await fetch("https://nnlgharpro-ret11.nnlgharpro.workers.dev/search", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                domain: domain,
+                category: category,
+                pincode: pincode
+            })
         });
 
-        if (filtered.length === 0) {
-            document.getElementById('providerList').innerHTML = `<div style="padding:30px; text-align:center; color:rgba(255,255,255,0.4);"><i class="fas fa-search" style="font-size:28px;display:block;margin-bottom:12px;color:#FF6B35;"></i>No providers found</div>`;
+        const data = await response.json();
+        
+        if (!data.success) {
+            document.getElementById('providerList').innerHTML = '<div style="text-align:center;color:red;">ONDC Search failed. Please try again.</div>';
             return;
         }
 
-        let html = '';
-        filtered.forEach(p => {
-           const websiteDisplay = p.website ? `<a href="${p.website}" target="_blank" onclick="event.stopPropagation();" style="color:#4ECDC4;text-decoration:none;font-size:11px;">🌐 ${p.website.replace(/^https?:\/\//, '')}</a>` : '';
-html += `<div class="provider-item" onclick="selectProvider('${p.id}')"><div style="flex:1;"><div class="p-name">${p.name}</div><div class="p-detail">⭐ ${p.rating || '4.5'} • 📍 ${(p.pincodes && p.pincodes[0]) || p.pincode || 'N/A'}</div>${websiteDisplay ? `<div class="p-detail" style="margin-top:4px;">${websiteDisplay}</div>` : ''}</div><div class="p-select-icon"><i class="fas fa-chevron-right"></i></div></div>`; 
-        });
-        document.getElementById('providerList').innerHTML = html;
-        showToast(`✅ ${filtered.length} providers found!`);
-    } catch (e) { showToast('Error', true); }
+        const txnId = data.transaction_id;
+        let attempts = 0;
+        
+        // 2. Poll for Results (ONDC is async)
+        const interval = setInterval(async () => {
+            attempts++;
+            const res = await fetch(`https://nnlgharpro-ret11.nnlgharpro.workers.dev/get-results/${txnId}`);
+            const resultData = await res.json();
+
+            if (resultData.success && resultData.status === 'ready') {
+                clearInterval(interval);
+                displayOndcResults(resultData.results, pincode);
+            } else if (attempts > 10) {
+                clearInterval(interval);
+                document.getElementById('providerList').innerHTML = '<div style="text-align:center;color:gray;">No providers found. Please try again.</div>';
+            }
+        }, 2000); // Check every 2 seconds
+
+    } catch (e) { 
+        console.error(e);
+        showToast('Error connecting to ONDC', true); 
+        document.getElementById('providerList').innerHTML = '<div style="text-align:center;color:red;">Network Error</div>';
+    }
 };
+
+// DISPLAY ONDC RESULTS
+function displayOndcResults(ondcData, pincode) {
+    const catalog = ondcData.message?.catalog;
+    const providers = catalog?.['bpp/providers'] || [];
+    
+    window.currentOndcProviders = providers;
+
+    if (providers.length === 0) {
+        document.getElementById('providerList').innerHTML = `<div style="padding:30px; text-align:center; color:rgba(255,255,255,0.4);">No providers found for this pincode.</div>`;
+        return;
+    }
+
+    let html = '';
+    providers.forEach((p, index) => {
+        const providerName = p.descriptor?.name || 'Unknown Provider';
+        const rating = p.tags?.find(t => t.code === 'rating')?.list?.[0]?.value || '4.5';
+        
+        html += `<div class="provider-item" onclick="selectOndcProvider(${index})">
+            <div style="flex:1;">
+                <div class="p-name">${providerName}</div>
+                <div class="p-detail">⭐ ${rating} • 📍 ${pincode}</div>
+            </div>
+            <div class="p-select-icon"><i class="fas fa-chevron-right"></i></div>
+        </div>`;
+    });
+    document.getElementById('providerList').innerHTML = html;
+    showToast(`✅ ${providers.length} providers found!`);
+}
 
 // SELECT PROVIDER
 window.selectProvider = async function(id) {
