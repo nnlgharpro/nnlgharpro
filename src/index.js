@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC API — Universal (With KV & Signature) - v6.2 (Schema Fix)
+// 🚀 NNLGHARPRO ONDC API — Universal (With KV & Signature) - v6.3 (Context Fix)
 // ═══════════════════════════════════════════════════════════
 
 import { blake2b } from 'blakejs'; 
@@ -27,7 +27,7 @@ export default {
         return jsonResponse({
           status: 'active',
           service: 'NnlGharPro ONDC Universal API (TweetNaCl)',
-          version: '6.2.0',
+          version: '6.3.0',
           timestamp: new Date().toISOString()
         }, corsHeaders);
       }
@@ -44,8 +44,6 @@ export default {
 
         try {
           const authHeader = await generateOndcSignature(lookupBody, env);
-          console.log("🔐 Generated Auth Header:", authHeader);
-
           const regResponse = await fetch('https://preprod.registry.ondc.org/v2.0/lookup', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
@@ -111,7 +109,7 @@ async function generateOndcSignature(body, env) {
 
   const encoder = new TextEncoder();
   
-  // 1. BLAKE2b-512 hash generate karein (blakejs se)
+  // 1. BLAKE2b-512 hash generate karein
   const data = encoder.encode(JSON.stringify(body));
   const hashBuffer = blake2b(data, null, 64);
   const digest = btoa(String.fromCharCode(...hashBuffer));
@@ -148,34 +146,42 @@ async function generateOndcSignature(body, env) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// PAYLOAD BUILDER (SCHEMA FIXED)
+// PAYLOAD BUILDER (CONTEXT FIXED FOR RET DOMAIN)
 // ═══════════════════════════════════════════════════════════
 
 function buildPayload(action, domain, body, env) {
-  // 📍 Pincode to City Code mapping (Required for ONDC Context)
+  // 📍 Pincode to City Code mapping
   let cityCode = "std:011"; 
-  if (body.pincode === "123001") cityCode = "std:01282";
+  if (body.pincode === "123001") cityCode = "std:01282"; // Narnaul
 
   const context = {
     domain: domain,
+    country: "IND",           // ✅ FIX: Country top-level par
+    city: cityCode,           // ✅ FIX: City top-level par
     action: action,
-    version: '1.2.5',
+    core_version: '1.2.5',    // ✅ FIX: Retail ke liye 'version' ki jagah 'core_version' hota hai
     bap_id: env.ONDC_BAP_ID,
     bap_uri: env.ONDC_BAP_URI,
     transaction_id: body.transactionId || generateUUID(),
     message_id: generateUUID(),
     timestamp: getTimestamp(),
-    ttl: 'PT30S',
-    location: {
-      city: { code: cityCode },
-      country: { code: "IND" }
-    }
+    ttl: 'PT30S'
   };
 
   if (domain.startsWith('ONDC:SRV')) {
+    // Service domain ke liye thoda alag context hota hai (agar future mein use karein)
+    const srvContext = {
+      ...context,
+      version: '1.2.5', // SRV mein version hota hai
+      location: { city: { code: cityCode }, country: { code: "IND" } }
+    };
+    delete srvContext.core_version;
+    delete srvContext.country;
+    delete srvContext.city;
+
     if (action === 'search') {
       return {
-        context,
+        context: srvContext,
         message: {
           intent: {
             item: { descriptor: { name: body.query || 'Plumber' } },
@@ -184,18 +190,6 @@ function buildPayload(action, domain, body, env) {
         }
       };
     }
-    return {
-      context,
-      message: {
-        order: {
-          provider: { id: body.providerId || 'provider_1' },
-          items: body.items || [{ id: 'item_1', quantity: { count: 1 } }],
-          fulfillment: { type: 'SERVICE' },
-          billing: body.billing,
-          payment: body.payment
-        }
-      }
-    };
   }
 
   if (domain.startsWith('ONDC:RET')) {
@@ -205,7 +199,6 @@ function buildPayload(action, domain, body, env) {
         message: {
           intent: {
             category: { descriptor: { name: body.category || 'Food' } },
-            // ✅ FIX: fulfillment mein end aur payment hata diya gaya hai
             fulfillment: { type: 'Delivery' }
           }
         }
@@ -385,4 +378,4 @@ async function pushToObservability(action, context, message, env) {
   }
 }
 
-console.log('✅ NnlGharPro ONDC Universal API (TweetNaCl Edition) v6.2 loaded');
+console.log('✅ NnlGharPro ONDC Universal API (TweetNaCl Edition) v6.3 loaded');
