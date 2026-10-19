@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC API — Universal (With KV & Signature) - v6.5 (Payment Fix)
+// 🚀 NNLGHARPRO ONDC API — Universal (With KV & Signature) - v6.6 (Select Flow)
 // ═══════════════════════════════════════════════════════════
 
 import { blake2b } from 'blakejs'; 
@@ -27,7 +27,7 @@ export default {
         return jsonResponse({
           status: 'active',
           service: 'NnlGharPro ONDC Universal API (TweetNaCl)',
-          version: '6.5.0',
+          version: '6.6.0',
           timestamp: new Date().toISOString()
         }, corsHeaders);
       }
@@ -65,11 +65,18 @@ export default {
         return await handleOutgoingRequest(action, request, env, ctx);
       }
       
-      // Get Results
+      // Get Search Results
       if (path.startsWith('/get-results/')) {
         const txnId = path.split('/')[2];
         return await handleGetResults(txnId, env, corsHeaders);
       }
+
+      // 👇 NAYA: Get Select (Menu) Results 👇
+      if (path.startsWith('/get-select/')) {
+        const txnId = path.split('/')[2];
+        return await handleGetSelect(txnId, env, corsHeaders);
+      }
+      // 👆 NAYA ENDPOINT KHATAM 👆
       
       // Incoming Webhooks
       if (path.startsWith('/on_')) {
@@ -140,7 +147,7 @@ async function generateOndcSignature(body, env) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// PAYLOAD BUILDER (PAYMENT & FULFILLMENT FIXED)
+// PAYLOAD BUILDER (UPDATED FOR SELECT)
 // ═══════════════════════════════════════════════════════════
 
 function buildPayload(action, domain, body, env) {
@@ -163,7 +170,6 @@ function buildPayload(action, domain, body, env) {
 
   if (domain.startsWith('ONDC:RET')) {
     if (action === 'search') {
-      // ✅ FIX: Payment block और fulfillment location वापस जोड़ दिए गए हैं
       return {
         context,
         message: {
@@ -173,7 +179,7 @@ function buildPayload(action, domain, body, env) {
               type: 'Delivery',
               end: {
                 location: {
-                  gps: "28.0444,76.1084", // आपके स्टोर/सर्विस एरिया का GPS
+                  gps: "28.0444,76.1084",
                   address: { area_code: body.pincode || "123001" }
                 }
               }
@@ -186,6 +192,34 @@ function buildPayload(action, domain, body, env) {
         }
       };
     }
+    
+    // 👇 NAYA: Select Flow ke liye payload 👇
+    if (action === 'select') {
+      return {
+        context,
+        message: {
+          order: {
+            provider: { id: body.providerId || 'provider_1' },
+            items: [
+              { 
+                id: body.itemId || 'item_1', 
+                quantity: { count: 1 } 
+              }
+            ],
+            fulfillments: [
+              { 
+                type: 'Delivery',
+                end: {
+                  location: { gps: "28.0444,76.1084", address: { area_code: body.pincode || "123001" } }
+                }
+              }
+            ]
+          }
+        }
+      };
+    }
+    // 👆 NAYA CODE KHATAM 👆
+
     return {
       context,
       message: {
@@ -253,7 +287,7 @@ async function handleOutgoingRequest(action, request, env, ctx) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// INCOMING WEBHOOK HANDLER
+// INCOMING WEBHOOK HANDLER (UPDATED FOR ON_SELECT)
 // ═══════════════════════════════════════════════════════════
 
 async function handleIncomingWebhook(path, request, env, ctx) {
@@ -272,6 +306,17 @@ async function handleIncomingWebhook(path, request, env, ctx) {
     }
   }
 
+  // 👇 NAYA: on_select ka data save karne ke liye 👇
+  if (action === 'on_select' && txnId && env.ONDC_DATA) {
+    try {
+      await env.ONDC_DATA.put(`select_${txnId}`, JSON.stringify(body), { expirationTtl: 900 }); 
+      console.log(`✅ Saved on_select data to KV for TXN: ${txnId}`);
+    } catch (err) {
+      console.error(`❌ Failed to save to KV:`, err.message);
+    }
+  }
+  // 👆 NAYA CODE KHATAM 👆
+
   if (ctx && ctx.waitUntil) {
     ctx.waitUntil(pushToObservability(action, body.context, body.message, env));
     ctx.waitUntil(pushToObservability(action + '_response', body.context, { ack: { status: 'ACK' } }, env));
@@ -281,7 +326,7 @@ async function handleIncomingWebhook(path, request, env, ctx) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// GET RESULTS HANDLER
+// GET RESULTS HANDLERS
 // ═══════════════════════════════════════════════════════════
 
 async function handleGetResults(txnId, env, corsHeaders) {
@@ -299,6 +344,24 @@ async function handleGetResults(txnId, env, corsHeaders) {
     return jsonResponse({ success: false, message: err.message }, corsHeaders, 500);
   }
 }
+
+// 👇 NAYA: Menu fetch karne ke liye handler 👇
+async function handleGetSelect(txnId, env, corsHeaders) {
+  if (!txnId || !env.ONDC_DATA) {
+    return jsonResponse({ success: false, message: 'Invalid request or Database not configured' }, corsHeaders);
+  }
+  try {
+    const data = await env.ONDC_DATA.get(`select_${txnId}`);
+    if (data) {
+      return jsonResponse({ success: true, status: 'ready', results: JSON.parse(data) }, corsHeaders);
+    } else {
+      return jsonResponse({ success: false, status: 'pending', message: 'Data not ready yet' }, corsHeaders);
+    }
+  } catch (err) {
+    return jsonResponse({ success: false, message: err.message }, corsHeaders, 500);
+  }
+}
+// 👆 NAYA CODE KHATAM 👆
 
 // ═══════════════════════════════════════════════════════════
 // 📊 NETWORK OBSERVABILITY
@@ -360,4 +423,4 @@ async function pushToObservability(action, context, message, env) {
   }
 }
 
-console.log('✅ NnlGharPro ONDC Universal API (TweetNaCl Edition) v6.5 loaded');
+console.log('✅ NnlGharPro ONDC Universal API (TweetNaCl Edition) v6.6 loaded');
