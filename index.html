@@ -1126,12 +1126,16 @@ window.searchServices = async function() {
 
         const data = await response.json();
         
-        if (data.workbenchResponse && data.workbenchResponse.error) {
+                if (data.workbenchResponse && data.workbenchResponse.error) {
+            // ONDC se aane wala asli error nikaalein
+            const actualError = data.workbenchResponse.error.message || JSON.stringify(data.workbenchResponse.error);
+            console.error("Workbench Error:", actualError); // Console mein print hoga
+
             document.getElementById('providerList').innerHTML = `
                 <div style="padding:20px; text-align:center; color:#FF4757; font-size:14px;">
                     <i class="fas fa-exclamation-triangle" style="font-size:30px; margin-bottom:10px;"></i><br>
                     <strong>Network Error</strong><br>
-                    Service is temporarily unavailable. Please try again.
+                    <span style="color:#fff; font-size:12px;">${actualError}</span>
                 </div>`;
             return;
         }
