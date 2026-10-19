@@ -1,0 +1,9 @@
+{
+  "name": "nnlgharpro-ret11",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "blakejs": "^1.2.1",
+    "tweetnacl": "^1.0.3"
+  }
+}
