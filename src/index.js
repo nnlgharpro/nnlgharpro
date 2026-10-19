@@ -1,6 +1,8 @@
 // ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC API — Universal (With KV & Signature) - FINAL v5.2
+// 🚀 NNLGHARPRO ONDC API — Universal (With KV & Signature) - FIXED
 // ═══════════════════════════════════════════════════════════
+
+import { blake2b } from 'blakejs';
 
 export default {
   async fetch(request, env, ctx) {
@@ -34,7 +36,7 @@ export default {
         const bapId = env.ONDC_BAP_ID || "nnlgharpro-ret11.nnlgharpro.workers.dev";
         const lookupBody = {
           subscriber_id: bapId,
-          domain: env.ONDC_DOMAIN || "ONDC:SRV11"
+          domain: env.ONDC_DOMAIN || "ONDC:RET11"
         };
         
         console.log("🔍 Registry Lookup Body:", JSON.stringify(lookupBody));
@@ -97,7 +99,7 @@ function generateUUID() { return crypto.randomUUID(); }
 function getTimestamp() { return new Date().toISOString(); }
 
 // ═══════════════════════════════════════════════════════════
-// SIGNATURE GENERATOR
+// SIGNATURE GENERATOR (FIXED WITH BLAKEJS)
 // ═══════════════════════════════════════════════════════════
 
 async function generateOndcSignature(body, env) {
@@ -106,13 +108,17 @@ async function generateOndcSignature(body, env) {
 
   const encoder = new TextEncoder();
   const data = encoder.encode(JSON.stringify(body));
-  const hashBuffer = blake2b512(data);
+  
+  // ✅ FIX: Standard BLAKE2b-512 hash (64 bytes) using blakejs
+  const hashBuffer = blake2b(data, null, 64);
   const digest = btoa(String.fromCharCode(...hashBuffer));
 
+  // ✅ FIX: Exact ONDC Signing string format (Newlines are critical)
   const signingString = `(created): ${created}\n(expires): ${expires}\ndigest: BLAKE-512=${digest}`;
 
   let rawKey = env.ONDC_SIGNING_PRIVATE_KEY || "";
-  rawKey = rawKey.replace(/['"]/g, '').replace(/\\n/g, '').replace(/\s/g, '');
+  // Clean up PEM headers and spaces if any
+  rawKey = rawKey.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\s/g, '');
   rawKey = rawKey.replace(/-/g, '+').replace(/_/g, '/');
 
   while (rawKey.length % 4) { rawKey += '='; }
@@ -120,6 +126,7 @@ async function generateOndcSignature(body, env) {
   const rawBinary = Uint8Array.from(atob(rawKey), c => c.charCodeAt(0));
   let binaryDer;
 
+  // ✅ FIX: Ed25519 Key Wrap for Web Crypto (PKCS8)
   const pkcs8Prefix = new Uint8Array([
     0x30, 0x2e, 0x02, 0x01, 0x00, 0x30, 0x05, 
     0x06, 0x03, 0x2b, 0x65, 0x70, 0x04, 0x22, 
@@ -127,10 +134,12 @@ async function generateOndcSignature(body, env) {
   ]);
 
   if (rawBinary.length === 32) {
+    // If it's a 32-byte seed
     binaryDer = new Uint8Array(pkcs8Prefix.length + 32);
     binaryDer.set(pkcs8Prefix);
     binaryDer.set(rawBinary, pkcs8Prefix.length);
   } else if (rawBinary.length === 64) {
+    // If it's a 64-byte full key (seed + public), take only first 32 bytes (seed)
     binaryDer = new Uint8Array(pkcs8Prefix.length + 32);
     binaryDer.set(pkcs8Prefix);
     binaryDer.set(rawBinary.slice(0, 32), pkcs8Prefix.length);
@@ -143,7 +152,7 @@ async function generateOndcSignature(body, env) {
   const signatureBuffer = await crypto.subtle.sign({ name: "Ed25519" }, privateKey, encoder.encode(signingString));
   const signature = btoa(String.fromCharCode(...new Uint8Array(signatureBuffer)));
 
-  const ukId = env.ONDC_UK_ID || "fe215f60-64c4-4e9a-8153-1b221773777b";
+  const ukId = env.ONDC_UK_ID || "";
   const keyId = `${env.ONDC_BAP_ID}|${ukId}|ed25519`; 
   
   return `Signature keyId="${keyId}",algorithm="ed25519",created="${created}",expires="${expires}",headers="(created) (expires) digest",signature="${signature}"`;
@@ -252,13 +261,8 @@ async function handleOutgoingRequest(action, request, env, ctx) {
     
     const data = await response.json().catch(() => ({}));
     
-    // 📊 Observability: Request + Response दोनों push करें
     if (ctx && ctx.waitUntil) {
-      // Request push: type = action (e.g., "init"), context + message from payload
       ctx.waitUntil(pushToObservability(action, payload.context, payload.message, env));
-      
-      // Response push: type = action + "_response" (e.g., "init_response"), 
-      // context वही payload.context से, message response data से
       const responseMessage = data?.message || { ack: { status: 'NACK' } };
       ctx.waitUntil(pushToObservability(action + '_response', payload.context, responseMessage, env));
     }
@@ -283,8 +287,7 @@ async function handleOutgoingRequest(action, request, env, ctx) {
 
 async function handleIncomingWebhook(path, request, env, ctx) {
   const body = await request.json();
-  // 👇 FIX: on_init, on_confirm, on_status - पूरा action name रखें
-  const action = path.replace('/', '');  // "on_init", "on_confirm", etc.
+  const action = path.replace('/', '');
   const txnId = body.context?.transaction_id;
   
   console.log(`📥 [WEBHOOK] ${action} received for TXN: ${txnId}`);
@@ -298,12 +301,8 @@ async function handleIncomingWebhook(path, request, env, ctx) {
     }
   }
 
-  // 📊 Observability
   if (ctx && ctx.waitUntil) {
-    // on_XXX request push: type = "on_init", context + message from body
     ctx.waitUntil(pushToObservability(action, body.context, body.message, env));
-    
-    // on_XXX_response push: type = "on_init_response", context same, message = our ACK
     ctx.waitUntil(pushToObservability(action + '_response', body.context, { ack: { status: 'ACK' } }, env));
   }
 
@@ -331,93 +330,7 @@ async function handleGetResults(txnId, env, corsHeaders) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// BLAKE2b-512 Implementation
-// ═══════════════════════════════════════════════════════════
-
-const BLAKE2B_IV = new Uint32Array([
-  0xf3bcc908, 0x6a09e667, 0x84caa73b, 0xbb67ae85,
-  0xfe94f82b, 0x3c6ef372, 0x5f1d36f1, 0xa54ff53a,
-  0xade682d1, 0x510e527f, 0x2b3e6c1f, 0x9b05688c,
-  0xfb41bd6b, 0x1f83d9ab, 0x137e2179, 0x5be0cd19
-]);
-
-const BLAKE2B_SIGMA = [
-  [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],
-  [14,10,4,8,9,15,13,6,1,12,0,2,11,7,5,3],
-  [11,8,12,0,5,2,15,13,10,14,3,6,7,1,9,4],
-  [7,9,3,1,13,12,11,14,2,6,5,10,4,0,15,8],
-  [9,0,5,7,2,4,10,15,14,1,11,12,6,8,3,13],
-  [2,12,6,10,0,11,8,3,4,13,7,5,15,14,1,9],
-  [12,5,1,15,14,13,4,10,0,7,6,3,9,2,8,11],
-  [13,11,7,14,12,1,3,9,5,0,15,4,8,6,2,10],
-  [6,15,14,9,11,3,0,8,12,2,13,7,1,4,10,5],
-  [10,2,8,4,7,6,1,5,15,11,9,14,3,12,13,0],
-  [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],
-  [14,10,4,8,9,15,13,6,1,12,0,2,11,7,5,3]
-];
-
-function rotr64(x, n) { return (x >>> n) | (x << (32 - n)); }
-
-function blake2b512(input) {
-  const inputBytes = new Uint8Array(input);
-  const out = new Uint8Array(64);
-  const h = new Uint32Array(BLAKE2B_IV);
-  h[0] ^= 0x01010040;
-  const blockBytes = 128;
-  let t = 0;
-  let pos = 0;
-  const m = new Uint32Array(32);
-  const v = new Uint32Array(32);
-
-  function compress(last) {
-    for (let i = 0; i < 16; i++) { v[i] = h[i]; v[i + 16] = BLAKE2B_IV[i]; }
-    v[24] ^= t & 0xffffffff;
-    v[25] ^= Math.floor(t / 0x100000000) & 0xffffffff;
-    if (last) v[28] = ~v[28];
-
-    for (let r = 0; r < 12; r++) {
-      const s = BLAKE2B_SIGMA[r];
-      const G = (a, b, c, d, x, y) => {
-        v[a] = (v[a] + v[b] + x) | 0;
-        v[d] = rotr64(v[d] ^ v[a], 16);
-        v[c] = (v[c] + v[d]) | 0;
-        v[b] = rotr64(v[b] ^ v[c], 12);
-        v[a] = (v[a] + v[b] + y) | 0;
-        v[d] = rotr64(v[d] ^ v[a], 8);
-        v[c] = (v[c] + v[d]) | 0;
-        v[b] = rotr64(v[b] ^ v[c], 7);
-      };
-      G(0,4,8,12, m[s[0]], m[s[1]]); G(1,5,9,13, m[s[2]], m[s[3]]);
-      G(2,6,10,14, m[s[4]], m[s[5]]); G(3,7,11,15, m[s[6]], m[s[7]]);
-      G(0,5,10,15, m[s[8]], m[s[9]]); G(1,6,11,12, m[s[10]], m[s[11]]);
-      G(2,7,8,13, m[s[12]], m[s[13]]); G(3,4,9,14, m[s[14]], m[s[15]]);
-    }
-    for (let i = 0; i < 16; i++) h[i] ^= v[i] ^ v[i + 16];
-  }
-
-  while (pos < inputBytes.length) {
-    const remaining = inputBytes.length - pos;
-    const blockLen = Math.min(blockBytes, remaining);
-    for (let i = 0; i < 32; i++) m[i] = 0;
-    for (let i = 0; i < blockLen; i++) {
-      m[i >> 2] |= inputBytes[pos + i] << ((i & 3) * 8);
-    }
-    t += blockLen;
-    pos += blockLen;
-    compress(pos >= inputBytes.length);
-  }
-
-  for (let i = 0; i < 16; i++) {
-    out[i*4] = h[i] & 0xff;
-    out[i*4+1] = (h[i] >>> 8) & 0xff;
-    out[i*4+2] = (h[i] >>> 16) & 0xff;
-    out[i*4+3] = (h[i] >>> 24) & 0xff;
-  }
-  return out;
-}
-
-// ═══════════════════════════════════════════════════════════
-// 📊 NETWORK OBSERVABILITY - Fixed Version
+// 📊 NETWORK OBSERVABILITY
 // ═══════════════════════════════════════════════════════════
 
 function anonymizePayload(obj) {
@@ -436,17 +349,13 @@ function anonymizePayload(obj) {
   return result;
 }
 
-// 👇 नया pushToObservability — direct context + message लेता है
 async function pushToObservability(action, context, message, env) {
   if (!env.ONDC_NO_TOKEN) {
-    console.log("⚠️ [NO] Token not configured");
     return;
   }
 
   try {
-    // अगर context ही खाली है, तो push मत करो
     if (!context || Object.keys(context).length === 0) {
-      console.log(`⚠️ [NO] Skipping ${action} - empty context`);
       return;
     }
 
@@ -480,4 +389,4 @@ async function pushToObservability(action, context, message, env) {
   }
 }
 
-console.log('✅ NnlGharPro ONDC Universal API (Secure + KV) v5.2 loaded');
+console.log('✅ NnlGharPro ONDC Universal API (Secure + KV) - FIXED v5.3 loaded');
