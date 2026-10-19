@@ -10,10 +10,12 @@ ONDC_BAP_ID = "nnlgharpro-ret11.nnlgharpro.workers.dev"
 ONDC_BAP_URI = "https://nnlgharpro-ret11.nnlgharpro.workers.dev"
 ONDC_GATEWAY_URL = "https://preprod.gateway.ondc.org"
 
-# Secrets (Cloudflare Dashboard se set karenge - ye wrangler.toml me nahi dalne)
+# 👇 Ye 2 variables yahan add kar diye hain taaki deploy par delete na hon
+ONDC_UK_ID = "05063c66-41f2-4f75-878a-22f28d07712a"
+ONDC_SIGNING_PUBLIC_KEY = "ONGFJUVn9K609lH0a+xA1RVeMG+PL5KtrpcCiJFhV08="
+
+# ⚠️ Secrets (Cloudflare Dashboard se set karenge - ye wrangler.toml me nahi dalne warna public ho jayenge)
 # ONDC_SIGNING_PRIVATE_KEY
-# ONDC_SIGNING_PUBLIC_KEY
-# ONDC_UK_ID
 # ONDC_NO_TOKEN
 
 [[kv_namespaces]]
