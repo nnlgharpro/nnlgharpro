@@ -1122,6 +1122,16 @@ window.searchServices = async function() {
         });
 
         const data = await response.json();
+        if (data.workbenchResponse && data.workbenchResponse.error) {
+    const errorMsg = data.workbenchResponse.error.message || "Unknown Error";
+    document.getElementById('providerList').innerHTML = `
+        <div style="padding:20px; text-align:center; color:#FF4757; font-size:14px;">
+            <i class="fas fa-exclamation-triangle" style="font-size:30px; margin-bottom:10px;"></i><br>
+            <strong>ONDC Error:</strong><br>
+            ${errorMsg}
+        </div>`;
+    return; // Stop the function here
+}
         
         if (!data.success) {
             document.getElementById('providerList').innerHTML = '<div style="text-align:center;color:red;">ONDC Search failed. Please try again.</div>';
