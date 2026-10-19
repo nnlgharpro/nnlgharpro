@@ -8,12 +8,13 @@ ENVIRONMENT = "production"
 ONDC_DOMAIN = "ONDC:RET11" 
 ONDC_BAP_ID = "nnlgharpro-ret11.nnlgharpro.workers.dev"
 ONDC_BAP_URI = "https://nnlgharpro-ret11.nnlgharpro.workers.dev"
-OONDC_GATEWAY_URL = "https://preprod.gateway.ondc.org"
+ONDC_GATEWAY_URL = "https://preprod.gateway.ondc.org"
 
 # Secrets (Cloudflare Dashboard se set karenge - ye wrangler.toml me nahi dalne)
 # ONDC_SIGNING_PRIVATE_KEY
 # ONDC_SIGNING_PUBLIC_KEY
 # ONDC_UK_ID
+# ONDC_NO_TOKEN
 
 [[kv_namespaces]]
 binding = "ONDC_DATA"
