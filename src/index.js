@@ -1,12 +1,12 @@
 // ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC API — TRULY UNIVERSAL v9.1 (With NACK Check)
+// 🚀 NNLGHARPRO ONDC API — TRULY UNIVERSAL v9.2 (Cache Bypass Fix)
 // ═══════════════════════════════════════════════════════════
 
 import { blake2b } from 'blakejs'; 
 import nacl from 'tweetnacl';
 
 // ═══════════════════════════════════════════════════════════
-// 🎯 UNIVERSAL DOMAIN CONFIGURATION (Yahan nayi services add karein)
+// 🎯 UNIVERSAL DOMAIN CONFIGURATION
 // ═══════════════════════════════════════════════════════════
 const DOMAIN_CONFIG = {
   'ONDC:RET11': { category: 'Food', fulfillmentType: 'Delivery' },
@@ -32,7 +32,7 @@ export default {
     
     try {
       if (path === '/' || path === '/api/health') {
-        return jsonResponse({ status: 'active', version: '9.1.0' }, corsHeaders);
+        return jsonResponse({ status: 'active', version: '9.2.0' }, corsHeaders);
       }
       
       const outgoingActions = ['search', 'select', 'init', 'confirm', 'status', 'cancel', 'update', 'track', 'support', 'rating'];
@@ -110,8 +110,7 @@ function buildPayload(action, domain, body, env) {
   const config = DOMAIN_CONFIG[domain] || DOMAIN_CONFIG['ONDC:RET11'];
 
   // --- SEARCH ---
-   // 👇 Cache ko Workbench testing ke liye disable kar rahe hain
-  if (action === 'search' && !env.ONDC_GATEWAY_URL.includes('workbench')) { 
+  if (action === 'search') {
     return {
       context,
       message: {
@@ -192,10 +191,11 @@ function buildPayload(action, domain, body, env) {
 async function handleOutgoingRequest(action, request, env, ctx) {
   const body = await request.json().catch(() => ({}));
   const domain = body.domain || env.ONDC_DOMAIN || 'ONDC:RET11'; 
+  const gatewayUrl = env.ONDC_GATEWAY_URL || 'https://preprod.gateway.ondc.org';
   
-  // Caching for search (Only for high traffic)
+  // Caching for search (BYPASS CACHE IF WORKBENCH IS USED)
   let cacheKey = null;
-  if (action === 'search') {
+  if (action === 'search' && !gatewayUrl.includes('workbench')) {
     cacheKey = `cache_${domain}_${body.pincode || '110001'}_${body.category || 'default'}`;
     if (env.ONDC_DATA) {
       const cached = await env.ONDC_DATA.get(cacheKey);
@@ -205,7 +205,6 @@ async function handleOutgoingRequest(action, request, env, ctx) {
 
   const payload = buildPayload(action, domain, body, env);
   const authHeader = await generateOndcSignature(payload, env);
-  const gatewayUrl = env.ONDC_GATEWAY_URL || 'https://preprod.gateway.ondc.org';
   
   try {
     const response = await fetch(`${gatewayUrl}/${action}`, {
@@ -216,7 +215,7 @@ async function handleOutgoingRequest(action, request, env, ctx) {
     
     const data = await response.json().catch(() => ({}));
     
-    // 🚨 NAYA: Check if Workbench/ONDC rejected the request (NACK)
+    // 🚨 Check if Workbench/ONDC rejected the request (NACK)
     if (data?.message?.ack?.status === 'NACK' || data?.error) {
         return jsonResponse({ 
             success: false, 
