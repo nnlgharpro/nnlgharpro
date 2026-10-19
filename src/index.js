@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC API — Universal (With KV & Signature) - v6.3 (Context Fix)
+// 🚀 NNLGHARPRO ONDC API — Universal (With KV & Signature) - v6.4 (Final Fix)
 // ═══════════════════════════════════════════════════════════
 
 import { blake2b } from 'blakejs'; 
@@ -27,7 +27,7 @@ export default {
         return jsonResponse({
           status: 'active',
           service: 'NnlGharPro ONDC Universal API (TweetNaCl)',
-          version: '6.3.0',
+          version: '6.4.0',
           timestamp: new Date().toISOString()
         }, corsHeaders);
       }
@@ -146,7 +146,7 @@ async function generateOndcSignature(body, env) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// PAYLOAD BUILDER (CONTEXT FIXED FOR RET DOMAIN)
+// PAYLOAD BUILDER (DESCRIPTOR FIXED FOR RET DOMAIN)
 // ═══════════════════════════════════════════════════════════
 
 function buildPayload(action, domain, body, env) {
@@ -156,10 +156,10 @@ function buildPayload(action, domain, body, env) {
 
   const context = {
     domain: domain,
-    country: "IND",           // ✅ FIX: Country top-level par
-    city: cityCode,           // ✅ FIX: City top-level par
+    country: "IND",           
+    city: cityCode,           
     action: action,
-    core_version: '1.2.5',    // ✅ FIX: Retail ke liye 'version' ki jagah 'core_version' hota hai
+    core_version: '1.2.5',    
     bap_id: env.ONDC_BAP_ID,
     bap_uri: env.ONDC_BAP_URI,
     transaction_id: body.transactionId || generateUUID(),
@@ -169,10 +169,9 @@ function buildPayload(action, domain, body, env) {
   };
 
   if (domain.startsWith('ONDC:SRV')) {
-    // Service domain ke liye thoda alag context hota hai (agar future mein use karein)
     const srvContext = {
       ...context,
-      version: '1.2.5', // SRV mein version hota hai
+      version: '1.2.5',
       location: { city: { code: cityCode }, country: { code: "IND" } }
     };
     delete srvContext.core_version;
@@ -198,7 +197,8 @@ function buildPayload(action, domain, body, env) {
         context,
         message: {
           intent: {
-            category: { descriptor: { name: body.category || 'Food' } },
+            // ✅ FIX: category ki jagah item.descriptor use kiya gaya hai
+            item: { descriptor: { name: body.category || 'Food' } },
             fulfillment: { type: 'Delivery' }
           }
         }
@@ -378,4 +378,4 @@ async function pushToObservability(action, context, message, env) {
   }
 }
 
-console.log('✅ NnlGharPro ONDC Universal API (TweetNaCl Edition) v6.3 loaded');
+console.log('✅ NnlGharPro ONDC Universal API (TweetNaCl Edition) v6.4 loaded');
