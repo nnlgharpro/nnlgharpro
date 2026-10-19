@@ -1092,20 +1092,20 @@ window.selectService = function(service) {
 
 // SEARCH SERVICES
 // SEARCH SERVICES (ONDC REPLACEMENT)
+// SEARCH SERVICES (ONDC WITH CACHE & FAST POLLING)
 window.searchServices = async function() {
     if (!selectedService) { showToast('Select service first!', true); return; }
     const pincode = document.getElementById('pincode').value.trim();
     if (!pincode || pincode.length !== 6) { showToast('Valid pincode!', true); return; }
 
     document.getElementById('bookingModal').classList.add('show');
-    document.getElementById('providerList').innerHTML = '<div style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin"></i> Searching on ONDC Network...</div>';
+    document.getElementById('providerList').innerHTML = '<div style="text-align:center; padding:20px; color:#FFD93D;"><i class="fas fa-spinner fa-spin"></i> Searching on ONDC Network...</div>';
     document.getElementById('modalServiceName').textContent = selectedService;
     document.getElementById('modalPincode').textContent = pincode;
     document.getElementById('bookingForm').style.display = 'none';
     document.getElementById('providerListContainer').style.display = 'block';
 
-    // Domain Mapping
-    let domain = "ONDC:RET11"; // Default Food
+    let domain = "ONDC:RET11"; 
     let category = "Food";
     if (selectedService === 'Grocery') { domain = "ONDC:RET10"; category = "Grocery"; }
     
@@ -1122,26 +1122,35 @@ window.searchServices = async function() {
         });
 
         const data = await response.json();
+        
+        // Handle ONDC Errors
         if (data.workbenchResponse && data.workbenchResponse.error) {
-    const errorMsg = data.workbenchResponse.error.message || "Unknown Error";
-    document.getElementById('providerList').innerHTML = `
-        <div style="padding:20px; text-align:center; color:#FF4757; font-size:14px;">
-            <i class="fas fa-exclamation-triangle" style="font-size:30px; margin-bottom:10px;"></i><br>
-            <strong>ONDC Error:</strong><br>
-            ${errorMsg}
-        </div>`;
-    return; // Stop the function here
-}
+            const errorMsg = data.workbenchResponse.error.message || "Unknown Error";
+            document.getElementById('providerList').innerHTML = `
+                <div style="padding:20px; text-align:center; color:#FF4757; font-size:14px;">
+                    <i class="fas fa-exclamation-triangle" style="font-size:30px; margin-bottom:10px;"></i><br>
+                    <strong>ONDC Error:</strong><br>
+                    ${errorMsg}
+                </div>`;
+            return;
+        }
         
         if (!data.success) {
             document.getElementById('providerList').innerHTML = '<div style="text-align:center;color:red;">ONDC Search failed. Please try again.</div>';
             return;
         }
-window.currentOndcTransactionId = data.transaction_id;
-const txnId = data.transaction_id;
+
+        // ⚡ CACHE HIT: Agar backend se direct cached data aaya hai
+        if (data.cached && data.cachedData) {
+            displayOndcResults(data.cachedData, pincode);
+            return; 
+        }
+
+        // 2. Poll for Results (ONDC is async)
+        window.currentOndcTransactionId = data.transaction_id; // Save for Select
+        const txnId = data.transaction_id;
         let attempts = 0;
         
-        // 2. Poll for Results (ONDC is async)
         const interval = setInterval(async () => {
             attempts++;
             const res = await fetch(`https://nnlgharpro-ret11.nnlgharpro.workers.dev/get-results/${txnId}`);
@@ -1150,11 +1159,17 @@ const txnId = data.transaction_id;
             if (resultData.success && resultData.status === 'ready') {
                 clearInterval(interval);
                 displayOndcResults(resultData.results, pincode);
-            } else if (attempts > 10) {
+            } else if (attempts > 20) { // 40 seconds timeout (20 attempts * 2s)
                 clearInterval(interval);
-                document.getElementById('providerList').innerHTML = '<div style="text-align:center;color:gray;">No providers found. Please try again.</div>';
+                document.getElementById('providerList').innerHTML = `
+                    <div style="text-align:center; padding:30px; color:#FFD93D;">
+                        <i class="fas fa-hourglass-end" style="font-size:30px; margin-bottom:10px;"></i><br>
+                        <strong>No providers found.</strong><br>
+                        <span style="font-size:12px; color:#aaa;">ONDC server is taking too long.</span><br><br>
+                        <button onclick="searchServices()" style="padding:8px 16px; border-radius:8px; border:none; background:#FF6B35; color:white; font-weight:bold;">Try Again</button>
+                    </div>`;
             }
-        }, 2000); // Check every 2 seconds
+        }, 1000); // 👈 1 second check (faster response)
 
     } catch (e) { 
         console.error(e);
