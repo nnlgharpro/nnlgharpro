@@ -1151,6 +1151,7 @@ window.searchServices = async function() {
 
         window.currentOndcTransactionId = data.transaction_id; 
         const txnId = data.transaction_id;
+        console.log("🔍 SAVED TXN ID:", window.currentOndcTransactionId);
         let attempts = 0;
         
         const interval = setInterval(async () => {
@@ -1240,7 +1241,7 @@ window.selectProvider = async function(indexOrId) {
     const providerId = provider.id;
     const providerName = provider.descriptor?.name || 'Unknown Provider';
     const txnId = window.currentOndcTransactionId; 
-
+    console.log("📤 SENDING SELECT FOR TXN:", txnId);
     document.getElementById('providerList').innerHTML = `
         <div style="text-align:center; padding:30px; color:#FFD93D;">
             <i class="fas fa-spinner fa-spin" style="font-size:24px; margin-bottom:10px;"></i><br>
