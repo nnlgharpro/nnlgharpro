@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC API — Universal (With KV & Signature) - v6.4 (Final Fix)
+// 🚀 NNLGHARPRO ONDC API — Universal (With KV & Signature) - v6.5 (Payment Fix)
 // ═══════════════════════════════════════════════════════════
 
 import { blake2b } from 'blakejs'; 
@@ -27,7 +27,7 @@ export default {
         return jsonResponse({
           status: 'active',
           service: 'NnlGharPro ONDC Universal API (TweetNaCl)',
-          version: '6.4.0',
+          version: '6.5.0',
           timestamp: new Date().toISOString()
         }, corsHeaders);
       }
@@ -109,15 +109,12 @@ async function generateOndcSignature(body, env) {
 
   const encoder = new TextEncoder();
   
-  // 1. BLAKE2b-512 hash generate karein
   const data = encoder.encode(JSON.stringify(body));
   const hashBuffer = blake2b(data, null, 64);
   const digest = btoa(String.fromCharCode(...hashBuffer));
 
-  // 2. Exact ONDC Signing string format
   const signingString = `(created): ${created}\n(expires): ${expires}\ndigest: BLAKE-512=${digest}`;
 
-  // 3. Private Key ko clean aur decode karein
   let rawKey = env.ONDC_SIGNING_PRIVATE_KEY || "";
   rawKey = rawKey.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\s/g, '');
   rawKey = rawKey.replace(/-/g, '+').replace(/_/g, '/');
@@ -125,7 +122,6 @@ async function generateOndcSignature(body, env) {
   
   const privateKeyBytes = Uint8Array.from(atob(rawKey), c => c.charCodeAt(0));
 
-  // 4. TweetNaCl ke liye Secret Key tayar karein (64 bytes required)
   let secretKey = privateKeyBytes;
   if (privateKeyBytes.length === 32) {
       secretKey = nacl.sign.keyPair.fromSeed(privateKeyBytes).secretKey;
@@ -133,12 +129,10 @@ async function generateOndcSignature(body, env) {
       throw new Error(`Invalid private key length: ${privateKeyBytes.length}. Must be 32 (seed) or 64 (full key) bytes.`);
   }
 
-  // 5. Signature generate karein (TweetNaCl se)
   const messageBytes = encoder.encode(signingString);
   const signatureBytes = nacl.sign.detached(messageBytes, secretKey);
   const signature = btoa(String.fromCharCode(...signatureBytes));
 
-  // 6. Authorization Header format karein
   const ukId = env.ONDC_UK_ID;
   const keyId = `${env.ONDC_BAP_ID}|${ukId}|ed25519`; 
   
@@ -146,13 +140,12 @@ async function generateOndcSignature(body, env) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// PAYLOAD BUILDER (DESCRIPTOR FIXED FOR RET DOMAIN)
+// PAYLOAD BUILDER (PAYMENT & FULFILLMENT FIXED)
 // ═══════════════════════════════════════════════════════════
 
 function buildPayload(action, domain, body, env) {
-  // 📍 Pincode to City Code mapping
   let cityCode = "std:011"; 
-  if (body.pincode === "123001") cityCode = "std:01282"; // Narnaul
+  if (body.pincode === "123001") cityCode = "std:01282";
 
   const context = {
     domain: domain,
@@ -168,38 +161,27 @@ function buildPayload(action, domain, body, env) {
     ttl: 'PT30S'
   };
 
-  if (domain.startsWith('ONDC:SRV')) {
-    const srvContext = {
-      ...context,
-      version: '1.2.5',
-      location: { city: { code: cityCode }, country: { code: "IND" } }
-    };
-    delete srvContext.core_version;
-    delete srvContext.country;
-    delete srvContext.city;
-
-    if (action === 'search') {
-      return {
-        context: srvContext,
-        message: {
-          intent: {
-            item: { descriptor: { name: body.query || 'Plumber' } },
-            fulfillment: { type: 'SERVICE' }
-          }
-        }
-      };
-    }
-  }
-
   if (domain.startsWith('ONDC:RET')) {
     if (action === 'search') {
+      // ✅ FIX: Payment block और fulfillment location वापस जोड़ दिए गए हैं
       return {
         context,
         message: {
           intent: {
-            // ✅ FIX: category ki jagah item.descriptor use kiya gaya hai
             item: { descriptor: { name: body.category || 'Food' } },
-            fulfillment: { type: 'Delivery' }
+            fulfillment: {
+              type: 'Delivery',
+              end: {
+                location: {
+                  gps: "28.0444,76.1084", // आपके स्टोर/सर्विस एरिया का GPS
+                  address: { area_code: body.pincode || "123001" }
+                }
+              }
+            },
+            payment: {
+              "@ondc/org/buyer_app_finder_fee_type": "percent",
+              "@ondc/org/buyer_app_finder_fee_amount": "3.0"
+            }
           }
         }
       };
@@ -378,4 +360,4 @@ async function pushToObservability(action, context, message, env) {
   }
 }
 
-console.log('✅ NnlGharPro ONDC Universal API (TweetNaCl Edition) v6.4 loaded');
+console.log('✅ NnlGharPro ONDC Universal API (TweetNaCl Edition) v6.5 loaded');
