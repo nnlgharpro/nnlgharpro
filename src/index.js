@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC API — Universal (With KV & Signature) - v6.1 (Location Fix)
+// 🚀 NNLGHARPRO ONDC API — Universal (With KV & Signature) - v6.2 (Schema Fix)
 // ═══════════════════════════════════════════════════════════
 
 import { blake2b } from 'blakejs'; 
@@ -27,7 +27,7 @@ export default {
         return jsonResponse({
           status: 'active',
           service: 'NnlGharPro ONDC Universal API (TweetNaCl)',
-          version: '6.1.0',
+          version: '6.2.0',
           timestamp: new Date().toISOString()
         }, corsHeaders);
       }
@@ -148,12 +148,11 @@ async function generateOndcSignature(body, env) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// PAYLOAD BUILDER (UPDATED WITH LOCATION)
+// PAYLOAD BUILDER (SCHEMA FIXED)
 // ═══════════════════════════════════════════════════════════
 
 function buildPayload(action, domain, body, env) {
   // 📍 Pincode to City Code mapping (Required for ONDC Context)
-  // Agar aapka pincode 123001 (Narnaul) hai toh std:01282, warna default std:011 (Delhi) use hoga
   let cityCode = "std:011"; 
   if (body.pincode === "123001") cityCode = "std:01282";
 
@@ -167,7 +166,6 @@ function buildPayload(action, domain, body, env) {
     message_id: generateUUID(),
     timestamp: getTimestamp(),
     ttl: 'PT30S',
-    // 👇 YEH NAYI LOCATION ADD KI GAYI HAI (REF-09 FIX)
     location: {
       city: { code: cityCode },
       country: { code: "IND" }
@@ -181,8 +179,7 @@ function buildPayload(action, domain, body, env) {
         message: {
           intent: {
             item: { descriptor: { name: body.query || 'Plumber' } },
-            fulfillment: { type: 'SERVICE', end: { location: { gps: '28.0444,76.1084', address: { area_code: body.pincode || '123001' } } } },
-            payment: { '@ondc/org/buyer_app_finder_fee_type': 'percent', '@ondc/org/buyer_app_finder_fee_amount': '3' }
+            fulfillment: { type: 'SERVICE' }
           }
         }
       };
@@ -193,7 +190,7 @@ function buildPayload(action, domain, body, env) {
         order: {
           provider: { id: body.providerId || 'provider_1' },
           items: body.items || [{ id: 'item_1', quantity: { count: 1 } }],
-          fulfillment: { type: 'SERVICE', end: { location: { gps: '28.0444,76.1084', address: { area_code: '123001' } } } },
+          fulfillment: { type: 'SERVICE' },
           billing: body.billing,
           payment: body.payment
         }
@@ -208,9 +205,8 @@ function buildPayload(action, domain, body, env) {
         message: {
           intent: {
             category: { descriptor: { name: body.category || 'Food' } },
-            // Customer dwara diya gaya pincode area_code mein jayega
-            fulfillment: { type: 'Delivery', end: { location: { gps: '28.0444,76.1084', address: { area_code: body.pincode || '123001' } } } },
-            payment: { '@ondc/org/buyer_app_finder_fee_type': 'percent', '@ondc/org/buyer_app_finder_fee_amount': '3' }
+            // ✅ FIX: fulfillment mein end aur payment hata diya gaya hai
+            fulfillment: { type: 'Delivery' }
           }
         }
       };
@@ -221,7 +217,7 @@ function buildPayload(action, domain, body, env) {
         order: {
           provider: { id: body.providerId || 'provider_1' },
           items: body.items || [{ id: 'item_1', quantity: { count: 1 } }],
-          fulfillment: { type: 'Delivery', end: { location: { gps: '28.0444,76.1084', address: { area_code: '123001' } } } },
+          fulfillment: { type: 'Delivery' },
           billing: body.billing,
           payment: body.payment
         }
@@ -389,4 +385,4 @@ async function pushToObservability(action, context, message, env) {
   }
 }
 
-console.log('✅ NnlGharPro ONDC Universal API (TweetNaCl Edition) v6.1 loaded');
+console.log('✅ NnlGharPro ONDC Universal API (TweetNaCl Edition) v6.2 loaded');
