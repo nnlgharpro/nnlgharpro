@@ -1180,7 +1180,8 @@ function displayOndcResults(ondcData, pincode) {
         const providerName = p.descriptor?.name || 'Unknown Provider';
         const rating = p.tags?.find(t => t.code === 'rating')?.list?.[0]?.value || '4.5';
         
-        html += `<div class="provider-item" onclick="selectOndcProvider(${index})">
+       // Is tarah update karein:
+       html += `<div class="provider-item" onclick="selectProvider(${index})">
             <div style="flex:1;">
                 <div class="p-name">${providerName}</div>
                 <div class="p-detail">⭐ ${rating} • 📍 ${pincode}</div>
@@ -1196,14 +1197,25 @@ function displayOndcResults(ondcData, pincode) {
 // 🛒 NAYA ONDC CODE: Provider Select & Menu Flow
 // ═══════════════════════════════════════════════════════════
 
-window.selectProvider = async function(id) {
-    const provider = window.currentOndcProviders.find(p => p.id === id);
-    if (!provider) return;
+window.selectProvider = async function(indexOrId) {
+    // Check karein ki index aaya hai ya ID (Yeh sabse zaroori fix hai)
+    let provider;
+    if (typeof indexOrId === 'number') {
+        provider = window.currentOndcProviders[indexOrId]; 
+    } else {
+        provider = window.currentOndcProviders.find(p => p.id === indexOrId); 
+    }
+
+    if (!provider) {
+        showToast('❌ Provider data nahi mila. Dobara search karein.', true);
+        return;
+    }
 
     const providerId = provider.id;
     const providerName = provider.descriptor?.name || 'Unknown Provider';
     const txnId = window.currentOndcTransactionId; 
 
+    // Turant loading spinner dikhayein
     document.getElementById('providerList').innerHTML = `
         <div style="text-align:center; padding:30px; color:#FFD93D;">
             <i class="fas fa-spinner fa-spin" style="font-size:24px; margin-bottom:10px;"></i><br>
@@ -1219,7 +1231,7 @@ window.selectProvider = async function(id) {
                 domain: "ONDC:RET11",
                 transactionId: txnId,
                 providerId: providerId,
-                pincode: document.getElementById('pincode').value.trim() || "123001"
+                pincode: document.getElementById('pincode').value.trim() || "110001"
             })
         });
 
@@ -1235,17 +1247,20 @@ window.selectProvider = async function(id) {
                 if (resultData.success && resultData.status === 'ready') {
                     clearInterval(interval);
                     displayProviderMenu(resultData.results.message.order);
-                } else if (attempts > 10) {
+                } else if (attempts > 10) { // 20 seconds baad timeout
                     clearInterval(interval);
                     document.getElementById('providerList').innerHTML = `
                         <div style="text-align:center;color:#FF4757;padding:20px;">
                             <i class="fas fa-exclamation-triangle" style="font-size:30px;margin-bottom:10px;"></i><br>
-                            Menu load nahi ho paya. Dobara try karein.
+                            Menu load nahi ho paya. Timeout ho gaya.
+                            <br><br>
+                            <button onclick="closeBookingModal()" style="padding:8px 16px; border-radius:8px; border:none; background:#FF6B35; color:white;">Close</button>
                         </div>`;
                 }
             }, 2000); 
         } else {
-            showToast('❌ Select request failed', true);
+            showToast('❌ Select request failed: ' + (data.error || 'Unknown'), true);
+            displayOndcResults(window.currentOndcData, document.getElementById('pincode').value);
         }
     } catch (error) {
         console.error("Select Error:", error);
