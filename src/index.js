@@ -1,8 +1,9 @@
 // ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC API — Universal (With KV & Signature) - FIXED
+// 🚀 NNLGHARPRO ONDC API — Universal (With KV & Signature) - v6.0 (TweetNaCl Fix)
 // ═══════════════════════════════════════════════════════════
 
 import { blake2b } from 'blakejs';
+import nacl from 'tweetnacl';
 
 export default {
   async fetch(request, env, ctx) {
@@ -25,13 +26,13 @@ export default {
       if (path === '/' || path === '/api/health') {
         return jsonResponse({
           status: 'active',
-          service: 'NnlGharPro ONDC Universal API (Secure)',
-          version: '5.2.0',
+          service: 'NnlGharPro ONDC Universal API (TweetNaCl)',
+          version: '6.0.0',
           timestamp: new Date().toISOString()
         }, corsHeaders);
       }
       
-      // Registry Lookup
+      // Registry Lookup (Test Endpoint)
       if (path === '/registry-lookup') {
         const bapId = env.ONDC_BAP_ID || "nnlgharpro-ret11.nnlgharpro.workers.dev";
         const lookupBody = {
@@ -43,6 +44,8 @@ export default {
 
         try {
           const authHeader = await generateOndcSignature(lookupBody, env);
+          console.log("🔐 Generated Auth Header:", authHeader); // Debugging ke liye
+
           const regResponse = await fetch('https://preprod.registry.ondc.org/v2.0/lookup', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
@@ -56,7 +59,7 @@ export default {
         }
       }
       
-      // Outgoing
+      // Outgoing Actions
       const outgoingActions = ['search', 'select', 'init', 'confirm', 'status', 'cancel', 'update', 'track', 'support', 'rating'];
       const action = path.replace('/', '');
       
@@ -64,13 +67,13 @@ export default {
         return await handleOutgoingRequest(action, request, env, ctx);
       }
       
-      // Get results
+      // Get Results
       if (path.startsWith('/get-results/')) {
         const txnId = path.split('/')[2];
         return await handleGetResults(txnId, env, corsHeaders);
       }
       
-      // Incoming webhooks
+      // Incoming Webhooks
       if (path.startsWith('/on_')) {
         return await handleIncomingWebhook(path, request, env, ctx);
       }
@@ -99,7 +102,7 @@ function generateUUID() { return crypto.randomUUID(); }
 function getTimestamp() { return new Date().toISOString(); }
 
 // ═══════════════════════════════════════════════════════════
-// SIGNATURE GENERATOR (FIXED WITH BLAKEJS)
+// SIGNATURE GENERATOR (FIXED WITH TWEETNACL)
 // ═══════════════════════════════════════════════════════════
 
 async function generateOndcSignature(body, env) {
@@ -107,52 +110,39 @@ async function generateOndcSignature(body, env) {
   const expires = created + 3600;
 
   const encoder = new TextEncoder();
-  const data = encoder.encode(JSON.stringify(body));
   
-  // ✅ FIX: Standard BLAKE2b-512 hash (64 bytes) using blakejs
+  // 1. BLAKE2b-512 hash generate karein (blakejs se)
+  const data = encoder.encode(JSON.stringify(body));
   const hashBuffer = blake2b(data, null, 64);
   const digest = btoa(String.fromCharCode(...hashBuffer));
 
-  // ✅ FIX: Exact ONDC Signing string format (Newlines are critical)
+  // 2. Exact ONDC Signing string format
   const signingString = `(created): ${created}\n(expires): ${expires}\ndigest: BLAKE-512=${digest}`;
 
+  // 3. Private Key ko clean aur decode karein
   let rawKey = env.ONDC_SIGNING_PRIVATE_KEY || "";
-  // Clean up PEM headers and spaces if any
   rawKey = rawKey.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\s/g, '');
   rawKey = rawKey.replace(/-/g, '+').replace(/_/g, '/');
-
   while (rawKey.length % 4) { rawKey += '='; }
+  
+  const privateKeyBytes = Uint8Array.from(atob(rawKey), c => c.charCodeAt(0));
 
-  const rawBinary = Uint8Array.from(atob(rawKey), c => c.charCodeAt(0));
-  let binaryDer;
-
-  // ✅ FIX: Ed25519 Key Wrap for Web Crypto (PKCS8)
-  const pkcs8Prefix = new Uint8Array([
-    0x30, 0x2e, 0x02, 0x01, 0x00, 0x30, 0x05, 
-    0x06, 0x03, 0x2b, 0x65, 0x70, 0x04, 0x22, 
-    0x04, 0x20
-  ]);
-
-  if (rawBinary.length === 32) {
-    // If it's a 32-byte seed
-    binaryDer = new Uint8Array(pkcs8Prefix.length + 32);
-    binaryDer.set(pkcs8Prefix);
-    binaryDer.set(rawBinary, pkcs8Prefix.length);
-  } else if (rawBinary.length === 64) {
-    // If it's a 64-byte full key (seed + public), take only first 32 bytes (seed)
-    binaryDer = new Uint8Array(pkcs8Prefix.length + 32);
-    binaryDer.set(pkcs8Prefix);
-    binaryDer.set(rawBinary.slice(0, 32), pkcs8Prefix.length);
-  } else {
-    binaryDer = rawBinary;
+  // 4. TweetNaCl ke liye Secret Key tayar karein (64 bytes required)
+  let secretKey = privateKeyBytes;
+  if (privateKeyBytes.length === 32) {
+      // Agar seed (32 bytes) hai, toh keypair generate karein
+      secretKey = nacl.sign.keyPair.fromSeed(privateKeyBytes).secretKey;
+  } else if (privateKeyBytes.length !== 64) {
+      throw new Error(`Invalid private key length: ${privateKeyBytes.length}. Must be 32 (seed) or 64 (full key) bytes.`);
   }
 
-  const privateKey = await crypto.subtle.importKey("pkcs8", binaryDer.buffer, { name: "Ed25519" }, false, ["sign"]);
+  // 5. Signature generate karein (TweetNaCl se)
+  const messageBytes = encoder.encode(signingString);
+  const signatureBytes = nacl.sign.detached(messageBytes, secretKey);
+  const signature = btoa(String.fromCharCode(...signatureBytes));
 
-  const signatureBuffer = await crypto.subtle.sign({ name: "Ed25519" }, privateKey, encoder.encode(signingString));
-  const signature = btoa(String.fromCharCode(...new Uint8Array(signatureBuffer)));
-
-  const ukId = env.ONDC_UK_ID || "";
+  // 6. Authorization Header format karein
+  const ukId = env.ONDC_UK_ID;
   const keyId = `${env.ONDC_BAP_ID}|${ukId}|ed25519`; 
   
   return `Signature keyId="${keyId}",algorithm="ed25519",created="${created}",expires="${expires}",headers="(created) (expires) digest",signature="${signature}"`;
@@ -382,11 +372,11 @@ async function pushToObservability(action, context, message, env) {
     });
 
     const resultText = await response.text();
-    console.log(`📊 [NO] Pushed ${action} - Status: ${response.status} - Response: ${resultText.substring(0, 200)}`);
+    console.log(`📊 [NO] Pushed ${action} - Status: ${response.status}`);
 
   } catch (err) {
     console.error(`❌ [NO] Failed to push ${action}:`, err.message);
   }
 }
 
-console.log('✅ NnlGharPro ONDC Universal API (Secure + KV) - FIXED v5.3 loaded');
+console.log('✅ NnlGharPro ONDC Universal API (TweetNaCl Edition) v6.0 loaded');
