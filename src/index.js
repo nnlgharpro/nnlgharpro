@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC API — TRULY UNIVERSAL v9.0
+// 🚀 NNLGHARPRO ONDC API — TRULY UNIVERSAL v9.1 (With NACK Check)
 // ═══════════════════════════════════════════════════════════
 
 import { blake2b } from 'blakejs'; 
@@ -32,7 +32,7 @@ export default {
     
     try {
       if (path === '/' || path === '/api/health') {
-        return jsonResponse({ status: 'active', version: '9.0.0' }, corsHeaders);
+        return jsonResponse({ status: 'active', version: '9.1.0' }, corsHeaders);
       }
       
       const outgoingActions = ['search', 'select', 'init', 'confirm', 'status', 'cancel', 'update', 'track', 'support', 'rating'];
@@ -186,7 +186,7 @@ function buildPayload(action, domain, body, env) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// 📤 OUTGOING HANDLER (With Smart Cache)
+// 📤 OUTGOING HANDLER (With Smart Cache & NACK Check)
 // ═══════════════════════════════════════════════════════════
 async function handleOutgoingRequest(action, request, env, ctx) {
   const body = await request.json().catch(() => ({}));
@@ -215,6 +215,15 @@ async function handleOutgoingRequest(action, request, env, ctx) {
     
     const data = await response.json().catch(() => ({}));
     
+    // 🚨 NAYA: Check if Workbench/ONDC rejected the request (NACK)
+    if (data?.message?.ack?.status === 'NACK' || data?.error) {
+        return jsonResponse({ 
+            success: false, 
+            error: data?.error?.message || data?.message?.error?.message || "Request rejected by Gateway",
+            workbenchResponse: data 
+        }, { 'Access-Control-Allow-Origin': '*' });
+    }
+
     if (ctx && ctx.waitUntil && action === 'search' && cacheKey && env.ONDC_DATA) {
         ctx.waitUntil(env.ONDC_DATA.put(`txn_map_${payload.context.transaction_id}`, cacheKey, { expirationTtl: 600 }));
     }
