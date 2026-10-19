@@ -1137,8 +1137,8 @@ window.searchServices = async function() {
             document.getElementById('providerList').innerHTML = '<div style="text-align:center;color:red;">ONDC Search failed. Please try again.</div>';
             return;
         }
-
-        const txnId = data.transaction_id;
+window.currentOndcTransactionId = data.transaction_id;
+const txnId = data.transaction_id;
         let attempts = 0;
         
         // 2. Poll for Results (ONDC is async)
@@ -1192,36 +1192,108 @@ function displayOndcResults(ondcData, pincode) {
     showToast(`✅ ${providers.length} providers found!`);
 }
 
-// SELECT PROVIDER
+// ═══════════════════════════════════════════════════════════
+// 🛒 NAYA ONDC CODE: Provider Select & Menu Flow
+// ═══════════════════════════════════════════════════════════
+
 window.selectProvider = async function(id) {
-    selectedProviderId = id;
-    selectedProviderData = allProviders.find(p => p.id === id);
-    document.querySelectorAll('.provider-item').forEach(el => el.classList.remove('selected'));
-    const el = document.querySelector(`.provider-item[onclick*="'${id}'"]`);
-    if (el) el.classList.add('selected');
-    document.getElementById('selectedProviderName').textContent = selectedProviderData ? selectedProviderData.name : 'Unknown';
+    const provider = window.currentOndcProviders.find(p => p.id === id);
+    if (!provider) return;
 
-    providerItems = []; cart = {}; popupCart = {};
-    currentOrderType = ''; currentDeliveryDistance = 0; currentDeliveryCharge = 0;
+    const providerId = provider.id;
+    const providerName = provider.descriptor?.name || 'Unknown Provider';
+    const txnId = window.currentOndcTransactionId; 
 
-    await loadProviderItems(id);
-    renderOrderTypeButtons();
+    document.getElementById('providerList').innerHTML = `
+        <div style="text-align:center; padding:30px; color:#FFD93D;">
+            <i class="fas fa-spinner fa-spin" style="font-size:24px; margin-bottom:10px;"></i><br>
+            <strong>Menu load ho raha hai (${providerName})...</strong><br>
+            <span style="font-size:12px; color:rgba(255,255,255,0.4); margin-top:5px; display:block;">Thoda wait karein (2-5 sec)</span>
+        </div>`;
 
-    document.getElementById('providerListContainer').style.display = 'none';
-    document.getElementById('bookingForm').style.display = 'block';
+    try {
+        const response = await fetch("https://nnlgharpro-ret11.nnlgharpro.workers.dev/select", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                domain: "ONDC:RET11",
+                transactionId: txnId,
+                providerId: providerId,
+                pincode: document.getElementById('pincode').value.trim() || "123001"
+            })
+        });
 
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    document.getElementById('bookingDate').value = tomorrow.toISOString().split('T')[0];
-    document.getElementById('bookingTime').value = '10:00';
-    document.getElementById('custName').value = '';
-    document.getElementById('custMobile').value = '';
-    document.getElementById('custAddress').value = '';
-    document.getElementById('custNotes').value = '';
-    document.getElementById('popupProviderName').textContent = selectedProviderData ? selectedProviderData.name : 'Items';
+        const data = await response.json();
+        
+        if (data.success) {
+            let attempts = 0;
+            const interval = setInterval(async () => {
+                attempts++;
+                const res = await fetch(`https://nnlgharpro-ret11.nnlgharpro.workers.dev/get-select/${txnId}`);
+                const resultData = await res.json();
 
-    updateTotalAndPayment();
-    updateSelectedItemsSummary();
+                if (resultData.success && resultData.status === 'ready') {
+                    clearInterval(interval);
+                    displayProviderMenu(resultData.results.message.order);
+                } else if (attempts > 10) {
+                    clearInterval(interval);
+                    document.getElementById('providerList').innerHTML = `
+                        <div style="text-align:center;color:#FF4757;padding:20px;">
+                            <i class="fas fa-exclamation-triangle" style="font-size:30px;margin-bottom:10px;"></i><br>
+                            Menu load nahi ho paya. Dobara try karein.
+                        </div>`;
+                }
+            }, 2000); 
+        } else {
+            showToast('❌ Select request failed', true);
+        }
+    } catch (error) {
+        console.error("Select Error:", error);
+        document.getElementById('providerList').innerHTML = `<div style="text-align:center;color:#FF4757;padding:20px;">Network Error.</div>`;
+    }
+};
+
+// Menu (items) ko screen par dikhane ka function
+function displayProviderMenu(order) {
+    const items = order.items || [];
+    const providerName = order.provider?.descriptor?.name || 'Provider';
+    
+    let menuHTML = `<div style="font-size:16px; font-weight:800; color:#4ECDC4; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">
+        Menu: ${providerName}
+    </div>`;
+    
+    if (items.length === 0) {
+        menuHTML += `<div style="color:gray; padding:20px; text-align:center;">Is provider ke paas abhi koi item available nahi hai.</div>`;
+    } else {
+        items.forEach(item => {
+            const price = item.price?.value || 0;
+            const name = item.descriptor?.name || 'Item';
+            const isAvailable = item.tags?.find(t => t.code === 'status')?.list?.[0]?.value !== 'Unavailable';
+            
+            menuHTML += `
+                <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:10px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; border:1px solid rgba(255,255,255,0.08);">
+                    <div style="flex:1;">
+                        <div style="font-weight:700; font-size:14px; color:#fff;">${name}</div>
+                        <div style="font-size:13px; color:#FFD93D; margin-top:4px; font-weight:600;">₹${price}</div>
+                    </div>
+                    ${isAvailable ? 
+                    `<button onclick="addToCart('${item.id}', '${name}', ${price})" style="background:linear-gradient(135deg, #4ECDC4, #44B3A8); border:none; padding:8px 16px; border-radius:8px; font-weight:700; cursor:pointer; color:#fff; font-family:'Inter', sans-serif;">Add</button>` : 
+                    `<span style="color:#FF4757; font-size:12px; font-weight:700;">Sold Out</span>`}
+                </div>`;
+        });
+    }
+    
+    menuHTML += `
+        <div style="margin-top:15px; text-align:center;">
+            <button onclick="closeBookingModal()" style="background:rgba(255,255,255,0.05); color:#fff; border:1px solid rgba(255,255,255,0.1); padding:10px 20px; border-radius:8px; cursor:pointer; width:100%;">Close</button>
+        </div>
+    `;
+
+    document.getElementById('providerList').innerHTML = menuHTML;
+}
+
+window.addToCart = function(itemId, itemName, price) {
+    showToast(`✅ ${itemName} (₹${price}) cart mein add ho gaya!`);
 };
 
 // 🎯 RENDER ORDER TYPE BUTTONS
