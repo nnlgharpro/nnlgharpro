@@ -1,9 +1,21 @@
 // ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC API — Full Flow (Search, Select, Init, Confirm) v8.0
+// 🚀 NNLGHARPRO ONDC API — TRULY UNIVERSAL v9.0
 // ═══════════════════════════════════════════════════════════
 
 import { blake2b } from 'blakejs'; 
 import nacl from 'tweetnacl';
+
+// ═══════════════════════════════════════════════════════════
+// 🎯 UNIVERSAL DOMAIN CONFIGURATION (Yahan nayi services add karein)
+// ═══════════════════════════════════════════════════════════
+const DOMAIN_CONFIG = {
+  'ONDC:RET11': { category: 'Food', fulfillmentType: 'Delivery' },
+  'ONDC:RET10': { category: 'Grocery', fulfillmentType: 'Delivery' },
+  'ONDC:RET12': { category: 'Fashion', fulfillmentType: 'Delivery' },
+  'ONDC:RET14': { category: 'Electronics', fulfillmentType: 'Delivery' },
+  'ONDC:RET13': { category: 'Beauty', fulfillmentType: 'Delivery' },
+  'ONDC:RET15': { category: 'Home Decor', fulfillmentType: 'Delivery' }
+};
 
 export default {
   async fetch(request, env, ctx) {
@@ -16,18 +28,13 @@ export default {
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     };
     
-    if (request.method === 'OPTIONS') {
-      return new Response(null, { headers: corsHeaders });
-    }
-    
-    console.log(`📥 ${request.method} ${path}`);
+    if (request.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
     
     try {
       if (path === '/' || path === '/api/health') {
-        return jsonResponse({ status: 'active', version: '8.0.0' }, corsHeaders);
+        return jsonResponse({ status: 'active', version: '9.0.0' }, corsHeaders);
       }
       
-      // Outgoing Actions
       const outgoingActions = ['search', 'select', 'init', 'confirm', 'status', 'cancel', 'update', 'track', 'support', 'rating'];
       const action = path.replace('/', '');
       
@@ -35,47 +42,35 @@ export default {
         return await handleOutgoingRequest(action, request, env, ctx);
       }
       
-      // Get Results Endpoints
-      if (path.startsWith('/get-results/')) {
-        return await handleGetResults(path.split('/')[2], env, corsHeaders);
-      }
-      if (path.startsWith('/get-select/')) {
-        return await handleGetSelect(path.split('/')[2], env, corsHeaders);
-      }
-      if (path.startsWith('/get-init/')) {
-        return await handleGetInit(path.split('/')[2], env, corsHeaders);
-      }
-      if (path.startsWith('/get-confirm/')) {
-        return await handleGetConfirm(path.split('/')[2], env, corsHeaders);
+      // Dynamic Get Endpoints (/get-search/..., /get-select/...)
+      if (path.startsWith('/get-')) {
+        const parts = path.split('/'); // ['', 'get-search', 'txnId']
+        const actionType = parts[1].replace('get-', ''); // 'search', 'select', 'init'
+        const txnId = parts[2];
+        return await handleGetData(actionType, txnId, env, corsHeaders);
       }
       
-      // Incoming Webhooks
       if (path.startsWith('/on_')) {
         return await handleIncomingWebhook(path, request, env, ctx);
       }
       
-      return jsonResponse({ error: 'Not found', path: path }, corsHeaders, 404);
-      
+      return jsonResponse({ error: 'Not found' }, corsHeaders, 404);
     } catch (error) {
-      console.error('❌ Error:', error.message);
-      return jsonResponse({ error: error.message, path: path }, corsHeaders, 500);
+      return jsonResponse({ error: error.message }, corsHeaders, 500);
     }
   }
 };
 
+// ═══════════════════════════════════════════════════════════
+// 🛠️ HELPERS & AUTHENTICATION
+// ═══════════════════════════════════════════════════════════
 function jsonResponse(data, headers, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status: status,
-    headers: { ...headers, 'Content-Type': 'application/json' }
-  });
+  return new Response(JSON.stringify(data), { status, headers: { ...headers, 'Content-Type': 'application/json' } });
 }
 
 function generateUUID() { return crypto.randomUUID(); }
 function getTimestamp() { return new Date().toISOString(); }
 
-// ═══════════════════════════════════════════════════════════
-// SIGNATURE GENERATOR (TweetNaCl)
-// ═══════════════════════════════════════════════════════════
 async function generateOndcSignature(body, env) {
   const created = Math.floor(Date.now() / 1000);
   const expires = created + 3600;
@@ -87,151 +82,123 @@ async function generateOndcSignature(body, env) {
   const signingString = `(created): ${created}\n(expires): ${expires}\ndigest: BLAKE-512=${digest}`;
 
   let rawKey = env.ONDC_SIGNING_PRIVATE_KEY || "";
-  rawKey = rawKey.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\s/g, '');
-  rawKey = rawKey.replace(/-/g, '+').replace(/_/g, '/');
+  rawKey = rawKey.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\s/g, '').replace(/-/g, '+').replace(/_/g, '/');
   while (rawKey.length % 4) { rawKey += '='; }
   
   const privateKeyBytes = Uint8Array.from(atob(rawKey), c => c.charCodeAt(0));
-  let secretKey = privateKeyBytes;
-  if (privateKeyBytes.length === 32) {
-      secretKey = nacl.sign.keyPair.fromSeed(privateKeyBytes).secretKey;
-  } else if (privateKeyBytes.length !== 64) {
-      throw new Error(`Invalid private key length.`);
-  }
+  let secretKey = privateKeyBytes.length === 32 ? nacl.sign.keyPair.fromSeed(privateKeyBytes).secretKey : privateKeyBytes;
 
-  const messageBytes = encoder.encode(signingString);
-  const signatureBytes = nacl.sign.detached(messageBytes, secretKey);
+  const signatureBytes = nacl.sign.detached(encoder.encode(signingString), secretKey);
   const signature = btoa(String.fromCharCode(...signatureBytes));
   
   return `Signature keyId="${env.ONDC_BAP_ID}|${env.ONDC_UK_ID}|ed25519",algorithm="ed25519",created="${created}",expires="${expires}",headers="(created) (expires) digest",signature="${signature}"`;
 }
 
 // ═══════════════════════════════════════════════════════════
-// PAYLOAD BUILDER (SEARCH, SELECT, INIT, CONFIRM)
+// 🧠 UNIVERSAL PAYLOAD BUILDER
 // ═══════════════════════════════════════════════════════════
 function buildPayload(action, domain, body, env) {
-  let cityCode = "std:011"; 
-  if (body.pincode === "123001") cityCode = "std:01282";
+  const cityCode = body.pincode === "123001" ? "std:01282" : "std:011";
 
   const context = {
-    domain: domain,
-    country: "IND",           
-    city: cityCode,           
-    action: action,
-    core_version: '1.2.5',    
-    bap_id: env.ONDC_BAP_ID,
-    bap_uri: env.ONDC_BAP_URI,
+    domain, country: "IND", city: cityCode, action, core_version: '1.2.5',
+    bap_id: env.ONDC_BAP_ID, bap_uri: env.ONDC_BAP_URI,
     transaction_id: body.transactionId || generateUUID(),
-    message_id: generateUUID(),
-    timestamp: getTimestamp(),
-    ttl: 'PT30S'
+    message_id: generateUUID(), timestamp: getTimestamp(), ttl: 'PT30S'
   };
 
-  if (domain.startsWith('ONDC:RET')) {
-    
-    // 1. SEARCH
-    if (action === 'search') {
-      return {
-        context,
-        message: {
-          intent: {
-            item: { descriptor: { name: body.category || 'Food' } },
-            fulfillment: { type: 'Delivery', end: { location: { gps: "28.0444,76.1084", address: { area_code: body.pincode || "123001" } } } },
-            payment: { "@ondc/org/buyer_app_finder_fee_type": "percent", "@ondc/org/buyer_app_finder_fee_amount": "3.0" }
-          }
-        }
-      };
-    }
+  const config = DOMAIN_CONFIG[domain] || DOMAIN_CONFIG['ONDC:RET11'];
 
-    // 2. SELECT
-    if (action === 'select') {
-      return {
-        context,
-        message: {
-          order: {
-            provider: { id: body.providerId || 'provider_1' },
-            items: [{ id: body.itemId || 'item_1', quantity: { count: 1 } }],
-            fulfillments: [{ type: 'Delivery', end: { location: { gps: "28.0444,76.1084", address: { area_code: body.pincode || "123001" } } } }]
-          }
+  // --- SEARCH ---
+  if (action === 'search') {
+    return {
+      context,
+      message: {
+        intent: {
+          item: { descriptor: { name: body.category || config.category } },
+          fulfillment: { type: config.fulfillmentType, end: { location: { gps: body.gps || "28.0444,76.1084", address: { area_code: body.pincode || "110001" } } } },
+          payment: { "@ondc/org/buyer_app_finder_fee_type": "percent", "@ondc/org/buyer_app_finder_fee_amount": "3.0" }
         }
-      };
-    }
-
-    // 3. INIT
-    if (action === 'init') {
-      return {
-        context,
-        message: {
-          order: {
-            provider: { id: body.providerId, locations: [{ id: "L1" }] },
-            items: body.items || [], 
-            billing: {
-              name: body.name || "Customer",
-              address: { name: body.name || "Customer", building: "Ghar", locality: body.address || "Locality", city: cityCode, state: "Delhi", country: "IND", area_code: body.pincode },
-              tax_number: "GST123",
-              phone: body.phone || "9876543210",
-              email: "test@test.com",
-              created_at: getTimestamp(),
-              updated_at: getTimestamp()
-            },
-            fulfillment: {
-              type: 'Delivery',
-              end: { location: { gps: "28.0444,76.1084", address: { area_code: body.pincode } } }
-            },
-            quote: {
-              price: { currency: "INR", value: body.totalAmount || "100" },
-              breakup: [{ "@ondc/org/item_id": (body.items && body.items[0]) ? body.items[0].id : "item_1", "@ondc/org/item_quantity": { count: 1 }, "@ondc/org/title_type": "item", price: { currency: "INR", value: body.totalAmount || "100" } } ]
-            },
-            payment: { type: "ON-ORDER", status: "NOT-PAID", collected_by: "BAP" }
-          }
-        }
-      };
-    }
-
-    // 4. CONFIRM
-    if (action === 'confirm') {
-      return {
-        context,
-        message: {
-          order: {
-            id: body.orderId || generateUUID(),
-            state: "Created",
-            provider: { id: body.providerId, locations: [{ id: "L1" }] },
-            items: body.items || [],
-            billing: body.billing || {}, 
-            fulfillment: body.fulfillment || {},
-            quote: body.quote || {},
-            payment: { type: "ON-ORDER", status: "PAID", collected_by: "BAP", transaction_id: "TXN-" + generateUUID() }
-          }
-        }
-      };
-    }
+      }
+    };
   }
-  
-  return { context, message: { intent: body.intent || {}, order: body.order || {} } };
+
+  // --- SELECT ---
+  if (action === 'select') {
+    return {
+      context,
+      message: {
+        order: {
+          provider: { id: body.providerId },
+          items: body.items || [{ id: 'item_1', quantity: { count: 1 } }],
+          fulfillments: [{ type: config.fulfillmentType, end: { location: { gps: body.gps || "28.0444,76.1084", address: { area_code: body.pincode } } } }]
+        }
+      }
+    };
+  }
+
+  // --- INIT ---
+  if (action === 'init') {
+    return {
+      context,
+      message: {
+        order: {
+          provider: { id: body.providerId, locations: [{ id: "L1" }] },
+          items: body.items, 
+          billing: {
+            name: body.name || "Customer",
+            address: { name: body.name, building: "Ghar", locality: body.address || "Locality", city: cityCode, state: "Delhi", country: "IND", area_code: body.pincode },
+            tax_number: "GST123", phone: body.phone || "9876543210", email: body.email || "test@test.com",
+            created_at: getTimestamp(), updated_at: getTimestamp()
+          },
+          fulfillment: { type: config.fulfillmentType, end: { location: { gps: body.gps || "28.0444,76.1084", address: { area_code: body.pincode } } } },
+          quote: {
+            price: { currency: "INR", value: body.totalAmount || "100" },
+            breakup: [{ "@ondc/org/item_id": body.items[0].id, "@ondc/org/item_quantity": { count: 1 }, "@ondc/org/title_type": "item", price: { currency: "INR", value: body.totalAmount || "100" } }]
+          },
+          payment: { type: "ON-ORDER", status: "NOT-PAID", collected_by: "BAP" }
+        }
+      }
+    };
+  }
+
+  // --- CONFIRM ---
+  if (action === 'confirm') {
+    return {
+      context,
+      message: {
+        order: {
+          id: body.orderId || generateUUID(),
+          state: "Created",
+          provider: { id: body.providerId, locations: [{ id: "L1" }] },
+          items: body.items,
+          billing: body.billing, 
+          fulfillment: body.fulfillment,
+          quote: body.quote,
+          payment: { type: "ON-ORDER", status: "PAID", collected_by: "BAP", transaction_id: "TXN-" + generateUUID() }
+        }
+      }
+    };
+  }
+
+  // Default for other actions like status, cancel
+  return { context, message: body.message || {} };
 }
 
 // ═══════════════════════════════════════════════════════════
-// OUTGOING HANDLER (With Cache for Search)
+// 📤 OUTGOING HANDLER (With Smart Cache)
 // ═══════════════════════════════════════════════════════════
 async function handleOutgoingRequest(action, request, env, ctx) {
   const body = await request.json().catch(() => ({}));
   const domain = body.domain || env.ONDC_DOMAIN || 'ONDC:RET11'; 
   
-  // Cache logic sirf Search par lagega
+  // Caching for search (Only for high traffic)
   let cacheKey = null;
   if (action === 'search') {
-    cacheKey = `cache_search_${domain}_${body.pincode || '110001'}_${body.category || 'Food'}`;
+    cacheKey = `cache_${domain}_${body.pincode || '110001'}_${body.category || 'default'}`;
     if (env.ONDC_DATA) {
       const cached = await env.ONDC_DATA.get(cacheKey);
-      if (cached) {
-        console.log(`⚡ Serving from CACHE: ${cacheKey}`);
-        return jsonResponse({ 
-          success: true, cached: true, action: action,
-          transaction_id: generateUUID(),
-          cachedData: JSON.parse(cached) 
-        }, { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' });
-      }
+      if (cached) return jsonResponse({ success: true, cached: true, cachedData: JSON.parse(cached) }, { 'Access-Control-Allow-Origin': '*' });
     }
   }
 
@@ -248,81 +215,48 @@ async function handleOutgoingRequest(action, request, env, ctx) {
     
     const data = await response.json().catch(() => ({}));
     
-    // Save mapping for cache update when webhook arrives
-    if (ctx && ctx.waitUntil && action === 'search' && cacheKey) {
+    if (ctx && ctx.waitUntil && action === 'search' && cacheKey && env.ONDC_DATA) {
         ctx.waitUntil(env.ONDC_DATA.put(`txn_map_${payload.context.transaction_id}`, cacheKey, { expirationTtl: 600 }));
     }
     
-    return jsonResponse({ 
-      success: true, action: action, domain: domain,
-      transaction_id: payload.context.transaction_id,
-      workbenchResponse: data 
-    }, { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' });
-
+    return jsonResponse({ success: true, action, domain, transaction_id: payload.context.transaction_id, workbenchResponse: data }, { 'Access-Control-Allow-Origin': '*' });
   } catch (error) {
-    return jsonResponse({ error: "Fetch Error: " + error.message }, { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' }, 500);
+    return jsonResponse({ error: "Fetch Error: " + error.message }, { 'Access-Control-Allow-Origin': '*' }, 500);
   }
 }
 
 // ═══════════════════════════════════════════════════════════
-// INCOMING WEBHOOK HANDLER
+// 📥 INCOMING WEBHOOK (Saves to DB)
 // ═══════════════════════════════════════════════════════════
 async function handleIncomingWebhook(path, request, env, ctx) {
   const body = await request.json();
-  const action = path.replace('/', '');
+  const action = path.replace('/', ''); // e.g., 'on_search'
   const txnId = body.context?.transaction_id;
   
-  console.log(`📥 [WEBHOOK] ${action} received for TXN: ${txnId}`);
-
-  if (env.ONDC_DATA) {
+  if (env.ONDC_DATA && txnId) {
     try {
-      if (action === 'on_search' && txnId) {
-        await env.ONDC_DATA.put(`txn_${txnId}`, JSON.stringify(body), { expirationTtl: 900 }); 
+      // 1. Save as latest state
+      await env.ONDC_DATA.put(`data_${action}_${txnId}`, JSON.stringify(body), { expirationTtl: 900 }); 
+      
+      // 2. Update cache if it's on_search
+      if (action === 'on_search') {
         const cacheKey = await env.ONDC_DATA.get(`txn_map_${txnId}`);
-        if (cacheKey) {
-            await env.ONDC_DATA.put(cacheKey, JSON.stringify(body), { expirationTtl: 300 });
-        }
+        if (cacheKey) await env.ONDC_DATA.put(cacheKey, JSON.stringify(body), { expirationTtl: 300 });
       }
-      if (action === 'on_select' && txnId) {
-        await env.ONDC_DATA.put(`select_${txnId}`, JSON.stringify(body), { expirationTtl: 900 }); 
-      }
-      if (action === 'on_init' && txnId) {
-        await env.ONDC_DATA.put(`init_${txnId}`, JSON.stringify(body), { expirationTtl: 900 }); 
-      }
-      if (action === 'on_confirm' && txnId) {
-        await env.ONDC_DATA.put(`confirm_${txnId}`, JSON.stringify(body), { expirationTtl: 900 }); 
-      }
-    } catch (err) { console.error(`❌ KV Error:`, err.message); }
+    } catch (err) { console.error(`KV Error:`, err.message); }
   }
-
   return jsonResponse({ message: { ack: { status: 'ACK' } } }, { 'Content-Type': 'application/json' });
 }
 
 // ═══════════════════════════════════════════════════════════
-// GET RESULTS HANDLERS
+// 📥 DYNAMIC GET DATA HANDLER
 // ═══════════════════════════════════════════════════════════
-async function handleGetResults(txnId, env, corsHeaders) {
-  if (!txnId || !env.ONDC_DATA) return jsonResponse({ success: false }, corsHeaders);
-  const data = await env.ONDC_DATA.get(`txn_${txnId}`);
-  return data ? jsonResponse({ success: true, status: 'ready', results: JSON.parse(data) }, corsHeaders) : jsonResponse({ success: false, status: 'pending' }, corsHeaders);
+async function handleGetData(actionType, txnId, env, corsHeaders) {
+  if (!txnId || !env.ONDC_DATA) return jsonResponse({ success: false, message: 'Invalid request' }, corsHeaders);
+  try {
+    // actionType = 'search', 'select', 'init' etc.
+    const data = await env.ONDC_DATA.get(`data_on_${actionType}_${txnId}`);
+    if (data) return jsonResponse({ success: true, status: 'ready', results: JSON.parse(data) }, corsHeaders);
+    return jsonResponse({ success: false, status: 'pending' }, corsHeaders);
+  } catch (err) { return jsonResponse({ success: false, message: err.message }, corsHeaders, 500); }
 }
-
-async function handleGetSelect(txnId, env, corsHeaders) {
-  if (!txnId || !env.ONDC_DATA) return jsonResponse({ success: false }, corsHeaders);
-  const data = await env.ONDC_DATA.get(`select_${txnId}`);
-  return data ? jsonResponse({ success: true, status: 'ready', results: JSON.parse(data) }, corsHeaders) : jsonResponse({ success: false, status: 'pending' }, corsHeaders);
-}
-
-async function handleGetInit(txnId, env, corsHeaders) {
-  if (!txnId || !env.ONDC_DATA) return jsonResponse({ success: false }, corsHeaders);
-  const data = await env.ONDC_DATA.get(`init_${txnId}`);
-  return data ? jsonResponse({ success: true, status: 'ready', results: JSON.parse(data) }, corsHeaders) : jsonResponse({ success: false, status: 'pending' }, corsHeaders);
-}
-
-async function handleGetConfirm(txnId, env, corsHeaders) {
-  if (!txnId || !env.ONDC_DATA) return jsonResponse({ success: false }, corsHeaders);
-  const data = await env.ONDC_DATA.get(`confirm_${txnId}`);
-  return data ? jsonResponse({ success: true, status: 'ready', results: JSON.parse(data) }, corsHeaders) : jsonResponse({ success: false, status: 'pending' }, corsHeaders);
-}
-
-console.log('✅ NnlGharPro ONDC API (Full Flow) v8.0 loaded');
