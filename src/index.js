@@ -1,12 +1,12 @@
 // ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC API — TRULY UNIVERSAL v9.5 (BAP_URI Fixed)
+// 🚀 NNLGHARPRO ONDC API — TRULY UNIVERSAL v9.7 (Final)
 // ═══════════════════════════════════════════════════════════
 
 import { blake2b } from 'blakejs'; 
 import nacl from 'tweetnacl';
 
 // ═══════════════════════════════════════════════════════════
-// 🎯 UNIVERSAL DOMAIN CONFIGURATION
+// 🎯 UNIVERSAL DOMAIN CONFIGURATION (Wapas add kar diya)
 // ═══════════════════════════════════════════════════════════
 const DOMAIN_CONFIG = {
   'ONDC:RET11': { category: 'Food', fulfillmentType: 'Delivery' },
@@ -32,22 +32,21 @@ export default {
     
     try {
       if (path === '/' || path === '/api/health') {
-        return jsonResponse({ status: 'active', version: '9.5.0' }, corsHeaders);
+        return jsonResponse({ status: 'active', version: '9.7.0' }, corsHeaders);
       }
       
       const action = path.replace('/', '');
       
-      // 🚨 Workbench/ONDC se incoming request handle karna (BPP Mode)
-      const incomingActions = ['search', 'select', 'init', 'confirm', 'update', 'status', 'cancel', 'track', 'support', 'rating'];
+      // 🚨 1. WORKBENCH INCOMING (BPP Mode) - Isme koi BAP key nahi lagti
+      const incomingActions = ['search', 'select', 'init', 'confirm', 'update', 'status', 'cancel', 'track'];
       if (incomingActions.includes(action) && request.method === 'POST') {
           try {
               const body = await request.clone().json();
+              // Workbench humein BPP banakar call karta hai, toh ACK bhejo
               if (body.context && body.context.bpp_id) {
-                   // Request Workbench se aayi hai (BPP ban rahe hain)
                    if (env.ONDC_DATA && body.context.transaction_id) {
                        await env.ONDC_DATA.put(`bpp_req_${action}_${body.context.transaction_id}`, JSON.stringify(body), { expirationTtl: 900 });
                    }
-                   // ACK bhejna zaroori hai
                    return jsonResponse({ message: { ack: { status: "ACK" } } }, corsHeaders);
               }
           } catch (e) {
@@ -55,18 +54,15 @@ export default {
           }
       }
       
-      // Outgoing requests (Frontend se)
-      const outgoingActions = ['search', 'select', 'init', 'confirm', 'status', 'cancel', 'update', 'track', 'support', 'rating'];
+      // 🚨 2. FRONTEND OUTGOING (BAP Mode)
+      const outgoingActions = ['search', 'select', 'init', 'confirm', 'status', 'update'];
       if (outgoingActions.includes(action)) {
         return await handleOutgoingRequest(action, request, env, ctx);
       }
       
-      // Dynamic Get Endpoints (/get-search/..., /get-select/...)
       if (path.startsWith('/get-')) {
         const parts = path.split('/');
-        const actionType = parts[1].replace('get-', '');
-        const txnId = parts[2];
-        return await handleGetData(actionType, txnId, env, corsHeaders);
+        return await handleGetData(parts[1].replace('get-', ''), parts[2], env, corsHeaders);
       }
       
       if (path.startsWith('/on_')) {
@@ -80,13 +76,9 @@ export default {
   }
 };
 
-// ═══════════════════════════════════════════════════════════
-// 🛠️ HELPERS & AUTHENTICATION
-// ═══════════════════════════════════════════════════════════
 function jsonResponse(data, headers, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { ...headers, 'Content-Type': 'application/json' } });
 }
-
 function generateUUID() { return crypto.randomUUID(); }
 function getTimestamp() { return new Date().toISOString(); }
 
@@ -94,7 +86,6 @@ async function generateOndcSignature(body, env) {
   const created = Math.floor(Date.now() / 1000);
   const expires = created + 3600;
   const encoder = new TextEncoder();
-  
   const data = encoder.encode(JSON.stringify(body));
   const hashBuffer = blake2b(data, null, 64);
   const digest = btoa(String.fromCharCode(...hashBuffer));
@@ -106,156 +97,41 @@ async function generateOndcSignature(body, env) {
   
   const privateKeyBytes = Uint8Array.from(atob(rawKey), c => c.charCodeAt(0));
   let secretKey = privateKeyBytes.length === 32 ? nacl.sign.keyPair.fromSeed(privateKeyBytes).secretKey : privateKeyBytes;
-
   const signatureBytes = nacl.sign.detached(encoder.encode(signingString), secretKey);
   const signature = btoa(String.fromCharCode(...signatureBytes));
   
   return `Signature keyId="${env.ONDC_BAP_ID}|${env.ONDC_UK_ID}|ed25519",algorithm="ed25519",created="${created}",expires="${expires}",headers="(created) (expires) digest",signature="${signature}"`;
 }
 
-// ═══════════════════════════════════════════════════════════
-// 🧠 UNIVERSAL PAYLOAD BUILDER
-// ═══════════════════════════════════════════════════════════
 function buildPayload(action, domain, body, env) {
   const cityCode = body.pincode === "123001" ? "std:01282" : "std:011";
-
-  // 👇 Yahan BAP_ID aur BAP_URI ka fallback add kar diya hai
   const context = {
     domain, country: "IND", city: cityCode, action, core_version: '1.2.5',
+    bap_id: env.ONDC_BAP_ID || "gmSwiE_2Ke4DeI_ifn3bzUshWPyPif", 
     bap_uri: env.ONDC_BAP_URI || "https://workbench.ondc.tech",
     transaction_id: body.transactionId || generateUUID(),
     message_id: generateUUID(), timestamp: getTimestamp(), ttl: 'PT30S'
   };
-
   const config = DOMAIN_CONFIG[domain] || DOMAIN_CONFIG['ONDC:RET11'];
 
-  // --- SEARCH ---
   if (action === 'search') {
-    return {
-      context,
-      message: {
-        intent: {
-          item: { descriptor: { name: body.category || config.category } },
-          fulfillment: { type: config.fulfillmentType, end: { location: { gps: body.gps || "28.0444,76.1084", address: { area_code: body.pincode || "110001" } } } },
-          payment: { "@ondc/org/buyer_app_finder_fee_type": "percent", "@ondc/org/buyer_app_finder_fee_amount": "3.0" }
-        }
-      }
-    };
+    return { context, message: { intent: { item: { descriptor: { name: body.category || config.category } }, fulfillment: { type: config.fulfillmentType, end: { location: { gps: body.gps || "28.0444,76.1084", address: { area_code: body.pincode || "110001" } } } }, payment: { "@ondc/org/buyer_app_finder_fee_type": "percent", "@ondc/org/buyer_app_finder_fee_amount": "3.0" } } } };
   }
-
-  // --- SELECT ---
   if (action === 'select') {
-    return {
-      context,
-      message: {
-        order: {
-          provider: { id: body.providerId },
-          items: body.items || [{ id: 'item_1', quantity: { count: 1 } }],
-          fulfillments: [{ type: config.fulfillmentType, end: { location: { gps: body.gps || "28.0444,76.1084", address: { area_code: body.pincode } } } }]
-        }
-      }
-    };
+    return { context, message: { order: { provider: { id: body.providerId }, items: body.items || [{ id: 'item_1', quantity: { count: 1 } }], fulfillments: [{ type: config.fulfillmentType, end: { location: { gps: body.gps || "28.0444,76.1084", address: { area_code: body.pincode } } } }] } } };
   }
-
-  // --- INIT ---
   if (action === 'init') {
-    return {
-      context,
-      message: {
-        order: {
-          provider: { id: body.providerId, locations: [{ id: "L1" }] },
-          items: body.items, 
-          billing: {
-            name: body.name || "Customer",
-            address: { name: body.name, building: "Ghar", locality: body.address || "Locality", city: cityCode, state: "Delhi", country: "IND", area_code: body.pincode },
-            tax_number: "GST123", phone: body.phone || "9876543210", email: body.email || "test@test.com",
-            created_at: getTimestamp(), updated_at: getTimestamp()
-          },
-          fulfillment: { type: config.fulfillmentType, end: { location: { gps: body.gps || "28.0444,76.1084", address: { area_code: body.pincode } } } },
-          quote: {
-            price: { currency: "INR", value: body.totalAmount || "100" },
-            breakup: [{ "@ondc/org/item_id": body.items[0].id, "@ondc/org/item_quantity": { count: 1 }, "@ondc/org/title_type": "item", price: { currency: "INR", value: body.totalAmount || "100" } }]
-          },
-          payment: { type: "ON-ORDER", status: "NOT-PAID", collected_by: "BAP" }
-        }
-      }
-    };
+    return { context, message: { order: { provider: { id: body.providerId, locations: [{ id: "L1" }] }, items: body.items, billing: { name: body.name || "Customer", address: { name: body.name, building: "Ghar", locality: body.address || "Locality", city: cityCode, state: "Delhi", country: "IND", area_code: body.pincode }, tax_number: "GST123", phone: body.phone || "9876543210", email: body.email || "test@test.com", created_at: getTimestamp(), updated_at: getTimestamp() }, fulfillment: { type: config.fulfillmentType, end: { location: { gps: body.gps || "28.0444,76.1084", address: { area_code: body.pincode } } } }, quote: { price: { currency: "INR", value: body.totalAmount || "100" }, breakup: [{ "@ondc/org/item_id": body.items[0].id, "@ondc/org/item_quantity": { count: 1 }, "@ondc/org/title_type": "item", price: { currency: "INR", value: body.totalAmount || "100" } }] }, payment: { type: "ON-ORDER", status: "NOT-PAID", collected_by: "BAP" } } } };
   }
-
-  // --- CONFIRM ---
   if (action === 'confirm') {
-    return {
-      context,
-      message: {
-        order: {
-          id: body.orderId || generateUUID(),
-          state: "Created",
-          provider: { id: body.providerId, locations: [{ id: "L1" }] },
-          items: body.items,
-          billing: body.billing, 
-          fulfillment: body.fulfillment,
-          quote: body.quote,
-          payment: { type: "ON-ORDER", status: "PAID", collected_by: "BAP", transaction_id: "TXN-" + generateUUID() }
-        }
-      }
-    };
+    return { context, message: { order: { id: body.orderId || generateUUID(), state: "Created", provider: { id: body.providerId, locations: [{ id: "L1" }] }, items: body.items, billing: body.billing, fulfillment: body.fulfillment, quote: body.quote, payment: { type: "ON-ORDER", status: "PAID", collected_by: "BAP", transaction_id: "TXN-" + generateUUID() } } } };
   }
-
-  // --- UPDATE (BUYER INSTRUCTIONS & ADDRESS) ---
   if (action === 'update') {
-    return {
-      context,
-      message: {
-        update_target: body.update_target || "fulfillment",
-        order: {
-          id: body.orderId,
-          state: "Created",
-          provider: { id: body.providerId, locations: [{ id: "L1" }] },
-          items: body.items || [],
-          billing: body.billing || {},
-          fulfillments: body.fulfillments || [{
-            id: "F1",
-            type: config.fulfillmentType,
-            end: {
-              location: {
-                gps: body.gps || "28.0444,76.1084",
-                address: {
-                  name: body.name || "Customer",
-                  building: body.address || "Locality",
-                  locality: body.locality || "Locality",
-                  city: cityCode,
-                  state: "Delhi",
-                  country: "IND",
-                  area_code: body.pincode
-                }
-              },
-              contact: { phone: body.phone || "9876543210", email: body.email || "test@test.com" }
-            },
-            tags: [
-              {
-                code: "bpp_terms",
-                list: [
-                  { code: "instructions", value: body.instructions || "Ghar par 2 baje aayein, gate 3" }
-                ]
-              }
-            ]
-          }],
-          quote: body.quote || {
-            price: { currency: "INR", value: body.totalAmount || "100" },
-            breakup: [{ "@ondc/org/item_id": body.items?.[0]?.id || "item_1", "@ondc/org/item_quantity": { count: 1 }, "@ondc/org/title_type": "item", price: { currency: "INR", value: body.totalAmount || "100" } }]
-          },
-          payment: { type: "ON-ORDER", status: "PAID", collected_by: "BAP" }
-        }
-      }
-    };
+    return { context, message: { update_target: body.update_target || "fulfillment", order: { id: body.orderId, state: "Created", provider: { id: body.providerId, locations: [{ id: "L1" }] }, items: body.items || [], billing: body.billing || {}, fulfillments: body.fulfillments || [{ id: "F1", type: config.fulfillmentType, end: { location: { gps: body.gps || "28.0444,76.1084", address: { name: body.name || "Customer", building: body.address || "Locality", locality: body.locality || "Locality", city: cityCode, state: "Delhi", country: "IND", area_code: body.pincode } }, contact: { phone: body.phone || "9876543210", email: body.email || "test@test.com" } }, tags: [{ code: "bpp_terms", list: [{ code: "instructions", value: body.instructions || "Ghar par 2 baje aayein, gate 3" }] }] }], quote: body.quote || { price: { currency: "INR", value: body.totalAmount || "100" }, breakup: [{ "@ondc/org/item_id": body.items?.[0]?.id || "item_1", "@ondc/org/item_quantity": { count: 1 }, "@ondc/org/title_type": "item", price: { currency: "INR", value: body.totalAmount || "100" } }] }, payment: { type: "ON-ORDER", status: "PAID", collected_by: "BAP" } } } };
   }
-
   return { context, message: body.message || {} };
 }
 
-// ═══════════════════════════════════════════════════════════
-// 📤 OUTGOING HANDLER (With Smart Cache & NACK Check)
-// ═══════════════════════════════════════════════════════════
 async function handleOutgoingRequest(action, request, env, ctx) {
   const body = await request.json().catch(() => ({}));
   const domain = body.domain || env.ONDC_DOMAIN || 'ONDC:RET11'; 
@@ -283,31 +159,22 @@ async function handleOutgoingRequest(action, request, env, ctx) {
     const data = await response.json().catch(() => ({}));
     
     if (data?.message?.ack?.status === 'NACK' || data?.error) {
-        return jsonResponse({ 
-            success: false, 
-            error: data?.error?.message || data?.message?.error?.message || "Request rejected by Gateway",
-            workbenchResponse: data 
-        }, { 'Access-Control-Allow-Origin': '*' });
+        return jsonResponse({ success: false, error: data?.error?.message || "Request rejected by Gateway", workbenchResponse: data }, { 'Access-Control-Allow-Origin': '*' });
     }
 
     if (ctx && ctx.waitUntil && action === 'search' && cacheKey && env.ONDC_DATA) {
         ctx.waitUntil(env.ONDC_DATA.put(`txn_map_${payload.context.transaction_id}`, cacheKey, { expirationTtl: 600 }));
     }
-    
     return jsonResponse({ success: true, action, domain, transaction_id: payload.context.transaction_id, workbenchResponse: data }, { 'Access-Control-Allow-Origin': '*' });
   } catch (error) {
     return jsonResponse({ error: "Fetch Error: " + error.message }, { 'Access-Control-Allow-Origin': '*' }, 500);
   }
 }
 
-// ═══════════════════════════════════════════════════════════
-// 📥 INCOMING WEBHOOK (Saves to DB)
-// ═══════════════════════════════════════════════════════════
 async function handleIncomingWebhook(path, request, env, ctx) {
   const body = await request.json();
   const action = path.replace('/', '');
   const txnId = body.context?.transaction_id;
-  
   if (env.ONDC_DATA && txnId) {
     try {
       await env.ONDC_DATA.put(`data_${action}_${txnId}`, JSON.stringify(body), { expirationTtl: 900 }); 
@@ -320,9 +187,6 @@ async function handleIncomingWebhook(path, request, env, ctx) {
   return jsonResponse({ message: { ack: { status: 'ACK' } } }, { 'Content-Type': 'application/json' });
 }
 
-// ═══════════════════════════════════════════════════════════
-// 📥 DYNAMIC GET DATA HANDLER
-// ═══════════════════════════════════════════════════════════
 async function handleGetData(actionType, txnId, env, corsHeaders) {
   if (!txnId || !env.ONDC_DATA) return jsonResponse({ success: false, message: 'Invalid request' }, corsHeaders);
   try {
