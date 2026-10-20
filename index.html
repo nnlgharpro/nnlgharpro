@@ -1121,7 +1121,7 @@ window.searchServices = async function() {
         });
 
         const data = await response.json();
-        
+        window.transactionId = data.transactionId;
         if (data.workbenchResponse && data.workbenchResponse.error) {
             const actualError = data.workbenchResponse.error.message || JSON.stringify(data.workbenchResponse.error);
             document.getElementById('providerList').innerHTML = `
