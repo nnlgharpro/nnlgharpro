@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC API — TRULY UNIVERSAL v9.2 (Cache Bypass Fix)
+// 🚀 NNLGHARPRO ONDC API — TRULY UNIVERSAL v9.3 (Update Flow Fixed)
 // ═══════════════════════════════════════════════════════════
 
 import { blake2b } from 'blakejs'; 
@@ -32,7 +32,7 @@ export default {
     
     try {
       if (path === '/' || path === '/api/health') {
-        return jsonResponse({ status: 'active', version: '9.2.0' }, corsHeaders);
+        return jsonResponse({ status: 'active', version: '9.3.0' }, corsHeaders);
       }
       
       const outgoingActions = ['search', 'select', 'init', 'confirm', 'status', 'cancel', 'update', 'track', 'support', 'rating'];
@@ -181,7 +181,63 @@ function buildPayload(action, domain, body, env) {
     };
   }
 
-  // Default for other actions like status, cancel
+  // ═══════════════════════════════════════════════════════
+  // ✅ FIXED: UPDATE (BUYER INSTRUCTIONS & ADDRESS)
+  // ═══════════════════════════════════════════════════════
+  if (action === 'update') {
+    return {
+      context,
+      message: {
+        update_target: body.update_target || "fulfillment", // Workbench expects this
+        order: {
+          id: body.orderId,
+          state: "Created",
+          provider: { id: body.providerId, locations: [{ id: "L1" }] },
+          items: body.items || [],
+          billing: body.billing || {},
+          
+          // Fulfillment update (address / instructions)
+          fulfillments: body.fulfillments || [{
+            id: "F1",
+            type: config.fulfillmentType,
+            end: {
+              location: {
+                gps: body.gps || "28.0444,76.1084",
+                address: {
+                  name: body.name || "Customer",
+                  building: body.address || "Locality",
+                  locality: body.locality || "Locality",
+                  city: cityCode,
+                  state: "Delhi",
+                  country: "IND",
+                  area_code: body.pincode
+                }
+              },
+              contact: { phone: body.phone || "9876543210", email: body.email || "test@test.com" }
+            },
+            // Customer instructions are passed here
+            tags: [
+              {
+                code: "bpp_terms",
+                list: [
+                  { code: "instructions", value: body.instructions || "Ghar par 2 baje aayein, gate 3" }
+                ]
+              }
+            ]
+          }],
+          
+          quote: body.quote || {
+            price: { currency: "INR", value: body.totalAmount || "100" },
+            breakup: [{ "@ondc/org/item_id": body.items?.[0]?.id || "item_1", "@ondc/org/item_quantity": { count: 1 }, "@ondc/org/title_type": "item", price: { currency: "INR", value: body.totalAmount || "100" } }]
+          },
+          
+          payment: { type: "ON-ORDER", status: "PAID", collected_by: "BAP" }
+        }
+      }
+    };
+  }
+
+  // Default for other actions like status, cancel, track, support, rating
   return { context, message: body.message || {} };
 }
 
