@@ -1261,6 +1261,55 @@ window.selectProvider = async function(indexOrId) {
                 items: [{ id: "item_1", quantity: { count: 1 } }] 
             })
         });
+// // ONDC INIT PHASE (बिलिंग और एड्रेस डिटेल्स भेजना)
+window.onidcInitOrder = async function(providerId, itemsList, customerDetails) {
+    try {
+        const response = await fetch("https://workers.dev", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                domain: "ONDC:RET11",
+                providerId: providerId,
+                items: itemsList,
+                name: customerDetails.name || "Customer",
+                phone: customerDetails.phone || "9876543210",
+                pincode: document.getElementById('pincode').value.trim() || "110001",
+                address: customerDetails.address || "Main Street"
+            })
+        });
+        const initData = await response.json();
+        console.log("ONDC Init Response:", initData);
+        return initData;
+    } catch (error) {
+        console.error("Error in ONDC Init Call:", error);
+    }
+};
+
+// // ONDC CONFIRM PHASE (ऑर्डर को पक्का/कन्फर्म करना)
+window.ondcConfirmOrder = async function(orderId, providerId, itemsList, billingDetails, fulfillmentDetails) {
+    try {
+       const response = await fetch("https://workers.dev", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                domain: "ONDC:RET11",
+                orderId: orderId || crypto.randomUUID(),
+                providerId: providerId,
+                items: itemsList,
+                billing: billingDetails,
+                fulfillment: fulfillmentDetails
+            })
+        });
+        const confirmData = await response.json();
+        console.log("ONDC Confirm Response:", confirmData);
+        if(typeof showToast === "function") showToast("Order Placed Successfully via ONDC!", false);
+        return confirmData;
+    } catch (error) {
+        console.error("Error in ONDC Confirm Call:", error);
+        if(typeof showToast === "function") showToast("Failed to confirm ONDC order", true);
+    }
+};
+
 
         const data = await response.json();
         
