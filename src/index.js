@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC API — TRULY UNIVERSAL v9.3 (Update Flow Fixed)
+// 🚀 NNLGHARPRO ONDC API — TRULY UNIVERSAL v9.4 (Workbench Ready)
 // ═══════════════════════════════════════════════════════════
 
 import { blake2b } from 'blakejs'; 
@@ -32,20 +32,39 @@ export default {
     
     try {
       if (path === '/' || path === '/api/health') {
-        return jsonResponse({ status: 'active', version: '9.3.0' }, corsHeaders);
+        return jsonResponse({ status: 'active', version: '9.4.0' }, corsHeaders);
       }
       
-      const outgoingActions = ['search', 'select', 'init', 'confirm', 'status', 'cancel', 'update', 'track', 'support', 'rating'];
       const action = path.replace('/', '');
       
+      // 🚨 NAYA ADD: Workbench/ONDC se incoming request handle karna (BPP Mode)
+      const incomingActions = ['search', 'select', 'init', 'confirm', 'update', 'status', 'cancel', 'track', 'support', 'rating'];
+      if (incomingActions.includes(action) && request.method === 'POST') {
+          try {
+              const body = await request.clone().json();
+              if (body.context && body.context.bpp_id) {
+                   // Request Workbench se aayi hai (BPP ban rahe hain)
+                   if (env.ONDC_DATA && body.context.transaction_id) {
+                       await env.ONDC_DATA.put(`bpp_req_${action}_${body.context.transaction_id}`, JSON.stringify(body), { expirationTtl: 900 });
+                   }
+                   // ACK bhejna zaroori hai
+                   return jsonResponse({ message: { ack: { status: "ACK" } } }, corsHeaders);
+              }
+          } catch (e) {
+              return jsonResponse({ message: { ack: { status: "NACK" } } }, corsHeaders, 400);
+          }
+      }
+      
+      // Outgoing requests (Frontend se)
+      const outgoingActions = ['search', 'select', 'init', 'confirm', 'status', 'cancel', 'update', 'track', 'support', 'rating'];
       if (outgoingActions.includes(action)) {
         return await handleOutgoingRequest(action, request, env, ctx);
       }
       
       // Dynamic Get Endpoints (/get-search/..., /get-select/...)
       if (path.startsWith('/get-')) {
-        const parts = path.split('/'); // ['', 'get-search', 'txnId']
-        const actionType = parts[1].replace('get-', ''); // 'search', 'select', 'init'
+        const parts = path.split('/');
+        const actionType = parts[1].replace('get-', '');
         const txnId = parts[2];
         return await handleGetData(actionType, txnId, env, corsHeaders);
       }
@@ -188,15 +207,13 @@ function buildPayload(action, domain, body, env) {
     return {
       context,
       message: {
-        update_target: body.update_target || "fulfillment", // Workbench expects this
+        update_target: body.update_target || "fulfillment",
         order: {
           id: body.orderId,
           state: "Created",
           provider: { id: body.providerId, locations: [{ id: "L1" }] },
           items: body.items || [],
           billing: body.billing || {},
-          
-          // Fulfillment update (address / instructions)
           fulfillments: body.fulfillments || [{
             id: "F1",
             type: config.fulfillmentType,
@@ -215,7 +232,6 @@ function buildPayload(action, domain, body, env) {
               },
               contact: { phone: body.phone || "9876543210", email: body.email || "test@test.com" }
             },
-            // Customer instructions are passed here
             tags: [
               {
                 code: "bpp_terms",
@@ -225,12 +241,10 @@ function buildPayload(action, domain, body, env) {
               }
             ]
           }],
-          
           quote: body.quote || {
             price: { currency: "INR", value: body.totalAmount || "100" },
             breakup: [{ "@ondc/org/item_id": body.items?.[0]?.id || "item_1", "@ondc/org/item_quantity": { count: 1 }, "@ondc/org/title_type": "item", price: { currency: "INR", value: body.totalAmount || "100" } }]
           },
-          
           payment: { type: "ON-ORDER", status: "PAID", collected_by: "BAP" }
         }
       }
@@ -249,7 +263,6 @@ async function handleOutgoingRequest(action, request, env, ctx) {
   const domain = body.domain || env.ONDC_DOMAIN || 'ONDC:RET11'; 
   const gatewayUrl = env.ONDC_GATEWAY_URL || 'https://preprod.gateway.ondc.org';
   
-  // Caching for search (BYPASS CACHE IF WORKBENCH IS USED)
   let cacheKey = null;
   if (action === 'search' && !gatewayUrl.includes('workbench')) {
     cacheKey = `cache_${domain}_${body.pincode || '110001'}_${body.category || 'default'}`;
@@ -271,7 +284,6 @@ async function handleOutgoingRequest(action, request, env, ctx) {
     
     const data = await response.json().catch(() => ({}));
     
-    // 🚨 Check if Workbench/ONDC rejected the request (NACK)
     if (data?.message?.ack?.status === 'NACK' || data?.error) {
         return jsonResponse({ 
             success: false, 
@@ -295,15 +307,12 @@ async function handleOutgoingRequest(action, request, env, ctx) {
 // ═══════════════════════════════════════════════════════════
 async function handleIncomingWebhook(path, request, env, ctx) {
   const body = await request.json();
-  const action = path.replace('/', ''); // e.g., 'on_search'
+  const action = path.replace('/', '');
   const txnId = body.context?.transaction_id;
   
   if (env.ONDC_DATA && txnId) {
     try {
-      // 1. Save as latest state
       await env.ONDC_DATA.put(`data_${action}_${txnId}`, JSON.stringify(body), { expirationTtl: 900 }); 
-      
-      // 2. Update cache if it's on_search
       if (action === 'on_search') {
         const cacheKey = await env.ONDC_DATA.get(`txn_map_${txnId}`);
         if (cacheKey) await env.ONDC_DATA.put(cacheKey, JSON.stringify(body), { expirationTtl: 300 });
@@ -319,7 +328,6 @@ async function handleIncomingWebhook(path, request, env, ctx) {
 async function handleGetData(actionType, txnId, env, corsHeaders) {
   if (!txnId || !env.ONDC_DATA) return jsonResponse({ success: false, message: 'Invalid request' }, corsHeaders);
   try {
-    // actionType = 'search', 'select', 'init' etc.
     const data = await env.ONDC_DATA.get(`data_on_${actionType}_${txnId}`);
     if (data) return jsonResponse({ success: true, status: 'ready', results: JSON.parse(data) }, corsHeaders);
     return jsonResponse({ success: false, status: 'pending' }, corsHeaders);
