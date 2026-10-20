@@ -7,18 +7,18 @@ compatibility_flags = ["nodejs_compat"]
 ENVIRONMENT = "production"
 ONDC_DOMAIN = "ONDC:RET11" 
 
-# 👇 Workbench Gateway (BPP testing ke liye)
-ONDC_GATEWAY_URL = "https://preprod.gateway.ondc.org"
+# 👇 Workbench URL (Kyunki aap abhi Workbench par test kar rahe ho)
+ONDC_GATEWAY_URL = "https://workbench.ondc.tech/api-service/ONDC:RET11/1.2.5/seller"
 
-# 👇 BAP Keys (Error fix: bap_uri missing)
+# 👇 BAP Keys (Workbench ki keys)
 ONDC_BAP_ID = "gmSw1E_2Ke4DeL_Ifn3zbzuUshWPypiF" 
 ONDC_BAP_URI = "https://workbench.ondc.tech"
 
-# 👇 BPP Keys
+# 👇 BPP Keys (Aapki Seller App ki keys)
 ONDC_UK_ID = "05063c66-41f2-4f75-878a-22f28d07712a"
 ONDC_SIGNING_PUBLIC_KEY = "ONGFJUVn9K609lH0a+xA1RVeMG+PL5KtrpcCiJFhV08="
 
-# ⚠️ Secrets (Cloudflare Dashboard se set karenge - command: npx wrangler secret put ONDC_SIGNING_PRIVATE_KEY)
+# ⚠️ Secrets (Cloudflare Dashboard se set karenge)
 # ONDC_SIGNING_PRIVATE_KEY
 
 [[kv_namespaces]]
