@@ -1156,7 +1156,7 @@ window.searchServices = async function() {
         
         const interval = setInterval(async () => {
             attempts++;
-              const res = await fetch(`https://workers.dev{window.transactionId}`);
+             const res = await fetch(`https://nnlgharpro-ret11.nnlgharpro.workers.dev/get-results/${window.transactionId}`);
             const resultData = await res.json();
 
             if (resultData.success && resultData.status === 'ready') {
