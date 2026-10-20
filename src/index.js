@@ -173,8 +173,10 @@ async function handleOutgoingRequest(action, request, env, ctx) {
 
 async function handleIncomingWebhook(path, request, env, ctx) {
   const body = await request.json();
-  const action = path.replace('/', '');
+  const action = path.replace('/', ''); // e.g., 'on_search'
   const txnId = body.context?.transaction_id;
+  
+  // 1. Database mein save karo
   if (env.ONDC_DATA && txnId) {
     try {
       await env.ONDC_DATA.put(`data_${action}_${txnId}`, JSON.stringify(body), { expirationTtl: 900 }); 
@@ -184,6 +186,42 @@ async function handleIncomingWebhook(path, request, env, ctx) {
       }
     } catch (err) { console.error(`KV Error:`, err.message); }
   }
+
+  // 2. Workbench ko sahi response bhejo taaki flow aage badhe
+  if (action === 'on_select' || action === 'on_init' || action === 'on_confirm' || action === 'on_update') {
+      
+      const orderResponse = {
+          id: "ORD-" + generateUUID(),
+          state: "Created",
+          provider: { id: "P1", locations: [{ id: "L1" }] },
+          items: [{ id: "item_1", quantity: { count: 1 }, price: { currency: "INR", value: "100" } }],
+          billing: { 
+              name: "Customer", 
+              address: { name: "Customer", building: "Ghar", locality: "Locality", city: "std:011", state: "Delhi", country: "IND", area_code: "110001" }, 
+              phone: "9876543210", email: "test@test.com", 
+              created_at: getTimestamp(), updated_at: getTimestamp() 
+          },
+          fulfillments: [{ 
+              id: "F1", 
+              type: "Delivery", 
+              state: { descriptor: { code: "Pending" } }, 
+              end: { location: { gps: "28.0444,76.1084", address: { area_code: "110001" } }, contact: { phone: "9876543210" } } 
+          }],
+          quote: { 
+              price: { currency: "INR", value: "100" }, 
+              breakup: [{ "@ondc/org/item_id": "item_1", "@ondc/org/item_quantity": { count: 1 }, "@ondc/org/title_type": "item", price: { currency: "INR", value: "100" } }] 
+          },
+          payment: { type: "ON-ORDER", status: "PAID", collected_by: "BAP" }
+      };
+
+      return jsonResponse({
+          message: {
+              ack: { status: 'ACK' },
+              order: orderResponse
+          }
+      }, { 'Content-Type': 'application/json' });
+  }
+
   return jsonResponse({ message: { ack: { status: 'ACK' } } }, { 'Content-Type': 'application/json' });
 }
 
