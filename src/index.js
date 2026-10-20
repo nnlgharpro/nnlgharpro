@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC API — TRULY UNIVERSAL v9.4 (Workbench Ready)
+// 🚀 NNLGHARPRO ONDC API — TRULY UNIVERSAL v9.5 (BAP_URI Fixed)
 // ═══════════════════════════════════════════════════════════
 
 import { blake2b } from 'blakejs'; 
@@ -32,12 +32,12 @@ export default {
     
     try {
       if (path === '/' || path === '/api/health') {
-        return jsonResponse({ status: 'active', version: '9.4.0' }, corsHeaders);
+        return jsonResponse({ status: 'active', version: '9.5.0' }, corsHeaders);
       }
       
       const action = path.replace('/', '');
       
-      // 🚨 NAYA ADD: Workbench/ONDC se incoming request handle karna (BPP Mode)
+      // 🚨 Workbench/ONDC se incoming request handle karna (BPP Mode)
       const incomingActions = ['search', 'select', 'init', 'confirm', 'update', 'status', 'cancel', 'track', 'support', 'rating'];
       if (incomingActions.includes(action) && request.method === 'POST') {
           try {
@@ -119,9 +119,11 @@ async function generateOndcSignature(body, env) {
 function buildPayload(action, domain, body, env) {
   const cityCode = body.pincode === "123001" ? "std:01282" : "std:011";
 
+  // 👇 Yahan BAP_ID aur BAP_URI ka fallback add kar diya hai
   const context = {
     domain, country: "IND", city: cityCode, action, core_version: '1.2.5',
-    bap_id: env.ONDC_BAP_ID, bap_uri: env.ONDC_BAP_URI,
+    bap_id: env.ONDC_BAP_ID || "nnlgharpro-buyer", 
+    bap_uri: env.ONDC_BAP_URI || "https://nnlgharpro-ret11.nnlgharpro.workers.dev",
     transaction_id: body.transactionId || generateUUID(),
     message_id: generateUUID(), timestamp: getTimestamp(), ttl: 'PT30S'
   };
@@ -200,9 +202,7 @@ function buildPayload(action, domain, body, env) {
     };
   }
 
-  // ═══════════════════════════════════════════════════════
-  // ✅ FIXED: UPDATE (BUYER INSTRUCTIONS & ADDRESS)
-  // ═══════════════════════════════════════════════════════
+  // --- UPDATE (BUYER INSTRUCTIONS & ADDRESS) ---
   if (action === 'update') {
     return {
       context,
@@ -251,7 +251,6 @@ function buildPayload(action, domain, body, env) {
     };
   }
 
-  // Default for other actions like status, cancel, track, support, rating
   return { context, message: body.message || {} };
 }
 
