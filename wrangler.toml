@@ -1,20 +1,24 @@
 name = "nnlgharpro-ret11"
 main = "src/index.js"
 compatibility_date = "2024-10-01"
-compatibility_flags = ["nodejs_compat"] 
+compatibility_flags = ["nodejs_compat"]
 
 [vars]
 ENVIRONMENT = "production"
 ONDC_DOMAIN = "ONDC:RET11" 
 
-# 👇 Ye Workbench BPP testing ke liye hai
+# 👇 Workbench Gateway (BPP testing ke liye)
 ONDC_GATEWAY_URL = "https://workbench.ondc.tech/api-service/ONDC:RET11/1.2.5/seller"
 
-# 👇 Aapki Keys (BPP ke liye)
+# 👇 BAP Keys (Error fix: bap_uri missing)
+ONDC_BAP_ID = "nnlgharpro-buyer"
+ONDC_BAP_URI = "https://nnlgharpro-ret11.nnlgharpro.workers.dev"
+
+# 👇 BPP Keys
 ONDC_UK_ID = "05063c66-41f2-4f75-878a-22f28d07712a"
 ONDC_SIGNING_PUBLIC_KEY = "ONGFJUVn9K609lH0a+xA1RVeMG+PL5KtrpcCiJFhV08="
 
-# ⚠️ Secrets (Cloudflare Dashboard se set karenge)
+# ⚠️ Secrets (Cloudflare Dashboard se set karenge - command: npx wrangler secret put ONDC_SIGNING_PRIVATE_KEY)
 # ONDC_SIGNING_PRIVATE_KEY
 
 [[kv_namespaces]]
