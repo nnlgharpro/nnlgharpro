@@ -6,17 +6,16 @@ compatibility_flags = ["nodejs_compat"]
 [vars]
 ENVIRONMENT = "production"
 ONDC_DOMAIN = "ONDC:RET11" 
-ONDC_BAP_ID = "nnlgharpro-ret11.nnlgharpro.workers.dev"
-ONDC_BAP_URI = "https://nnlgharpro-ret11.nnlgharpro.workers.dev"
+
+# 👇 Ye Workbench BPP testing ke liye hai
 ONDC_GATEWAY_URL = "https://workbench.ondc.tech/api-service/ONDC:RET11/1.2.5/seller"
 
-# 👇 Ye 2 variables yahan add kar diye hain taaki deploy par delete na hon
+# 👇 Aapki Keys (BPP ke liye)
 ONDC_UK_ID = "05063c66-41f2-4f75-878a-22f28d07712a"
 ONDC_SIGNING_PUBLIC_KEY = "ONGFJUVn9K609lH0a+xA1RVeMG+PL5KtrpcCiJFhV08="
 
-# ⚠️ Secrets (Cloudflare Dashboard se set karenge - ye wrangler.toml me nahi dalne warna public ho jayenge)
+# ⚠️ Secrets (Cloudflare Dashboard se set karenge)
 # ONDC_SIGNING_PRIVATE_KEY
-# ONDC_NO_TOKEN
 
 [[kv_namespaces]]
 binding = "ONDC_DATA"
