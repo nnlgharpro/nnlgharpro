@@ -12,7 +12,7 @@ ONDC_GATEWAY_URL = "https://workbench.ondc.tech/api-service/ONDC:RET11/1.2.5/sel
 
 # 👇 BAP Keys (Error fix: bap_uri missing)
 ONDC_BAP_ID = "gmSwiE_2Ke4DeI_ifn3bzUshWPyPif"
-ONDC_BAP_URI = "https://nnlgharpro-ret11.nnlgharpro.workers.dev"
+ bap_uri: env.ONDC_BAP_URI || "https://workbench.ondc.tech",
 
 # 👇 BPP Keys
 ONDC_UK_ID = "05063c66-41f2-4f75-878a-22f28d07712a"
