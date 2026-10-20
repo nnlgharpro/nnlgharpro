@@ -8,7 +8,7 @@ ENVIRONMENT = "production"
 ONDC_DOMAIN = "ONDC:RET11" 
 
 # 👇 Workbench URL (Kyunki aap abhi Workbench par test kar rahe ho)
-ONDC_GATEWAY_URL = "https://workbench.ondc.tech/api-service/ONDC:RET11/1.2.5/Buyer"
+ONDC_GATEWAY_URL = "https://workbench.ondc.tech/api-service/ONDC:RET11/1.2.5/seller"
 
 # 👇 BAP Keys (Workbench ki keys)
 ONDC_BAP_ID = "gmSw1E_2Ke4DeL_Ifn3zbzuUshWPypiF" 
