@@ -1114,7 +1114,7 @@ window.searchServices = async function() {
     if (selectedService === 'Grocery') { domain = "ONDC:RET10"; category = "Grocery"; }
     
     try {
-        const response = await fetch("https://nnlgharpro-ret11.nnlgharpro.workers.dev/search", {
+        const response = await fetch("https://nnlgharpro-ret11.nnlgharpro.workers.dev/client_search", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ domain: domain, category: category, pincode: pincode })
@@ -1250,7 +1250,7 @@ window.selectProvider = async function(indexOrId) {
         </div>`;
 
     try {
-        const response = await fetch("https://nnlgharpro-ret11.nnlgharpro.workers.dev/select", {
+        const response = await fetch("https://nnlgharpro-ret11.nnlgharpro.workers.dev/client_select", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
