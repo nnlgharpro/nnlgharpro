@@ -122,7 +122,7 @@ function buildPayload(action, domain, body, env) {
   // 👇 Yahan BAP_ID aur BAP_URI ka fallback add kar diya hai
   const context = {
     domain, country: "IND", city: cityCode, action, core_version: '1.2.5',
-    bap_id: env.ONDC_BAP_ID || "nnlgharpro-buyer", 
+     bap_id: env.ONDC_BAP_ID || "gmSwiE_2Ke4DeI_ifn3bzUshWPyPif", 
     bap_uri: env.ONDC_BAP_URI || "https://nnlgharpro-ret11.nnlgharpro.workers.dev",
     transaction_id: body.transactionId || generateUUID(),
     message_id: generateUUID(), timestamp: getTimestamp(), ttl: 'PT30S'
