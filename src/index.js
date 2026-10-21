@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC API — UNIVERSAL FINAL v12.1 (ONDC Tags Compliant)
+// 🚀 NNLGHARPRO ONDC API — UNIVERSAL FINAL v12.2 (Absolute Matcher)
 // ═══════════════════════════════════════════════════════════
 import { blake2b } from 'blakejs'; 
 import nacl from 'tweetnacl';
@@ -19,7 +19,7 @@ export default {
     
     try {
       if (path === '' || path === 'api/health') {
-        return jsonResponse({ status: 'active', version: '12.1.0', role: 'Tags_Compliant_Engine' }, corsHeaders);
+        return jsonResponse({ status: 'active', version: '12.2.0', role: 'Absolute_Matcher' }, corsHeaders);
       }
       
       const mockProviders = [{
@@ -36,15 +36,15 @@ export default {
           }]
       }];
 
-      // 🚨 1. GATEWAY INCOMING CALLBACKS
-      if (path.startsWith('on_')) {
+      // 🚨 1. GATEWAY INCOMING CALLBACKS (पूरी तरह एंडपॉइंट यूआरएल पाथ से अलाइन)
+      if (path === 'on_search' || path === 'on_select' || path === 'on_init' || path === 'on_confirm' || path.startsWith('on_')) {
         const body = await request.json();
         const txnId = body.context?.transaction_id;
         const action = body.context?.action;
         const domain = body.context?.domain || "ONDC:RET11";
 
         if (env.ONDC_DATA && txnId) {
-            await env.ONDC_DATA.put(`bap_callback_${path}_${txnId}`, JSON.stringify(body), { expirationTtl: 900 });
+            await env.ONDC_DATA.put(`bap_callback_${action}_${txnId}`, JSON.stringify(body), { expirationTtl: 900 });
         }
 
         // Live Auto-Pipeline Trigger
@@ -133,7 +133,6 @@ async function generateOndcSignature(body, env) {
   return `Signature keyId="${env.ONDC_BAP_ID}|${env.ONDC_UK_ID}|ed25519",algorithm="ed25519",created="${created}",expires="${expires}",headers="(created) (expires) digest",signature="${signature}"`;
 }
 
-// 🌟 ONDC NEW SCHEMA COMPLIANT PAYLOAD BUILDER
 function buildBapPayload(action, domain, body, transactionId, env) {
   const timestamp = new Date().toISOString();
   return {
@@ -146,7 +145,6 @@ function buildBapPayload(action, domain, body, transactionId, env) {
       intent: {
         item: { descriptor: { name: "Food" } },
         fulfillment: { type: "Delivery", end: { location: { gps: "28.6139,77.2090", address: { area_code: body.pincode || "110001" } } } },
-        // ✅ ONDC New Tags Alignment Fix (Required by Workbench)
         tags: [
           {
             code: "BAP_TERMS",
