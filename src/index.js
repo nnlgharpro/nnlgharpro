@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC API — UNIVERSAL FINAL v12.3 (Update Flow Enabled)
+// 🚀 NNLGHARPRO ONDC API — UNIVERSAL FINAL v12.4 (Full Update Flow)
 // ═══════════════════════════════════════════════════════════
 import { blake2b } from 'blakejs'; 
 import nacl from 'tweetnacl';
@@ -19,7 +19,7 @@ export default {
     
     try {
       if (path === '' || path === 'api/health') {
-        return jsonResponse({ status: 'active', version: '12.3.0', role: 'Absolute_Matcher' }, corsHeaders);
+        return jsonResponse({ status: 'active', version: '12.4.0', role: 'Absolute_Matcher' }, corsHeaders);
       }
       
       const mockProviders = [{
@@ -52,26 +52,38 @@ export default {
             const updatedOrder = body.message?.order;
             if (updatedOrder) {
                 console.log(`[ON_UPDATE] Order ${updatedOrder.id} updated successfully.`);
-                // Store the updated order state in KV for later retrieval
                 await env.ONDC_DATA.put(`order_${updatedOrder.id}_updated`, JSON.stringify(updatedOrder), { expirationTtl: 3600 });
             }
         }
 
-        // Live Auto-Pipeline Trigger (Keep for standard flow)
+        // 🔥 LIVE AUTO-PIPELINE TRIGGER (Updated to include 'update' step)
         if (action === 'on_search' && txnId) {
           ctx.waitUntil(
             (async () => {
-              const nextActions = ['select', 'init', 'confirm'];
+              // Yahan 'update' add kar diya gaya hai
+              const nextActions = ['select', 'init', 'confirm', 'update'];
+              
               for (const act of nextActions) {
-                await new Promise(r => setTimeout(r, 800));
-                const autoPayload = buildBapPayload(act, domain, {}, txnId, env);
+                await new Promise(r => setTimeout(r, 1000)); // 1 second delay between actions
+                
+                // Update action ke liye test payload
+                let testBody = {};
+                if (act === 'update') {
+                    testBody = {
+                        orderId: "test_order_" + txnId.substring(0,8),
+                        newBuilding: "Flat 402, Updated Building",
+                        instructions: "Please ring the bell twice."
+                    };
+                }
+
+                const autoPayload = buildBapPayload(act, domain, testBody, txnId, env);
                 const autoAuth = await generateOndcSignature(autoPayload, env);
                 
                 await fetch(env.ONDC_GATEWAY_URL, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json', 'X-Gateway-Authorization': autoAuth, 'Authorization': autoAuth },
                   body: JSON.stringify(autoPayload)
-                }).then(res => res.text()).catch(() => {});
+                }).then(res => res.text()).catch((e) => console.log(`Auto-Pipeline Error (${act}):`, e));
               }
             })()
           );
@@ -188,11 +200,9 @@ function buildBapPayload(action, domain, body, transactionId, env) {
         payment: { uri: "https://razorpay.com", tls_method: "string", status: "PAID", type: "ON-ORDER", collected_by: "BAP" }
       }
     } : action === 'update' ? {
-      // 🎯 NEW UPDATE PAYLOAD FOR ADDRESS & INSTRUCTIONS
+      // 🎯 UPDATE PAYLOAD FOR ADDRESS & INSTRUCTIONS
       order: {
-        // Use the orderId passed from frontend, or fallback for testing
         id: body.orderId || "YOUR_EXISTING_ORDER_ID", 
-        
         fulfillments: [{
           id: "F1",
           type: "Delivery",
@@ -209,7 +219,6 @@ function buildBapPayload(action, domain, body, transactionId, env) {
                 area_code: body.newAreaCode || "110001"
               }
             },
-            // Add instructions as a tag or descriptor based on the BPP's schema
             instructions: {
               name: "delivery_instructions",
               short_desc: body.instructions || "Please ring the bell twice."
