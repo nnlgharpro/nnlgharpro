@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC API — UNIVERSAL FINAL v12.0 (Instant Workbench Pass)
+// 🚀 NNLGHARPRO ONDC API — UNIVERSAL FINAL v12.1 (ONDC Tags Compliant)
 // ═══════════════════════════════════════════════════════════
 import { blake2b } from 'blakejs'; 
 import nacl from 'tweetnacl';
@@ -19,7 +19,7 @@ export default {
     
     try {
       if (path === '' || path === 'api/health') {
-        return jsonResponse({ status: 'active', version: '12.0.0', role: 'Ultimate_Pass_Engine' }, corsHeaders);
+        return jsonResponse({ status: 'active', version: '12.1.0', role: 'Tags_Compliant_Engine' }, corsHeaders);
       }
       
       const mockProviders = [{
@@ -36,7 +36,7 @@ export default {
           }]
       }];
 
-      // 🚨 1. GATEWAY INCOMING CALLBACKS (जादुई लाइव ट्रिगर)
+      // 🚨 1. GATEWAY INCOMING CALLBACKS
       if (path.startsWith('on_')) {
         const body = await request.json();
         const txnId = body.context?.transaction_id;
@@ -47,13 +47,13 @@ export default {
             await env.ONDC_DATA.put(`bap_callback_${path}_${txnId}`, JSON.stringify(body), { expirationTtl: 900 });
         }
 
-        // 🌟 ब्रह्मास्त्र: जैसे ही Workbench आपके वर्कर पर on_search भेजे, वर्कर तुरंत उसी लाइव ऑथेंटिकेटेड सेशन आईडी पर select, init, confirm तीनों बैक-टू-बैक फायर कर देगा!
+        // Live Auto-Pipeline Trigger
         if (action === 'on_search' && txnId) {
           ctx.waitUntil(
             (async () => {
               const nextActions = ['select', 'init', 'confirm'];
               for (const act of nextActions) {
-                await new Promise(r => setTimeout(r, 800)); // ओआरडीसी नेटवर्क सिंक स्पेस
+                await new Promise(r => setTimeout(r, 800));
                 const autoPayload = buildBapPayload(act, domain, {}, txnId, env);
                 const autoAuth = await generateOndcSignature(autoPayload, env);
                 
@@ -63,7 +63,6 @@ export default {
                   body: JSON.stringify(autoPayload)
                 }).then(res => res.text()).catch(() => {});
               }
-              console.log("🎯 [ONDC COUPLING SUCCESS] Full Live Pipeline Successfully Cleared!");
             })()
           );
         }
@@ -134,6 +133,7 @@ async function generateOndcSignature(body, env) {
   return `Signature keyId="${env.ONDC_BAP_ID}|${env.ONDC_UK_ID}|ed25519",algorithm="ed25519",created="${created}",expires="${expires}",headers="(created) (expires) digest",signature="${signature}"`;
 }
 
+// 🌟 ONDC NEW SCHEMA COMPLIANT PAYLOAD BUILDER
 function buildBapPayload(action, domain, body, transactionId, env) {
   const timestamp = new Date().toISOString();
   return {
@@ -146,7 +146,17 @@ function buildBapPayload(action, domain, body, transactionId, env) {
       intent: {
         item: { descriptor: { name: "Food" } },
         fulfillment: { type: "Delivery", end: { location: { gps: "28.6139,77.2090", address: { area_code: body.pincode || "110001" } } } },
-        payment: { "@ondc/org/buyer_app_finder_fee_type": "percent", "@ondc/org/buyer_app_finder_fee_amount": "3.0" }
+        // ✅ ONDC New Tags Alignment Fix (Required by Workbench)
+        tags: [
+          {
+            code: "BAP_TERMS",
+            list: [
+              { code: "STATIC_SIGNATURE_REQ", value: "true" },
+              { code: "FINDER_FEE_TYPE", value: "percent" },
+              { code: "FINDER_FEE_AMOUNT", value: "3.0" }
+            ]
+          }
+        ]
       }
     } : action === 'select' ? {
       order: {
