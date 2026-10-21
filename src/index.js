@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC API — UNIVERSAL FINAL v12.2 (Absolute Matcher)
+// 🚀 NNLGHARPRO ONDC API — UNIVERSAL FINAL v12.3 (Update Flow Enabled)
 // ═══════════════════════════════════════════════════════════
 import { blake2b } from 'blakejs'; 
 import nacl from 'tweetnacl';
@@ -19,7 +19,7 @@ export default {
     
     try {
       if (path === '' || path === 'api/health') {
-        return jsonResponse({ status: 'active', version: '12.2.0', role: 'Absolute_Matcher' }, corsHeaders);
+        return jsonResponse({ status: 'active', version: '12.3.0', role: 'Absolute_Matcher' }, corsHeaders);
       }
       
       const mockProviders = [{
@@ -36,7 +36,7 @@ export default {
           }]
       }];
 
-      // 🚨 1. GATEWAY INCOMING CALLBACKS (पूरी तरह एंडपॉइंट यूआरएल पाथ से अलाइन)
+      // 🚨 1. GATEWAY INCOMING CALLBACKS
       if (path === 'on_search' || path === 'on_select' || path === 'on_init' || path === 'on_confirm' || path.startsWith('on_')) {
         const body = await request.json();
         const txnId = body.context?.transaction_id;
@@ -47,7 +47,17 @@ export default {
             await env.ONDC_DATA.put(`bap_callback_${action}_${txnId}`, JSON.stringify(body), { expirationTtl: 900 });
         }
 
-        // Live Auto-Pipeline Trigger
+        // 🎯 SPECIFIC HANDLING FOR on_update
+        if (action === 'on_update' && txnId) {
+            const updatedOrder = body.message?.order;
+            if (updatedOrder) {
+                console.log(`[ON_UPDATE] Order ${updatedOrder.id} updated successfully.`);
+                // Store the updated order state in KV for later retrieval
+                await env.ONDC_DATA.put(`order_${updatedOrder.id}_updated`, JSON.stringify(updatedOrder), { expirationTtl: 3600 });
+            }
+        }
+
+        // Live Auto-Pipeline Trigger (Keep for standard flow)
         if (action === 'on_search' && txnId) {
           ctx.waitUntil(
             (async () => {
@@ -176,6 +186,36 @@ function buildBapPayload(action, domain, body, transactionId, env) {
         billing: { name: "Test User", phone: "9876543210", address: { building: "Main Road", city: "Delhi", area_code: "110001" } },
         fulfillments: [{ id: "F1", type: "Delivery", end: { location: { gps: "28.6139,77.2090", address: { area_code: "110001" } } } }],
         payment: { uri: "https://razorpay.com", tls_method: "string", status: "PAID", type: "ON-ORDER", collected_by: "BAP" }
+      }
+    } : action === 'update' ? {
+      // 🎯 NEW UPDATE PAYLOAD FOR ADDRESS & INSTRUCTIONS
+      order: {
+        // Use the orderId passed from frontend, or fallback for testing
+        id: body.orderId || "YOUR_EXISTING_ORDER_ID", 
+        
+        fulfillments: [{
+          id: "F1",
+          type: "Delivery",
+          end: {
+            location: {
+              gps: body.newGps || "28.6139,77.2090",
+              address: {
+                name: body.newName || "Test User",
+                building: body.newBuilding || "New Building, Flat 402",
+                locality: body.newLocality || "New Locality",
+                city: body.newCity || "Delhi",
+                state: body.newState || "Delhi",
+                country: "IND",
+                area_code: body.newAreaCode || "110001"
+              }
+            },
+            // Add instructions as a tag or descriptor based on the BPP's schema
+            instructions: {
+              name: "delivery_instructions",
+              short_desc: body.instructions || "Please ring the bell twice."
+            }
+          }
+        }]
       }
     } : {}
   };
