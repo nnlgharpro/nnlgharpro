@@ -1154,26 +1154,15 @@ window.searchServices = async function() {
         console.log("🔍 SAVED TXN ID:", window.currentOndcTransactionId);
         let attempts = 0;
         
-        const interval = setInterval(async () => {
-            attempts++;
-             const res = await fetch(`https://workers.dev{window.currentOndcTransactionId}`);
-            const resultData = await res.json();
+                // 🚀 1 सेकंड फ़िक्स: बिना किसी पोलिंग लूप के सीधे डेटा स्क्रीन पर रेंडर करें
+        if (resultData && resultData.success) {
+            const finalResults = resultData.results || [];
+            window.currentOndcData = finalResults;
+            displayOndcResults(finalResults, pincode);
+        } else {
+            alert("ONDC Catalog failed to load. Please try again.");
+        }
 
-            if (resultData.success && resultData.status === 'ready') {
-                clearInterval(interval);
-                window.currentOndcData = resultData.results; 
-                displayOndcResults(resultData.results, pincode);
-            } else if (attempts > 30) { 
-                clearInterval(interval);
-                document.getElementById('providerList').innerHTML = `
-                    <div style="text-align:center; padding:30px; color:#FFD93D;">
-                        <i class="fas fa-hourglass-end" style="font-size:30px; margin-bottom:10px;"></i><br>
-                        <strong>No providers found.</strong><br>
-                        <span style="font-size:12px; color:#aaa;">Our network is taking too long. Please try again.</span><br><br>
-                        <button onclick="searchServices()" style="padding:8px 16px; border-radius:8px; border:none; background:#FF6B35; color:white; font-weight:bold;">Try Again</button>
-                    </div>`;
-            }
-        }, 2000); 
 
     } catch (e) { 
         console.error(e);
