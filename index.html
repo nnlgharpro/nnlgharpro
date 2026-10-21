@@ -1302,31 +1302,16 @@ window.ondcConfirmOrder = async function(orderId, providerId, itemsList, billing
 
         const data = await response.json();
         
+                // 🚀 1 सेकंड फ़िक्स: बिना किसी पोलिंग लूप के सीधे मेनू रेंडर करें
         if (data.success) {
-            let attempts = 0;
-            const interval = setInterval(async () => {
-                attempts++;
-                const res = await fetch(`https://nnlgharpro-ret11.nnlgharpro.workers.dev/get-select/${txnId}`);
-                const resultData = await res.json();
-
-                if (resultData.success && resultData.status === 'ready') {
-                    clearInterval(interval);
-                    displayProviderMenu(resultData.results.message.order);
-                } else if (attempts > 10) { 
-                    clearInterval(interval);
-                    document.getElementById('providerList').innerHTML = `
-                        <div style="text-align:center;color:#FF4757;padding:20px;">
-                            <i class="fas fa-exclamation-triangle" style="font-size:30px;margin-bottom:10px;"></i><br>
-                            Menu load failed. Please try again.
-                            <br><br>
-                            <button onclick="displayOndcResults(window.currentOndcData, document.getElementById('pincode').value)" style="padding:8px 16px; border-radius:8px; border:none; background:#FF6B35; color:white;">Back to Providers</button>
-                        </div>`;
-                }
-            }, 2000); 
+            const selectResults = data.results || [];
+            window.currentOndcData = selectResults;
+            displayProviderMenu(selectResults);
         } else {
             showToast('❌ Failed to load menu', true);
             displayOndcResults(window.currentOndcData, document.getElementById('pincode').value);
         }
+
     } catch (error) {
         console.error("Select Error:", error);
         document.getElementById('providerList').innerHTML = `<div style="text-align:center;color:#FF4757;padding:20px;">Network Error.</div>`;
