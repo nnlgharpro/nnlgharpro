@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC API — WORKBENCH FINAL CLEARANCE (v15.1)
+// 🚀 NNLGHARPRO ONDC API — FINAL WORKBENCH CLEARANCE (v16.0)
 // ═══════════════════════════════════════════════════════════
 import { blake2b } from 'blakejs'; 
 import nacl from 'tweetnacl';
@@ -19,7 +19,7 @@ export default {
     
     try {
       if (path === '' || path === 'api/health') {
-        return jsonResponse({ status: 'active', version: '15.1.0' }, corsHeaders);
+        return jsonResponse({ status: 'active', version: '16.0.0' }, corsHeaders);
       }
       
       const mockProviders = [{
@@ -36,7 +36,7 @@ export default {
           }]
       }];
 
-      // 🚨 1. GATEWAY INCOMING CALLBACKS
+      // 🚨 1. GATEWAY INCOMING CALLBACKS (on_search, on_select, etc.)
       if (path.startsWith('on_')) {
         const body = await request.json();
         const txnId = body.context?.transaction_id;
@@ -128,11 +128,11 @@ async function generateOndcSignature(body, env) {
   return `Signature keyId="${env.ONDC_BAP_ID}|${env.ONDC_UK_ID}|ed25519",algorithm="ed25519",created="${created}",expires="${expires}",headers="(created) (expires) digest",signature="${signature}"`;
 }
 
-// ✅ PAYLOAD BUILDER (ALL FIXES APPLIED)
+// ✅ PAYLOAD BUILDER (FULL WORKBENCH COMPLIANT)
 function buildBapPayload(action, domain, body, transactionId, env) {
   const timestamp = new Date().toISOString();
   
-  // Context Setup (Mandatory for all ONDC calls)
+  // 🔥 Context with bpp_id and bpp_uri
   const context = {
     domain: domain, 
     country: "IND", 
@@ -141,8 +141,8 @@ function buildBapPayload(action, domain, body, transactionId, env) {
     core_version: '1.2.5',
     bap_id: env.ONDC_BAP_ID, 
     bap_uri: env.ONDC_BAP_URI,
-    bpp_id: "workbench.ondc.tech", // ✅ FIXED
-    bpp_uri: "https://workbench.ondc.tech", // ✅ FIXED
+    bpp_id: "workbench.ondc.tech", 
+    bpp_uri: "https://workbench.ondc.tech", 
     transaction_id: transactionId, 
     message_id: crypto.randomUUID(), 
     timestamp: timestamp, 
@@ -156,9 +156,7 @@ function buildBapPayload(action, domain, body, transactionId, env) {
       intent: {
         item: { descriptor: { name: "Food" } },
         fulfillment: { type: "Delivery", end: { location: { gps: "28.6139,77.2090", address: { area_code: body.pincode || "110001" } } } },
-        tags: [
-          { code: "BAP_TERMS", list: [ { code: "STATIC_SIGNATURE_REQ", value: "true" }, { code: "FINDER_FEE_TYPE", value: "percent" }, { code: "FINDER_FEE_AMOUNT", value: "3.0" } ] }
-        ]
+        tags: [{ code: "BAP_TERMS", list: [ { code: "STATIC_SIGNATURE_REQ", value: "true" }, { code: "FINDER_FEE_TYPE", value: "percent" }, { code: "FINDER_FEE_AMOUNT", value: "3.0" } ] }]
       }
     };
   } else if (action === 'select') {
@@ -168,8 +166,8 @@ function buildBapPayload(action, domain, body, transactionId, env) {
         items: [{ 
             id: "item_veg_thali", 
             quantity: { count: 1 },
-            location_id: "L1", // ✅ FIXED
-            tags: [{ code: "type", list: [{ code: "type", value: "item" }] }] // ✅ FIXED
+            location_id: "L1", 
+            tags: [{ code: "type", list: [{ code: "type", value: "item" }] }] 
         }],
         billing: {
           name: "Test User",
