@@ -390,3 +390,147 @@ function updateCartUI() {
             </div>`;
     });
     if (cart.length === 0) html = '<div style="text-align:center; padding:30px; color:#aaa;"><i class="fas fa-shopping-cart fa-2x" style="margin-bottom:10px; opacity:0.3;"></i><br>Cart is empty</div>';
+    document.getElementById('cartItemsList').innerHTML = html;
+    document.getElementById('cartTotal').textContent = `₹${totalPrice}`;
+    document.getElementById('cartBadge').textContent = totalQty;
+    document.getElementById('cartBadge').style.display = totalQty > 0 ? 'block' : 'none';
+}
+function changeQty(id, delta) {
+    const item = cart.find(i => i.id === id);
+    if (item) { item.qty += delta; if (item.qty <= 0) cart = cart.filter(i => i.id !== id); updateCartUI(); }
+}
+function openCart() { openModal('cartModal'); }
+
+// RAZORPAY PAYMENT
+function proceedToCheckout() {
+    if (cart.length === 0) return showToast('Cart is empty!');
+    closeModal('cartModal');
+    openModal('checkoutModal');
+}
+function initiateRazorpay() {
+    const name = document.getElementById('custName').value.trim();
+    const mobile = document.getElementById('custMobile').value.trim();
+    const address = document.getElementById('custAddress').value.trim();
+    if (!name || !mobile || !address) return showToast('Please fill all details!');
+    if (mobile.length < 10) return showToast('Invalid mobile number!');
+
+    let totalPrice = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    var options = {
+        "key": RZP_KEY, "amount": totalPrice * 100, "currency": "INR",
+        "name": "NnlGharPro", "description": `${currentCategory} Order`,
+        "handler": function (response) {
+            closeModal('checkoutModal');
+            showReceipt(response.razorpay_payment_id, name, totalPrice);
+            cart = []; updateCartUI();
+            showToast("Payment Successful!");
+        },
+        "prefill": { "name": name, "contact": mobile }, "theme": { "color": "#4ECDC4" }
+    };
+    var rzp = new Razorpay(options);
+    rzp.open();
+}
+function showReceipt(paymentId, name, total) {
+    document.getElementById('rcptId').textContent = paymentId.substring(0, 10).toUpperCase();
+    document.getElementById('rcptName').textContent = name;
+    document.getElementById('rcptItems').textContent = cart.map(i => `${i.name} (x${i.qty})`).join(', ') || "Order";
+    document.getElementById('rcptTotal').textContent = `₹${total}`;
+    openModal('receiptModal');
+}
+
+// RECHARGE LOGIC
+function checkRechargeServiceStatus() {
+    db.collection('settings').doc('rechargeService').onSnapshot(doc => {
+        if (doc.exists) {
+            const data = doc.data();
+            rechargeServiceOpen = data.open !== false;
+            const warning = document.getElementById('rechargeServiceWarning');
+            const payBtn = document.getElementById('rechargePayBtn');
+            
+            if (!rechargeServiceOpen) {
+                warning.style.display = 'block';
+                warning.innerHTML = `🔄 ${data.message || 'Service temporarily down.'}`;
+                payBtn.disabled = true;
+                payBtn.textContent = 'Service Closed';
+                payBtn.style.opacity = '0.5';
+            } else {
+                warning.style.display = 'none';
+                payBtn.disabled = false;
+                payBtn.innerHTML = '<i class="fas fa-lock"></i> Pay Now';
+                payBtn.style.opacity = '1';
+            }
+        }
+    });
+}
+
+function selectOp(op, e) {
+    selectedOp = op;
+    document.querySelectorAll('.op-card').forEach(el => { el.style.borderColor = 'transparent'; el.style.background = 'rgba(255,255,255,0.05)'; });
+    e.currentTarget.style.borderColor = '#4ECDC4';
+    e.currentTarget.style.background = 'rgba(78,205,196,0.1)';
+    loadRechargePlans();
+}
+
+async function loadRechargePlans() {
+    if(!selectedOp) return;
+    const listEl = document.getElementById('plansList');
+    listEl.innerHTML = '<div style="color:#4ECDC4; font-size:12px; width:100%; text-align:center; padding:10px;"><i class="fas fa-spinner fa-spin"></i> Loading plans...</div>';
+    
+    try {
+        const snap = await db.collection('rechargePlans').where('operator', '==', selectedOp).where('active', '==', true).get();
+        availablePlans = [];
+        snap.forEach(doc => availablePlans.push({ id: doc.id, ...doc.data() }));
+        
+        if (availablePlans.length === 0) {
+            listEl.innerHTML = '<div style="color:#aaa; font-size:12px; width:100%; text-align:center; padding:10px;">No plans found for this operator</div>';
+            return;
+        }
+
+        availablePlans.sort((a, b) => (a.amount || 0) - (b.amount || 0));
+        let html = '';
+        availablePlans.forEach((plan, index) => {
+            html += `
+                <div class="plan-card" onclick="selectPlan(${plan.amount})">
+                    ${index === 0 ? '<div class="pop-tag">🔥 POPULAR</div>' : ''}
+                    <div class="amount">₹${plan.amount}</div>
+                    <div class="validity"><i class="fas fa-clock"></i> ${plan.validity || 'N/A'}</div>
+                    <div class="desc">${plan.description || plan.desc || ''}</div>
+                </div>
+            `;
+        });
+        listEl.innerHTML = html;
+    } catch (e) {
+        listEl.innerHTML = '<div style="color:#FF4757; font-size:12px; width:100%; text-align:center;">Error loading plans</div>';
+    }
+}
+
+function selectPlan(amount) {
+    document.getElementById('rcAmount').value = amount;
+    document.querySelectorAll('.plan-card').forEach(el => el.classList.remove('selected'));
+    event.currentTarget.classList.add('selected');
+}
+
+function processRecharge() {
+    if (!rechargeServiceOpen) return showToast('Recharge service is currently closed.', true);
+    const num = document.getElementById('rcNumber').value.trim();
+    const amt = parseFloat(document.getElementById('rcAmount').value);
+    if (num.length !== 10 || !selectedOp || !amt || amt < 10) return showToast('Fill details properly!');
+    
+    var options = {
+        "key": RZP_KEY, "amount": amt * 100, "currency": "INR",
+        "name": "NnlGharPro Recharge", "description": `${selectedOp} Recharge`,
+        "handler": function (response) {
+            closeModal('rechargeModal');
+            showToast("Recharge Successful!");
+            db.collection('rechargeOrders').add({
+                customerUid: currentUser.uid, number: num, operator: selectedOp, amount: amt,
+                paymentId: response.razorpay_payment_id, status: 'pending', createdAt: new Date().toISOString()
+            }).catch(e => console.log(e));
+        },
+        "prefill": { "contact": num }, "theme": { "color": "#4ECDC4" }
+    };
+    var rzp = new Razorpay(options);
+    rzp.open();
+}
+</script>
+</body>
+</html>
