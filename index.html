@@ -102,21 +102,17 @@ input, textarea { -webkit-user-select: text; user-select: text; }
         </div>
     </div>
 
-    <!-- SPECIAL SERVICES (Recharge & Insurance) -->
+    <!-- SPECIAL SERVICES -->
     <div class="special-grid">
         <div class="special-card" onclick="openModal('rechargeModal')">
-            <i class="fas fa-mobile-alt"></i>
-            <h4>Recharge</h4>
-            <p>Mobile & DTH</p>
+            <i class="fas fa-mobile-alt"></i><h4>Recharge</h4><p>Mobile & DTH</p>
         </div>
         <div class="special-card" onclick="openModal('insuranceModal')">
-            <i class="fas fa-shield-alt"></i>
-            <h4>Insurance</h4>
-            <p>Bike, Car, Health</p>
+            <i class="fas fa-shield-alt"></i><h4>Insurance</h4><p>Bike, Car, Health</p>
         </div>
     </div>
 
-    <!-- ONDC SERVICES SCROLLER -->
+    <!-- ONDC SERVICES -->
     <div style="font-size:14px; font-weight:700; margin-bottom:10px; color:#FFD93D;">ONDC Services</div>
     <div class="services-scroll">
         <div class="service-card" onclick="searchCategory('Food', 'ONDC:RET11')"><i class="fas fa-utensils"></i><span>Food</span></div>
@@ -286,7 +282,6 @@ async function searchCategory(cat, domain) {
         const data = await res.json();
         if(data.transactionId) currentTxnId = data.transactionId;
 
-        // Mock Select Call
         await fetch(`${API_URL}/client_select`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -299,4 +294,104 @@ async function searchCategory(cat, domain) {
             html += `
                 <div class="cart-item">
                     <div style="flex:1;"><div style="font-weight:700; font-size:14px;">${item.name}</div><div style="font-size:11px; color:rgba(255,255,255,0.5); margin:4px 0;">${item.desc}</div><div style="font-weight:800; color:#FFD93D;">₹${item.price}</div></div>
-                    <button class="btn-primary" onclick="add
+                    <button class="btn-primary" onclick="addToCart('${item.id}', '${item.name}', ${item.price})">Add</button>
+                </div>
+            `;
+        });
+        document.getElementById('menuList').innerHTML = html;
+    } catch (e) {
+        document.getElementById('menuList').innerHTML = '<div style="text-align:center; color:#FF4757; padding:20px;">Network Error</div>';
+    }
+}
+
+// CART
+function addToCart(id, name, price) {
+    const existing = cart.find(item => item.id === id);
+    if (existing) { existing.qty++; } else { cart.push({ id, name, price, qty: 1 }); }
+    updateCartUI();
+    closeModal('menuModal');
+    openCart();
+}
+function updateCartUI() {
+    let totalQty = 0, totalPrice = 0, html = '';
+    cart.forEach(item => {
+        totalQty += item.qty; totalPrice += (item.price * item.qty);
+        html += `
+            <div class="cart-item">
+                <div style="flex:1;"><div style="font-weight:700; font-size:13px;">${item.name}</div><div style="font-size:12px; color:#FFD93D; margin-top:2px;">₹${item.price}</div></div>
+                <div class="qty-control">
+                    <button class="qty-btn" onclick="changeQty('${item.id}', -1)">−</button>
+                    <span class="qty-num">${item.qty}</span>
+                    <button class="qty-btn" onclick="changeQty('${item.id}', 1)">+</button>
+                </div>
+                <div style="font-weight:800; color:#4ECDC4; margin-left:10px; font-size:13px;">₹${item.price * item.qty}</div>
+            </div>`;
+    });
+    if (cart.length === 0) html = '<div style="text-align:center; padding:20px; color:#aaa;">Cart is empty</div>';
+    document.getElementById('cartItemsList').innerHTML = html;
+    document.getElementById('cartTotal').textContent = `₹${totalPrice}`;
+    document.getElementById('cartBadge').textContent = totalQty;
+    document.getElementById('cartBadge').style.display = totalQty > 0 ? 'block' : 'none';
+}
+function changeQty(id, delta) {
+    const item = cart.find(i => i.id === id);
+    if (item) { item.qty += delta; if (item.qty <= 0) cart = cart.filter(i => i.id !== id); updateCartUI(); }
+}
+function openCart() { openModal('cartModal'); }
+
+// PAYMENT
+function proceedToCheckout() {
+    if (cart.length === 0) return showToast('Cart is empty!');
+    closeModal('cartModal');
+    openModal('checkoutModal');
+}
+function initiateRazorpay() {
+    const name = document.getElementById('custName').value.trim();
+    const mobile = document.getElementById('custMobile').value.trim();
+    const address = document.getElementById('custAddress').value.trim();
+    if (!name || !mobile || !address) return showToast('Please fill all details!');
+    if (mobile.length < 10) return showToast('Invalid mobile number!');
+
+    let totalPrice = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    var options = {
+        "key": RZP_KEY, "amount": totalPrice * 100, "currency": "INR",
+        "name": "NnlGharPro", "description": `${currentCategory} Order Payment`,
+        "handler": function (response) {
+            closeModal('checkoutModal');
+            showReceipt(response.razorpay_payment_id, name, totalPrice);
+            cart = []; updateCartUI();
+            showToast("Payment Successful!");
+        },
+        "prefill": { "name": name, "contact": mobile }, "theme": { "color": "#4ECDC4" }
+    };
+    var rzp = new Razorpay(options);
+    rzp.open();
+}
+function showReceipt(paymentId, name, total) {
+    document.getElementById('rcptId').textContent = paymentId.substring(0, 10).toUpperCase();
+    document.getElementById('rcptName').textContent = name;
+    document.getElementById('rcptItems').textContent = cart.map(i => `${i.name} (x${i.qty})`).join(', ') || "Order";
+    document.getElementById('rcptTotal').textContent = `₹${total}`;
+    openModal('receiptModal');
+}
+
+// RECHARGE
+function processRecharge() {
+    const num = document.getElementById('rcNumber').value.trim();
+    const amt = parseFloat(document.getElementById('rcAmount').value);
+    if (num.length !== 10 || !amt || amt < 10) return showToast('Fill all details properly!');
+    var options = {
+        "key": RZP_KEY, "amount": amt * 100, "currency": "INR",
+        "name": "NnlGharPro Recharge", "description": `Mobile Recharge`,
+        "handler": function (response) {
+            closeModal('rechargeModal');
+            showToast("Recharge Successful!");
+        },
+        "prefill": { "contact": num }, "theme": { "color": "#4ECDC4" }
+    };
+    var rzp = new Razorpay(options);
+    rzp.open();
+}
+</script>
+</body>
+</html>
