@@ -136,9 +136,9 @@ function buildBapPayload(action, domain, body, transactionId, env) {
     action: action, 
     core_version: '1.2.5',
     bap_id: env.ONDC_BAP_ID, 
-    bap_uri: env.ONDC_BAP_URI, 
+    bap_uri: env.ONDC_BAP_URI.endsWith('/') ? env.ONDC_BAP_URI : env.ONDC_BAP_URI + '/',
     bpp_id: "workbench.ondc.tech", 
-    bpp_uri: "https://workbench.ondc.tech", // ✅ FIXED: Correct URL
+    bpp_uri: "https://workbench.ondc.tech/", // ✅ FIXED: Correct URL
     transaction_id: transactionId, 
     message_id: crypto.randomUUID(), 
     timestamp: timestamp, 
