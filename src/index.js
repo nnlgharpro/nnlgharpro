@@ -45,9 +45,9 @@ export default {
         return jsonResponse({ message: { ack: { status: "ACK" } } }, corsHeaders);
       }
 
-      // 🚨 2. FRONTEND OUTGOING
-      if (path.startsWith('client_')) {
-        const action = path.replace('client_', '');
+           // 🚨 2. FRONTEND OUTGOING & WORKBENCH TESTING
+      if (path.startsWith('client_') || path === 'search' || path === 'select' || path === 'init' || path === 'confirm' || path === 'update') {
+        const action = path.startsWith('client_') ? path.replace('client_', '') : path;
         const reqBody = await request.json();
         
         const transactionId = reqBody.transactionId || crypto.randomUUID();
