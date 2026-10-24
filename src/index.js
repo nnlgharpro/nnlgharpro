@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC API — UNIVERSAL FINAL v12.4 (Full Update Flow)
+// 🚀 NNLGHARPRO ONDC API — UNIVERSAL FINAL v12.5 (Select Fixed)
 // ═══════════════════════════════════════════════════════════
 import { blake2b } from 'blakejs'; 
 import nacl from 'tweetnacl';
@@ -7,7 +7,7 @@ import nacl from 'tweetnacl';
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    const path = url.pathname.replace(/^\/+|\/+\$/g, ''); 
+    const path = url.pathname.replace(/^\/+|\/+$/g, ''); 
     
     const corsHeaders = {
       'Access-Control-Allow-Origin': '*',
@@ -19,7 +19,7 @@ export default {
     
     try {
       if (path === '' || path === 'api/health') {
-        return jsonResponse({ status: 'active', version: '12.4.0', role: 'Absolute_Matcher' }, corsHeaders);
+        return jsonResponse({ status: 'active', version: '12.5.0', role: 'Absolute_Matcher' }, corsHeaders);
       }
       
       const mockProviders = [{
@@ -60,13 +60,11 @@ export default {
         if (action === 'on_search' && txnId) {
           ctx.waitUntil(
             (async () => {
-              // Yahan 'update' add kar diya gaya hai
               const nextActions = ['select', 'init', 'confirm', 'update'];
               
               for (const act of nextActions) {
-                await new Promise(r => setTimeout(r, 1000)); // 1 second delay between actions
+                await new Promise(r => setTimeout(r, 1000));
                 
-                // Update action ke liye test payload
                 let testBody = {};
                 if (act === 'update') {
                     testBody = {
@@ -179,9 +177,46 @@ function buildBapPayload(action, domain, body, transactionId, env) {
         ]
       }
     } : action === 'select' ? {
+      // ✅ FIXED: billing + fulfillments added
       order: {
         provider: { id: "provider_workbench_1", locations: [{ id: "L1" }] },
-        items: [{ id: "item_veg_thali", quantity: { count: 1 } }]
+        items: [{ id: "item_veg_thali", quantity: { count: 1 } }],
+        billing: {
+          name: body.name || "Test User",
+          address: {
+            name: body.name || "Test User",
+            building: body.address || "Main Road",
+            locality: "Test Locality",
+            city: "Delhi",
+            state: "Delhi",
+            country: "IND",
+            area_code: body.pincode || "110001"
+          },
+          phone: body.phone || "9876543210",
+          email: body.email || "test@nnlgharpro.com"
+        },
+        fulfillments: [{
+          id: "F1",
+          type: "Delivery",
+          end: {
+            location: {
+              gps: "28.6139,77.2090",
+              address: {
+                name: body.name || "Test User",
+                building: body.address || "Main Road",
+                locality: "Test Locality",
+                city: "Delhi",
+                state: "Delhi",
+                country: "IND",
+                area_code: body.pincode || "110001"
+              }
+            },
+            contact: {
+              phone: body.phone || "9876543210",
+              email: body.email || "test@nnlgharpro.com"
+            }
+          }
+        }]
       }
     } : action === 'init' ? {
       order: {
@@ -200,7 +235,6 @@ function buildBapPayload(action, domain, body, transactionId, env) {
         payment: { uri: "https://razorpay.com", tls_method: "string", status: "PAID", type: "ON-ORDER", collected_by: "BAP" }
       }
     } : action === 'update' ? {
-      // 🎯 UPDATE PAYLOAD FOR ADDRESS & INSTRUCTIONS
       order: {
         id: body.orderId || "YOUR_EXISTING_ORDER_ID", 
         fulfillments: [{
