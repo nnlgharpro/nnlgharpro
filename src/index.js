@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC API — BUYER UPDATE FLOW FIXED (v18.0)
+// 🚀 NNLGHARPRO ONDC API — CLEAN SELECT FIX (v19.0)
 // ═══════════════════════════════════════════════════════════
 import { blake2b } from 'blakejs'; 
 import nacl from 'tweetnacl';
@@ -19,7 +19,7 @@ export default {
     
     try {
       if (path === '' || path === 'api/health') {
-        return jsonResponse({ status: 'active', version: '18.0.0' }, corsHeaders);
+        return jsonResponse({ status: 'active', version: '19.0.0' }, corsHeaders);
       }
       
       const mockProviders = [{
@@ -36,7 +36,7 @@ export default {
           }]
       }];
 
-      // 🚨 1. GATEWAY INCOMING CALLBACKS (on_search, on_select, etc.)
+      // 🚨 1. GATEWAY INCOMING CALLBACKS
       if (path.startsWith('on_')) {
         const body = await request.json();
         const txnId = body.context?.transaction_id;
@@ -128,11 +128,10 @@ async function generateOndcSignature(body, env) {
   return `Signature keyId="${env.ONDC_BAP_ID}|${env.ONDC_UK_ID}|ed25519",algorithm="ed25519",created="${created}",expires="${expires}",headers="(created) (expires) digest",signature="${signature}"`;
 }
 
-// ✅ PAYLOAD BUILDER (FULL WORKBENCH COMPLIANT)
+// ✅ PAYLOAD BUILDER
 function buildBapPayload(action, domain, body, transactionId, env) {
   const timestamp = new Date().toISOString();
   
-  // 🔥 Context with bpp_id and bpp_uri
   const context = {
     domain: domain, 
     country: "IND", 
@@ -160,26 +159,21 @@ function buildBapPayload(action, domain, body, transactionId, env) {
       }
     };
   } else if (action === 'select') {
+    // ✅ YEH HAI NAYA CLEAN SELECT
     message = {
       order: {
-        provider: { id: "provider_workbench_1", locations: [{ id: "L1" }] },
+        provider: { 
+            id: "provider_workbench_1", 
+            locations: [{ id: "L1" }] 
+        },
         items: [{ 
             id: "item_veg_thali", 
-            quantity: { count: 1 },
             location_id: "L1", 
-            tags: [{ code: "type", list: [{ code: "type", value: "item" }] }] 
-        }],
-        billing: {
-          name: "Test User",
-          address: { name: "Test User", building: "Main Road", locality: "Test Locality", city: "Delhi", state: "Delhi", country: "IND", area_code: body.pincode || "110001" },
-          phone: "9876543210", email: "test@nnlgharpro.com"
-        },
-        fulfillments: [{
-          id: "F1", type: "Delivery",
-          end: {
-            location: { gps: "28.6139,77.2090", address: { name: "Test User", building: "Main Road", locality: "Test Locality", city: "Delhi", state: "Delhi", country: "IND", area_code: body.pincode || "110001" } },
-            contact: { phone: "9876543210", email: "test@nnlgharpro.com" }
-          }
+            quantity: { count: 1 },
+            tags: [{ 
+                code: "type", 
+                list: [{ code: "type", value: "item" }] 
+            }]
         }]
       }
     };
@@ -235,7 +229,6 @@ function buildBapPayload(action, domain, body, transactionId, env) {
       }
     };
   } else if (action === 'update') {
-    // ✅ YEH HAI BUYER INSTRUCTIONS UPDATE FLOW KA PAYLOAD
     message = {
       order: {
         id: body.orderId || "test_order_123", 
