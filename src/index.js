@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC API — WORKBENCH FULL CLEARANCE (v14.0)
+// 🚀 NNLGHARPRO ONDC API — ALL IN ONE FIXED (v15.0)
 // ═══════════════════════════════════════════════════════════
 import { blake2b } from 'blakejs'; 
 import nacl from 'tweetnacl';
@@ -19,7 +19,7 @@ export default {
     
     try {
       if (path === '' || path === 'api/health') {
-        return jsonResponse({ status: 'active', version: '14.0.0', role: 'BAP_FULL' }, corsHeaders);
+        return jsonResponse({ status: 'active', version: '15.0.0', role: 'BAP_FULL' }, corsHeaders);
       }
       
       const mockProviders = [{
@@ -132,7 +132,7 @@ async function generateOndcSignature(body, env) {
 function buildBapPayload(action, domain, body, transactionId, env) {
   const timestamp = new Date().toISOString();
   
-  // Context Setup (Mandatory for all ONDC calls)
+  // ✅ Context Fixed: bpp_id and bpp_uri Added
   const context = {
     domain: domain, 
     country: "IND", 
@@ -151,7 +151,6 @@ function buildBapPayload(action, domain, body, transactionId, env) {
 
   let message = {};
 
-  // --- SEARCH ---
   if (action === 'search') {
     message = {
       intent: {
@@ -162,9 +161,7 @@ function buildBapPayload(action, domain, body, transactionId, env) {
         ]
       }
     };
-  } 
-  // --- SELECT ---
-  else if (action === 'select') {
+  } else if (action === 'select') {
     message = {
       order: {
         provider: { id: "provider_workbench_1", locations: [{ id: "L1" }] },
@@ -172,7 +169,7 @@ function buildBapPayload(action, domain, body, transactionId, env) {
             id: "item_veg_thali", 
             quantity: { count: 1 },
             location_id: "L1",
-            tags: [{ code: "type", list: [{ code: "type", value: "item" }] }] // ✅ FIXED: Items Tags
+            tags: [{ code: "type", list: [{ code: "type", value: "item" }] }] // ✅ Items tags added
         }],
         billing: {
           name: "Test User",
@@ -188,9 +185,7 @@ function buildBapPayload(action, domain, body, transactionId, env) {
         }]
       }
     };
-  } 
-  // --- INIT ---
-  else if (action === 'init') {
+  } else if (action === 'init') {
     message = {
       order: {
         provider: { id: "provider_workbench_1", locations: [{ id: "L1" }] },
@@ -211,9 +206,7 @@ function buildBapPayload(action, domain, body, transactionId, env) {
         }]
       }
     };
-  } 
-  // --- CONFIRM ---
-  else if (action === 'confirm') {
+  } else if (action === 'confirm') {
     message = {
       order: {
         id: crypto.randomUUID(), 
@@ -241,19 +234,23 @@ function buildBapPayload(action, domain, body, transactionId, env) {
             type: "ON-ORDER", 
             collected_by: "BAP" 
         },
-        tags: [{ // ✅ FIXED: Order level tags for F&B
+        tags: [{ 
             code: "bap_terms",
             list: [{ code: "static_signature_req", value: "true" }, { code: "finder_fee_type", value: "percent" }, { code: "finder_fee_amount", value: "3.0" }]
         }]
       }
     };
-  } 
-  // --- UPDATE ---
-  else if (action === 'update') {
+  } else if (action === 'update') {
     message = {
       order: {
         id: body.orderId || "YOUR_EXISTING_ORDER_ID", 
-        fulfillments: [{ id: "F1", type: "Delivery", end: { location: { gps: body.newGps || "28.6139,77.2090", address: { name: body.newName || "Test User", building: body.newBuilding || "New Building, Flat 402", locality: body.newLocality || "New Locality", city: body.newCity || "Delhi", state: body.newState || "Delhi", country: "IND", area_code: body.newAreaCode || "110001" } }, instructions: { name: "delivery_instructions", short_desc: body.instructions || "Please ring the bell twice." } } }]
+        fulfillments: [{ 
+            id: "F1", type: "Delivery", 
+            end: { 
+                location: { gps: body.newGps || "28.6139,77.2090", address: { name: body.newName || "Test User", building: body.newBuilding || "New Building, Flat 402", locality: body.newLocality || "New Locality", city: body.newCity || "Delhi", state: body.newState || "Delhi", country: "IND", area_code: body.newAreaCode || "110001" } }, 
+                instructions: { name: "delivery_instructions", short_desc: body.instructions || "Please ring the bell twice." } 
+            } 
+        }]
       }
     };
   }
