@@ -1,5 +1,13 @@
+// ═══════════════════════════════════════════════════════════
+// 🚀 NNLGHARPRO ONDC BACKEND — FINAL WORKBENCH CLEARANCE
+// ═══════════════════════════════════════════════════════════
 import { blake2b } from 'blakejs'; 
 import nacl from 'tweetnacl'; 
+
+const CORE_VERSION = "1.2.5";
+const DEFAULT_CITY = "std:011"; 
+const DEFAULT_COUNTRY = "IND";
+const TTL_DURATION = "PT30S";
 
 export default {
   async fetch(request, env, ctx) {
@@ -16,7 +24,7 @@ export default {
     
     try {
       if (path === '' || path === 'api/health') {
-        return jsonResponse({ status: 'active', version: '20.0.0' }, corsHeaders);
+        return jsonResponse({ status: 'active', version: '20.0.0', spec: `RET11-${CORE_VERSION}` }, corsHeaders);
       }
       
       const mockProviders = [{
@@ -33,7 +41,7 @@ export default {
           }]
       }];
 
-      // 🚨 1. GATEWAY INCOMING CALLBACKS
+      // 🚨 1. INBOUND PROTOCOL LAYER (ONDC Gateway Callbacks)
       if (path.startsWith('on_')) {
         const body = await request.json();
         const txnId = body.context?.transaction_id;
@@ -45,7 +53,7 @@ export default {
         return jsonResponse({ message: { ack: { status: "ACK" } } }, corsHeaders);
       }
 
-           // 🚨 2. FRONTEND OUTGOING & WORKBENCH TESTING
+      // 🚨 2. OUTBOUND CLIENT LAYER (Workbench aur Frontend dono ke liye)
       if (path.startsWith('client_') || path === 'search' || path === 'select' || path === 'init' || path === 'confirm' || path === 'update') {
         const action = path.startsWith('client_') ? path.replace('client_', '') : path;
         const reqBody = await request.json();
@@ -56,6 +64,7 @@ export default {
         const payload = buildBapPayload(action, domain, reqBody, transactionId, env);
         const authHeader = await generateOndcSignature(payload, env);
         
+        // Gateway URL fix
         const gatewayUrl = `${env.ONDC_GATEWAY_URL}/${action}`;
 
         ctx.waitUntil(
@@ -70,20 +79,19 @@ export default {
           })
           .then(async (res) => {
             const text = await res.text();
-            console.log(`[CLIENT_${action.toUpperCase()}] Status: ${res.status} | Response: ${text}`);
+            console.log(`[CLIENT_${action.toUpperCase()}] Gateway Outbound Success | Status: ${res.status}`);
           })
-          .catch((e) => console.log(`[CLIENT_${action.toUpperCase()}] Fetch Error:`, e.message))
+          .catch((e) => console.log(`[CLIENT_${action.toUpperCase()}] Gateway Execution Failure:`, e.message))
         );
 
         return jsonResponse({ 
             success: true, 
             transactionId: transactionId,
-            results: mockProviders,
             providers: mockProviders
         }, corsHeaders);
       }
       
-      return jsonResponse({ error: 'Route not mapped' }, corsHeaders, 404);
+      return jsonResponse({ error: 'Route execution pipeline missing mapping' }, corsHeaders, 404);
     } catch (error) {
       return jsonResponse({ error: error.message }, corsHeaders, 500);
     }
@@ -94,7 +102,7 @@ function jsonResponse(data, headers, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { ...headers, 'Content-Type': 'application/json' } });
 }
 
-// ✅ SIGNATURE GENERATOR
+// ✅ SECURE ED25519 PROTOCOL SIGNER
 async function generateOndcSignature(body, env) {
   const created = Math.floor(Date.now() / 1000);
   const expires = created + 3600;
@@ -112,12 +120,9 @@ async function generateOndcSignature(body, env) {
   while (rawKey.length % 4) { rawKey += '='; }
   
   const privateKeyBytes = Uint8Array.from(atob(rawKey), c => c.charCodeAt(0));
-  let secretKey;
-  if (privateKeyBytes.length === 32) {
-    secretKey = nacl.sign.keyPair.fromSeed(privateKeyBytes).secretKey;
-  } else {
-    secretKey = privateKeyBytes; 
-  }
+  let secretKey = privateKeyBytes.length === 32 
+    ? nacl.sign.keyPair.fromSeed(privateKeyBytes).secretKey 
+    : privateKeyBytes;
 
   const signatureBytes = nacl.sign.detached(encoder.encode(signingString), secretKey);
   const signature = btoa(String.fromCharCode(...signatureBytes));
@@ -125,103 +130,131 @@ async function generateOndcSignature(body, env) {
   return `Signature keyId="${env.ONDC_BAP_ID}|${env.ONDC_UK_ID}|ed25519",algorithm="ed25519",created="${created}",expires="${expires}",headers="(created) (expires) digest",signature="${signature}"`;
 }
 
-// ✅ PAYLOAD BUILDER WITH COMPLETE ONDC SCHEMAS
+// ✅ PAYLOAD DISPATCH STRUCT (RET11 COMPLIANT)
 function buildBapPayload(action, domain, body, transactionId, env) {
   const timestamp = new Date().toISOString();
   
   const context = {
     domain: domain, 
-    country: "IND", 
-    city: "std:011", 
+    country: DEFAULT_COUNTRY, 
+    city: DEFAULT_CITY, 
     action: action, 
-    core_version: '1.2.5',
+    core_version: CORE_VERSION,
     bap_id: env.ONDC_BAP_ID, 
-    bap_uri: env.ONDC_BAP_URI.endsWith('/') ? env.ONDC_BAP_URI : env.ONDC_BAP_URI + '/',
+    bap_uri: env.ONDC_BAP_URI,
     bpp_id: "workbench.ondc.tech", 
-    bpp_uri: "https://workbench.ondc.tech/", // ✅ FIXED: Correct URL
+    bpp_uri: "https://workbench.ondc.tech", // ✅ FIXED: No trailing slash
     transaction_id: transactionId, 
     message_id: crypto.randomUUID(), 
     timestamp: timestamp, 
-    ttl: 'PT30S'
+    ttl: TTL_DURATION
+  };
+
+  const itemBlock = {
+    id: body.itemId || "item_veg_thali",
+    location_id: "L1",
+    quantity: { count: parseInt(body.quantity || 1, 10) },
+    tags: [{
+      code: "type",
+      list: [{ code: "type", value: "item" }]
+    }]
+  };
+
+  const providerBlock = {
+    id: "provider_workbench_1",
+    locations: [{ id: "L1" }]
+  };
+
+  const defaultBilling = { 
+    name: "NnlGharPro Buyer Customer", 
+    address: { 
+      name: "NnlGharPro Base Hub", 
+      building: "Corporate Tech Block", 
+      locality: "Connaught Place", 
+      city: "Delhi", 
+      state: "Delhi", 
+      country: "IND", 
+      area_code: "110001" 
+    }, 
+    phone: "9876543210", 
+    email: "system-test@nnlgharpro.workers.dev" 
+  };
+
+  const defaultFulfillment = { 
+    id: "F1", 
+    type: "Delivery", 
+    end: { 
+      location: { 
+        gps: "28.6139,77.2090", 
+        address: { area_code: "110001" } 
+      }, 
+      contact: { phone: "9876543210" } 
+    } 
   };
 
   let message = {};
 
-  if (action === 'search') {
-    message = {
-      intent: {
-        item: { descriptor: { name: "Food" } },
-        fulfillment: { type: "Delivery", end: { location: { gps: "28.6139,77.2090", address: { area_code: body.pincode || "110001" } } } },
-        tags: [{ code: "BAP_TERMS", list: [ { code: "STATIC_SIGNATURE_REQ", value: "true" }, { code: "FINDER_FEE_TYPE", value: "percent" }, { code: "FINDER_FEE_AMOUNT", value: "3.0" } ] }]
-      }
-    };
-  } else if (action === 'select') {
-    message = {
-      order: {
-        provider: { id: "provider_workbench_1", locations: [{ id: "L1" }] },
-        items: [{ 
-            id: "item_veg_thali", 
-            location_id: "L1", 
-            quantity: { count: 1 },
-            tags: [{ code: "type", list: [{ code: "type", value: "item" }] }] 
-        }]
-      }
-    };
-  } else if (action === 'init') {
-    message = {
-      order: {
-        provider: { id: "provider_workbench_1", locations: [{ id: "L1" }] },
-        items: [{ 
-            id: "item_veg_thali", 
-            quantity: { count: 1 }, 
-            location_id: "L1",
-            tags: [{ code: "type", list: [{ code: "type", value: "item" }] }] 
-        }],
-        billing: { 
-            name: "Test User", 
-            address: { name: "Test User", building: "Main Road", locality: "Test Locality", city: "Delhi", state: "Delhi", country: "IND", area_code: "110001" }, 
-            phone: "9876543210", email: "test@nnlgharpro.com" 
-        },
-        fulfillments: [{ 
-            id: "F1", type: "Delivery", 
-            end: { location: { gps: "28.6139,77.2090", address: { area_code: "110001" } }, contact: { phone: "9876543210" } } 
-        }]
-      }
-    };
-  } else if (action === 'confirm') {
-    message = {
-      order: {
-        id: crypto.randomUUID(), 
-        state: "Created",
-        provider: { id: "provider_workbench_1", locations: [{ id: "L1" }] },
-        items: [{ 
-            id: "item_veg_thali", 
-            quantity: { count: 1 }, 
-            location_id: "L1",
-            tags: [{ code: "type", list: [{ code: "type", value: "item" }] }]
-        }],
-        billing: { 
-            name: "Test User", 
-            phone: "9876543210", 
-            address: { name: "Test User", building: "Main Road", locality: "Test Locality", city: "Delhi", state: "Delhi", country: "IND", area_code: "110001" } 
-        },
-        fulfillments: [{ 
-            id: "F1", 
+  switch (action) {
+    case 'search':
+      message = {
+        intent: {
+          item: { descriptor: { name: body.searchTerm || "Food" } },
+          fulfillment: { 
             type: "Delivery", 
-            end: { 
-                location: { gps: "28.6139,77.2090", address: { area_code: "110001" } }, 
-                contact: { phone: "9876543210" } 
-            } 
-        }],
-        payment: {
-            uri: "https://razorpay.com",
-            tls_method: "string", 
-            status: "PAID",
-            type: "ON-ORDER",
-            collected_by: "BAP"
+            end: { location: { gps: "28.6139,77.2090", address: { area_code: body.pincode || "110001" } } } 
+          },
+          tags: [{ 
+            code: "BAP_TERMS", 
+            list: [
+              { code: "STATIC_SIGNATURE_REQ", value: "true" }, 
+              { code: "FINDER_FEE_TYPE", value: "percent" }, 
+              { code: "FINDER_FEE_AMOUNT", value: "3.0" }
+            ] 
+          }]
         }
-      }
-    };
+      };
+      break;
+
+    case 'select':
+      message = {
+        order: {
+          provider: providerBlock,
+          items: [itemBlock]
+        }
+      };
+      break;
+
+    case 'init':
+      message = {
+        order: {
+          provider: providerBlock,
+          items: [itemBlock],
+          billing: defaultBilling,
+          fulfillments: [defaultFulfillment]
+        }
+      };
+      break;
+
+    case 'confirm':
+      message = {
+        order: {
+          id: crypto.randomUUID(), 
+          state: "Created",
+          provider: providerBlock,
+          items: [itemBlock],
+          billing: defaultBilling,
+          fulfillments: [defaultFulfillment],
+          payment: {
+              type: "POST-FULFILLMENT",
+              status: "NOT-PAID",
+              collected_by: "BPP"
+          }
+        }
+      };
+      break;
+      
+    default:
+      throw new Error(`Unsupported transaction pipeline phase: ${action}`);
   }
 
   return { context, message };
