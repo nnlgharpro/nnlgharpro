@@ -127,18 +127,22 @@ function buildBapPayload(action, domain, body, transactionId, env) {
     bap_id: env.ONDC_BAP_ID, 
     bap_uri: env.ONDC_BAP_URI,
     bpp_id: "workbench.ondc.tech", 
-    bpp_uri: "https://workbench.ondc.tech", // ✅ BINA SLASH KE
+    bpp_uri: "https://workbench.ondc.tech",
     transaction_id: transactionId, 
     message_id: crypto.randomUUID(), 
     timestamp: timestamp, 
     ttl: TTL_DURATION
   };
 
+  // ✅ FIXED TAGS
   const itemBlock = {
     id: "item_veg_thali",
     location_id: "L1",
     quantity: { count: 1 },
-    tags: [{ code: "type", list: [{ code: "type", value: "item" }] }]
+    tags: [{ 
+        code: "type", 
+        list: [{ code: "type", value: "item" }] 
+    }]
   };
 
   const providerBlock = { id: "provider_workbench_1", locations: [{ id: "L1" }] };
