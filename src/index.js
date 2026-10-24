@@ -57,6 +57,7 @@ export default {
         }
 
         // 🔥 LIVE AUTO-PIPELINE TRIGGER (Updated to include 'update' step)
+        /*
         if (action === 'on_search' && txnId) {
           ctx.waitUntil(
             (async () => {
@@ -86,7 +87,7 @@ export default {
             })()
           );
         }
-
+        */
         return jsonResponse({ message: { ack: { status: "ACK" } } }, corsHeaders);
       }
 
