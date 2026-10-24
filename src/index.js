@@ -18,7 +18,7 @@ export default {
         const reqBody = await request.json();
         const transactionId = reqBody.transactionId || crypto.randomUUID();
         
-        // Yahan hum payload build kar rahe hain
+        // Yahan hum payload build kar rahe hain (Bina Signature ke testing ke liye)
         const payload = {
           context: {
             domain: "ONDC:RET11",
@@ -28,8 +28,8 @@ export default {
             core_version: "1.2.5",
             bap_id: env.ONDC_BAP_ID,
             bap_uri: env.ONDC_BAP_URI,
-            bpp_id: "workbench.ondc.tech",       // ✅ FIX 1: BPP ID
-            bpp_uri: "https://workbench.ondc.tech", // ✅ FIX 2: BPP URI
+            bpp_id: "workbench.ondc.tech",         // ✅ FIXED
+            bpp_uri: "https://workbench.ondc.tech", // ✅ FIXED
             transaction_id: transactionId,
             message_id: crypto.randomUUID(),
             timestamp: new Date().toISOString(),
@@ -52,8 +52,8 @@ export default {
                     items: [{ 
                         id: "item_veg_thali", 
                         quantity: { count: 1 },
-                        location_id: "L1", // ✅ FIX 3: Location ID
-                        tags: [{ code: "type", list: [{ code: "type", value: "item" }] }] // ✅ FIX 4: Tags
+                        location_id: "L1", // ✅ FIXED
+                        tags: [{ code: "type", list: [{ code: "type", value: "item" }] }] // ✅ FIXED
                     }],
                     billing: {
                         name: "Test User",
