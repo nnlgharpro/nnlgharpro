@@ -13,7 +13,7 @@ ONDC_GATEWAY_URL = "https://workbench.ondc.tech/api-service/ONDC:RET11/1.2.5/sel
 # 👇 BAP Keys (Workbench ki keys)
 ONDC_BAP_ID = "gmSw1E_2Ke4DeL_Ifn3zbzuUshWPypiF" 
 # 🚨 YAHAN CHANGE KIYA HAI 🚨
-ONDC_BAP_URI = "https://nnlgharpro-ret11.nnlgharpro.workers.dev"
+ONDC_BAP_URI = "https://nnlgharpro-ret11.nnlgharpro.workers.dev" 
 
 # 👇 BPP Keys (Aapki Seller App ki keys)
 ONDC_UK_ID = "05063c66-41f2-4f75-878a-22f28d07712a"
