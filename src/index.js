@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC API — FINAL FIXED (v12.8)
+// 🚀 NNLGHARPRO ONDC API — SUPER FIXED (v13.0)
 // ═══════════════════════════════════════════════════════════
 import { blake2b } from 'blakejs'; 
 import nacl from 'tweetnacl';
@@ -19,7 +19,7 @@ export default {
     
     try {
       if (path === '' || path === 'api/health') {
-        return jsonResponse({ status: 'active', version: '12.8.0' }, corsHeaders);
+        return jsonResponse({ status: 'active', version: '13.0.0' }, corsHeaders);
       }
       
       const mockProviders = [{
@@ -53,21 +53,24 @@ export default {
         const action = path.replace('client_', '');
         const reqBody = await request.json();
         
-        // ✅ FIX: Agar frontend se transactionId aayi hai toh use karo, warna nayi banao
+        // Agar frontend se transactionId aayi hai toh use karo, warna nayi banao
         const transactionId = reqBody.transactionId || crypto.randomUUID();
-        // ✅ FIX: Domain ko reqBody se lo, warna default RET11
         const domain = reqBody.domain || env.ONDC_DOMAIN || "ONDC:RET11";
         
         const payload = buildBapPayload(action, domain, reqBody, transactionId, env);
         const authHeader = await generateOndcSignature(payload, env);
         
-        // ✅ FIX: URL ke aage action (jaise /search ya /select) lagana zaroori hai
         const gatewayUrl = `${env.ONDC_GATEWAY_URL}/${action}`;
 
+        // Request Gateway ko bhejein
         ctx.waitUntil(
           fetch(gatewayUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-Gateway-Authorization': authHeader, 'Authorization': authHeader },
+            headers: { 
+                'Content-Type': 'application/json', 
+                'X-Gateway-Authorization': authHeader, 
+                'Authorization': authHeader 
+            },
             body: JSON.stringify(payload)
           })
           .then(async (res) => {
@@ -77,10 +80,10 @@ export default {
           .catch((e) => console.log(`[CLIENT_${action.toUpperCase()}] Fetch Error:`, e.message))
         );
 
-        // Frontend ko wapas transactionId bhejna zaroori hai taaki wo select mein use kare
+        // Frontend ko response bhejein (TXN ID zaroori hai select ke liye)
         return jsonResponse({ 
             success: true, 
-            transactionId: transactionId, // <-- YEH SABSE ZAROORI HAI
+            transactionId: transactionId,
             results: mockProviders,
             providers: mockProviders
         }, corsHeaders);
@@ -97,6 +100,7 @@ function jsonResponse(data, headers, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { ...headers, 'Content-Type': 'application/json' } });
 }
 
+// ✅ SIGNATURE GENERATOR (ONDC STANDARD)
 async function generateOndcSignature(body, env) {
   const created = Math.floor(Date.now() / 1000);
   const expires = created + 3600;
@@ -127,10 +131,11 @@ async function generateOndcSignature(body, env) {
   return `Signature keyId="${env.ONDC_BAP_ID}|${env.ONDC_UK_ID}|ed25519",algorithm="ed25519",created="${created}",expires="${expires}",headers="(created) (expires) digest",signature="${signature}"`;
 }
 
+// ✅ PAYLOAD BUILDER (All Fixes Applied)
 function buildBapPayload(action, domain, body, transactionId, env) {
   const timestamp = new Date().toISOString();
   
-  // Common Context for all requests
+  // Context mein bpp_id aur bpp_uri add karna zaroori tha (Workbench error fix)
   const context = {
     domain: domain, 
     country: "IND", 
@@ -139,6 +144,8 @@ function buildBapPayload(action, domain, body, transactionId, env) {
     core_version: '1.2.5',
     bap_id: env.ONDC_BAP_ID, 
     bap_uri: env.ONDC_BAP_URI,
+    bpp_id: "workbench.ondc.tech", 
+    bpp_uri: "https://workbench.ondc.tech", 
     transaction_id: transactionId, 
     message_id: crypto.randomUUID(), 
     timestamp: timestamp, 
@@ -161,7 +168,11 @@ function buildBapPayload(action, domain, body, transactionId, env) {
     message = {
       order: {
         provider: { id: "provider_workbench_1", locations: [{ id: "L1" }] },
-        items: [{ id: "item_veg_thali", quantity: { count: 1 } }],
+        items: [{ 
+            id: "item_veg_thali", 
+            quantity: { count: 1 },
+            location_id: "L1" // Workbench error fix: Item mein location_id zaroori hai
+        }],
         billing: {
           name: "Test User",
           address: { name: "Test User", building: "Main Road", locality: "Test Locality", city: "Delhi", state: "Delhi", country: "IND", area_code: body.pincode || "110001" },
@@ -180,7 +191,7 @@ function buildBapPayload(action, domain, body, transactionId, env) {
     message = {
       order: {
         provider: { id: "provider_workbench_1", locations: [{ id: "L1" }] },
-        items: [{ id: "item_veg_thali", quantity: { count: 1 } }],
+        items: [{ id: "item_veg_thali", quantity: { count: 1 }, location_id: "L1" }],
         billing: { name: "Test User", address: { name: "Test User", building: "Main Road", city: "Delhi", state: "Delhi", country: "IND", area_code: "110001" }, phone: "9876543210", email: "test@nnlgharpro.com" },
         fulfillments: [{ id: "F1", type: "Delivery", end: { location: { gps: "28.6139,77.2090", address: { area_code: "110001" } } } }]
       }
@@ -190,7 +201,7 @@ function buildBapPayload(action, domain, body, transactionId, env) {
       order: {
         id: crypto.randomUUID(), state: "Created",
         provider: { id: "provider_workbench_1", locations: [{ id: "L1" }] },
-        items: [{ id: "item_veg_thali", quantity: { count: 1 } }],
+        items: [{ id: "item_veg_thali", quantity: { count: 1 }, location_id: "L1" }],
         billing: { name: "Test User", phone: "9876543210", address: { building: "Main Road", city: "Delhi", area_code: "110001" } },
         fulfillments: [{ id: "F1", type: "Delivery", end: { location: { gps: "28.6139,77.2090", address: { area_code: "110001" } } } }],
         payment: { uri: "https://razorpay.com", tls_method: "string", status: "PAID", type: "ON-ORDER", collected_by: "BAP" }
