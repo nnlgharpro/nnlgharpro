@@ -1,704 +1,219 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-<title>NnlGharPro - Book Trusted Services</title>
+<title>NnlGharPro - Super App</title>
 <meta name="google-site-verification" content="w6qm7tonraRh8hHgflqJmZaubqzFv7_CYz-vrh1Zbmw" />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); min-height: 100vh; padding: 12px; color: #fff; -webkit-user-select: none; user-select: none; }
-input, textarea, select { -webkit-user-select: text; user-select: text; }
-.container { max-width: 480px; margin: 0 auto; }
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+body { background: #0f0c29; background: linear-gradient(to right, #24243e, #302b63, #0f0c29); min-height: 100vh; color: #fff; padding: 12px; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
+.container { max-width: 480px; margin: 0 auto; display: none; }
+.container.active { display: block; }
+input, textarea { -webkit-user-select: text; user-select: text; }
 
 /* LOGIN */
-.login-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: flex; justify-content: center; align-items: center; z-index: 9999; padding: 20px; }
-.login-overlay.hidden { display: none; }
-.login-box { background: rgba(255,255,255,0.05); padding: 30px; border-radius: 20px; max-width: 350px; width: 100%; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
-.login-box h2 { font-size: 24px; margin-bottom: 20px; }
-.login-box input { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #fff; font-size: 14px; outline: none; }
-.login-box input:focus { border-color: #FF6B35; }
-.login-box .btn-primary { width: 100%; padding: 12px; background: linear-gradient(135deg, #FF6B35, #FF8C42); border: none; border-radius: 10px; color: #fff; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 5px; transition: 0.3s; }
-.login-box .btn-primary:hover { opacity: 0.9; transform: scale(1.02); }
-.login-box .btn-secondary { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: #fff; font-weight: 600; cursor: pointer; margin-top: 5px; transition: 0.3s; }
-.login-box .btn-secondary:hover { background: rgba(255,255,255,0.1); }
-.login-box .login-error { color: #FF4757; font-size: 12px; margin-top: 5px; display: none; word-break: break-word; }
-.login-box .auth-toggle { color: rgba(255,255,255,0.4); font-size: 12px; cursor: pointer; margin-top: 10px; display: block; transition: 0.3s; }
-.login-box .auth-toggle:hover { color: #FF6B35; }
-.login-box .forgot-link { color: rgba(255,255,255,0.3); font-size: 11px; cursor: pointer; display: block; margin-top: 8px; transition: 0.3s; }
-.login-box .forgot-link:hover { color: #FF6B35; text-decoration: underline; }
-.login-box .login-sub-text { color: rgba(255,255,255,0.5); margin-bottom: 20px; }
+.login-screen { position: fixed; inset: 0; background: #0f0c29; display: flex; justify-content: center; align-items: center; z-index: 9999; padding: 20px; }
+.login-box { background: rgba(255,255,255,0.05); padding: 25px; border-radius: 20px; width: 100%; max-width: 350px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+.login-box h2 { margin-bottom: 20px; font-size: 24px; }
+.login-box input { width: 100%; padding: 14px; margin-bottom: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: #fff; outline: none; font-size: 15px; }
+.login-box button { width: 100%; padding: 14px; background: linear-gradient(135deg, #FF6B35, #FF8C42); border: none; border-radius: 10px; color: #fff; font-weight: 700; font-size: 16px; cursor: pointer; }
+.login-box p { margin-top: 15px; font-size: 12px; color: #4ECDC4; cursor: pointer; }
 
 /* HEADER */
-#mainApp { display: none; }
-.header { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; flex-wrap: wrap; gap: 10px; }
-.logo-text { font-size: 24px; font-weight: 800; background: linear-gradient(135deg, #FF6B35, #FFD93D); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.user-info { font-size: 12px; background: rgba(255,255,255,0.05); padding: 4px 12px; border-radius: 20px; display: flex; align-items: center; gap: 8px; }
-.user-info button { background: #FF4757; border: none; color: #fff; padding: 4px 12px; border-radius: 12px; cursor: pointer; font-size: 10px; font-weight: 600; }
+.header { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; margin-bottom: 10px; }
+.logo { font-size: 22px; font-weight: 800; background: linear-gradient(135deg, #FF6B35, #FFD93D); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.cart-icon { position: relative; cursor: pointer; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 50%; }
+.cart-icon i { font-size: 18px; color: #4ECDC4; }
+.cart-badge { position: absolute; top: -5px; right: -5px; background: #FF4757; color: #fff; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 10px; display: none; }
 
-/* ALERT BAR */
-.alert-bar { background: rgba(255,255,255,0.04); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05); border-radius: 14px; padding: 10px 14px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
-.alert-bar .left { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #FF6B35; }
-.alert-bar .left i { color: #4ECDC4; }
-.alert-bar .right { display: flex; align-items: center; gap: 12px; font-size: 12px; color: rgba(255,255,255,0.6); }
-.alert-bar .right .weather { display: flex; align-items: center; gap: 6px; }
-.alert-bar .right .weather i { color: #FFD93D; }
-
-/* BROADCAST */
-.broadcast-banner { background: linear-gradient(135deg, #FF6B35, #FF8C42); border-radius: 12px; padding: 12px 16px; margin-bottom: 15px; color: #fff; display: none; align-items: center; gap: 12px; }
-.broadcast-banner.show { display: flex; }
-.broadcast-banner .b-content { flex: 1; font-size: 13px; line-height: 1.4; }
-.broadcast-banner .b-content a { color: #fff; text-decoration: underline; font-weight: 700; }
-.broadcast-banner .b-close { cursor: pointer; font-size: 18px; opacity: 0.7; }
-
-/* TRUST */
-.trust-section { background: linear-gradient(135deg, rgba(255,107,53,0.08), rgba(78,205,196,0.05)); border: 1px solid rgba(255,107,53,0.15); border-radius: 16px; padding: 18px 16px; margin-bottom: 15px; text-align: center; }
-.trust-section .stars { color: #FFD93D; font-size: 20px; margin-bottom: 8px; letter-spacing: 2px; }
-.trust-section .trust-title { font-size: 16px; font-weight: 800; margin-bottom: 12px; background: linear-gradient(135deg, #FF6B35, #FFD93D); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.trust-section .trust-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.trust-section .trust-stat { background: rgba(255,255,255,0.04); border-radius: 10px; padding: 10px 6px; border: 1px solid rgba(255,255,255,0.05); }
-.trust-section .trust-stat .stat-num { font-size: 16px; font-weight: 800; color: #4ECDC4; }
-.trust-section .trust-stat .stat-label { font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 2px; }
-
-/* PINCODE */
-.pincode-wrap { display: flex; gap: 10px; margin-bottom: 15px; }
-.pincode-wrap input { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #fff; font-size: 16px; text-align: center; }
-.pincode-wrap button { padding: 12px 20px; background: linear-gradient(135deg, #4ECDC4, #44B3A8); border: none; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; }
-
-/* SERVICES */
-.section-title { font-size: 18px; font-weight: 700; margin: 15px 0 10px; display: flex; align-items: center; gap: 8px; }
-.section-title i { color: #FF6B35; }
-.service-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-.service-btn { border-radius: 16px; padding: 20px 5px; text-align: center; cursor: pointer; transition: all 0.3s; font-size: 11px; font-weight: 700; border: 2px solid transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 90px; }
-.service-btn:hover { transform: translateY(-3px); }
-.service-btn.active { border-color: #FFD93D; box-shadow: 0 0 20px rgba(255,217,61,0.2); }
-.service-btn i { font-size: 26px; margin-bottom: 8px; }
-.s-recharge { background: linear-gradient(135deg, #5F259F, #8B5CF6); }
-.s-plumbing { background: linear-gradient(135deg, #0077b6, #00b4d8); }
-.s-electrician { background: linear-gradient(135deg, #f77f00, #fcbf49); }
-.s-mobile-laptop { background: linear-gradient(135deg, #2a9d8f, #52b788); }
-.s-home-decor { background: linear-gradient(135deg, #9b5de5, #f15bb5); }
-.s-painting { background: linear-gradient(135deg, #ef476f, #ff6b6b); }
-.s-ac-repair { background: linear-gradient(135deg, #118ab2, #06d6a0); }
-.s-cctv { background: linear-gradient(135deg, #264653, #2a9d8f); }
-.s-food-restaurant { background: linear-gradient(135deg, #e63946, #f4a261); }
-.s-taxi { background: linear-gradient(135deg, #1b4332, #40916c); }
-.s-ro-service { background: linear-gradient(135deg, #0077b6, #48cae4); }
-.s-cinema { background: linear-gradient(135deg, #6d597a, #b56576); }
-.s-hospital { background: linear-gradient(135deg, #d90429, #ef233c); }
-.s-lab { background: linear-gradient(135deg, #3a0ca3, #7209b7); }
-.s-school { background: linear-gradient(135deg, #3d5a80, #98c1d9); }
-.s-hotel { background: linear-gradient(135deg, #e65100, #f57c00); }
-.s-insurance { background: linear-gradient(135deg, #0d47a1, #1976d2); }
-.s-ecommerce { background: linear-gradient(135deg, #FF6B35, #FF8C42); }
-.s-tv { background: linear-gradient(135deg, #b5179e, #7209b7); }
-.s-local-bazar { background: linear-gradient(135deg, #0096c7, #023e8a); }
-.s-gym-fitness { background: linear-gradient(135deg, #e85d04, #dc2f02); }
-.s-other { background: linear-gradient(135deg, #455a64, #78909c); }
+/* SERVICES GRID */
+.service-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px; }
+.service-btn { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 12px 5px; text-align: center; cursor: pointer; transition: 0.2s; }
+.service-btn:active { transform: scale(0.95); }
+.service-btn i { font-size: 20px; margin-bottom: 6px; display: block; color: #FF6B35; }
+.service-btn span { font-size: 10px; font-weight: 600; color: #ccc; }
 
 /* MODALS */
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.92); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 9999; padding: 16px; }
-.modal-overlay.show { display: flex; }
-.modal-box { background: #1a1a2e; padding: 24px; border-radius: 20px; max-width: 420px; width: 100%; max-height: 90vh; overflow-y: auto; border: 1px solid rgba(255,255,255,0.08); animation: slideUp 0.3s ease; }
-@keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-.modal-box .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-.modal-box .modal-header h3 { font-size: 18px; margin: 0; display: flex; align-items: center; gap: 8px; }
-.modal-box .modal-header h3 i { color: #FF6B35; }
-.modal-box .modal-header .close-btn { background: none; border: none; color: rgba(255,255,255,0.4); font-size: 22px; cursor: pointer; }
-.modal-box .modal-sub { font-size: 13px; color: rgba(255,255,255,0.4); margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 5px; }
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: flex-end; z-index: 9998; }
+.modal.show { display: flex; }
+.modal-content { background: #1a1a2e; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 20px; max-height: 90vh; overflow-y: auto; animation: slideUp 0.2s ease-out; }
+@keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+.close-btn { background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; }
 
-/* INFO MODAL */
-.info-content { font-size: 13px; line-height: 1.7; color: rgba(255,255,255,0.8); }
-.info-content h4 { color: #4ECDC4; font-size: 14px; margin: 14px 0 6px; display: flex; align-items: center; gap: 6px; }
-.info-content h4:first-child { margin-top: 0; }
-.info-content p { margin-bottom: 8px; }
-.info-content ul { margin: 6px 0 12px 18px; }
-.info-content ul li { margin-bottom: 4px; }
-.info-content a { color: #4ECDC4; text-decoration: none; }
-.info-content .highlight { background: rgba(255,107,53,0.1); padding: 10px 12px; border-radius: 10px; border-left: 3px solid #FF6B35; margin: 10px 0; }
+/* CART ITEMS */
+.cart-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.05); }
+.qty-control { display: flex; align-items: center; gap: 10px; background: rgba(78,205,196,0.1); padding: 2px 8px; border-radius: 6px; }
+.qty-btn { background: none; border: none; color: #4ECDC4; font-size: 16px; font-weight: 800; cursor: pointer; }
+.qty-num { font-weight: 700; font-size: 13px; }
+.btn-primary { background: linear-gradient(135deg, #4ECDC4, #44B3A8); border: none; padding: 12px 20px; border-radius: 8px; color: #fff; font-weight: 700; cursor: pointer; }
+.btn-pay { background: linear-gradient(135deg, #5F259F, #8B5CF6); width: 100%; padding: 14px; font-size: 16px; border-radius: 10px; border: none; color: #fff; font-weight: 700; margin-top: 15px; }
 
-/* PROVIDER LIST */
-.provider-list-box { max-height: 250px; overflow-y: auto; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 4px; background: rgba(255,255,255,0.02); }
-.provider-item { padding: 12px 14px; cursor: pointer; transition: 0.2s; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid transparent; margin-bottom: 4px; }
-.provider-item:hover { background: rgba(255,255,255,0.05); }
-.provider-item.selected { border-color: #4ECDC4; background: rgba(78,205,196,0.1); }
-.provider-item .p-name { font-weight: 600; font-size: 14px; color: #fff; }
-.provider-item .p-detail { font-size: 12px; color: rgba(255,255,255,0.5); }
-.provider-item .p-select-icon { color: rgba(255,255,255,0.1); }
+/* RECHARGE */
+.op-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px; }
+.op-card { background: rgba(255,255,255,0.05); padding: 10px 5px; border-radius: 8px; text-align: center; cursor: pointer; border: 1px solid transparent; }
+.op-card.active { border-color: #4ECDC4; background: rgba(78,205,196,0.1); }
+.op-card img { height: 25px; border-radius: 5px; margin-bottom: 5px; }
+.op-card div { font-size: 10px; font-weight: 600; }
 
-/* BOOKING FORM */
-.booking-form { display: none; margin-top: 5px; }
-.booking-form .form-group { margin-bottom: 12px; }
-.booking-form .form-group label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.4); display: block; margin-bottom: 4px; }
-.booking-form input, .booking-form textarea { width: 100%; padding: 12px 14px; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; background: rgba(255,255,255,0.03); color: #fff; font-size: 14px; font-family: 'Inter', sans-serif; }
-.booking-form input:focus, .booking-form textarea:focus { outline: none; border-color: #FF6B35; }
-.booking-form .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+/* INSURANCE */
+.ins-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.ins-card { background: rgba(255,255,255,0.03); padding: 12px 5px; border-radius: 10px; text-align: center; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; }
+.ins-card i { font-size: 20px; color: #FFD93D; margin-bottom: 5px; display: block; }
+.ins-card span { font-size: 10px; }
 
-/* 🎯 ORDER TYPE SELECTOR */
-.order-type-section { background: linear-gradient(135deg, rgba(255,107,53,0.08), rgba(255,217,61,0.05)); border: 2px solid rgba(255,107,53,0.2); border-radius: 16px; padding: 16px; margin-bottom: 14px; }
-.order-type-section .ot-title { font-size: 14px; font-weight: 800; color: #FFD93D; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-.order-type-section .ot-title i { color: #FF6B35; }
-.order-type-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.order-type-btn { background: rgba(255,255,255,0.03); border: 2px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 16px 8px; text-align: center; cursor: pointer; transition: all 0.3s; color: #fff; }
-.order-type-btn:hover { background: rgba(255,255,255,0.06); }
-.order-type-btn.selected { border-color: #00C853; background: linear-gradient(135deg, rgba(0,200,83,0.15), rgba(0,230,118,0.08)); box-shadow: 0 0 20px rgba(0,200,83,0.2); }
-.order-type-btn .ot-icon { font-size: 32px; display: block; margin-bottom: 8px; }
-.order-type-btn .ot-label { font-size: 13px; font-weight: 700; display: block; margin-bottom: 4px; }
-.order-type-btn .ot-desc { font-size: 10px; color: rgba(255,255,255,0.5); line-height: 1.3; }
-.order-type-btn.selected .ot-desc { color: #00C853; font-weight: 600; }
-
-/* DELIVERY DISTANCE */
-.delivery-distance-section { background: linear-gradient(135deg, rgba(255,107,53,0.08), rgba(255,217,61,0.05)); border: 1px solid rgba(255,107,53,0.2); border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; display: none; }
-.delivery-distance-section.show { display: block; }
-.delivery-distance-section .dd-title { font-size: 13px; font-weight: 700; color: #FFD93D; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-.delivery-distance-section .dd-title i { color: #FF6B35; }
-.delivery-distance-section .dd-select { width: 100%; padding: 12px 14px; border: 1px solid rgba(255,107,53,0.3); border-radius: 10px; background: rgba(255,107,53,0.05); color: #fff; font-size: 14px; font-weight: 700; outline: none; cursor: pointer; }
-.delivery-distance-section .dd-select option { background: #1a1a2e; color: #fff; }
-.delivery-distance-section .dd-info { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 8px; line-height: 1.5; }
-.delivery-distance-section .dd-info strong { color: #FFD93D; }
-
-/* ITEMS SECTION */
-.items-section { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; }
-.items-section .items-title { font-size: 13px; font-weight: 700; color: #FFD93D; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-.items-section .items-title i { color: #FF6B35; }
-.items-section .items-title .open-popup-btn { margin-left: auto; background: rgba(255,107,53,0.12); border: 1px solid rgba(255,107,53,0.15); color: #FF6B35; padding: 4px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.3s; }
-.selected-items-summary { font-size: 12px; color: rgba(255,255,255,0.3); padding: 6px 0; border-top: 1px solid rgba(255,255,255,0.03); margin-top: 6px; }
-.selected-items-summary .summary-item { display: flex; justify-content: space-between; padding: 2px 0; font-size: 12px; }
-.selected-items-summary .summary-item .s-name { color: rgba(255,255,255,0.5); }
-.selected-items-summary .summary-item .s-qty { color: #4ECDC4; font-weight: 600; }
-.selected-items-summary .summary-item .s-price { color: #fff; }
-
-/* PAYMENT */
-.payment-section { background: rgba(78,205,196,0.04); border: 1px solid rgba(78,205,196,0.08); border-radius: 14px; padding: 16px; margin-bottom: 12px; display: none; }
-.payment-section .payment-title { font-size: 14px; font-weight: 700; color: #4ECDC4; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-.payment-breakdown { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
-.breakdown-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding: 6px 0; }
-.breakdown-row.items { color: rgba(255,255,255,0.7); }
-.breakdown-row.delivery { color: #FFD93D; }
-.breakdown-row.delivery.free { color: #00C853; }
-.breakdown-row.total { font-size: 18px; font-weight: 800; color: #FFD93D; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px; margin-top: 8px; }
-.breakdown-row .label { display: flex; align-items: center; gap: 8px; }
-.breakdown-row .label i { color: #4ECDC4; }
-.breakdown-row .amount { font-weight: 700; }
-.breakdown-row.total .amount { font-size: 22px; color: #fff; }
-
-.razorpay-pay-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #5F259F, #8B5CF6); border: none; border-radius: 12px; color: #fff; font-size: 18px; font-weight: 700; cursor: pointer; transition: all 0.3s; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
-.razorpay-pay-btn:hover { transform: scale(1.02); box-shadow: 0 8px 30px rgba(91, 37, 159, 0.4); }
-.razorpay-pay-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-.razorpay-pay-btn i { font-size: 22px; }
-
-.payment-note { font-size: 11px; color: rgba(255,255,255,0.3); text-align: center; margin-top: 6px; padding: 6px; background: rgba(78,205,196,0.05); border-radius: 8px; }
-.payment-note i { color: #4ECDC4; margin-right: 4px; }
-
-/* TOAST */
-.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); color: #fff; padding: 12px 24px; border-radius: 30px; display: none; font-size: 14px; z-index: 10000; border: 1px solid rgba(255,255,255,0.05); text-align: center; max-width: 90%; }
-.toast.success { border-color: rgba(78,205,196,0.3); }
-.toast.error { border-color: rgba(255,71,87,0.3); }
-
-/* FOOTER */
-.footer { text-align: center; padding: 18px 0 8px 0; border-top: 2px solid rgba(78, 205, 196, 0.15); margin-top: 16px; }
-.footer p { font-size: 14px; color: rgba(255, 255, 255, 0.8); letter-spacing: 1px; font-weight: 700; }
-.footer p i { color: #4ECDC4; margin: 0 6px; }
-.footer .brand-highlight { color: #4ECDC4; font-weight: 800; font-size: 15px; }
-.footer-links { margin-top: 10px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; font-size: 11px; }
-.footer-links a { color: rgba(255,255,255,0.5); text-decoration: none; transition: 0.3s; padding: 6px 12px; border-radius: 8px; background: rgba(255,255,255,0.03); cursor: pointer; border: 1px solid rgba(255,255,255,0.05); }
-.footer-links a:hover { color: #4ECDC4; background: rgba(78,205,196,0.08); border-color: rgba(78,205,196,0.2); }
-.footer .contact-info { margin-top: 12px; font-size: 11px; color: rgba(255,255,255,0.4); line-height: 1.8; }
-.footer .contact-info a { color: #4ECDC4; text-decoration: none; }
-
-/* RECEIPT */
-.receipt-container { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 99999; padding: 20px; }
-.receipt-container.show { display: flex; }
-.receipt-wrapper { background: #fff; border-radius: 16px; padding: 20px; max-width: 380px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.5); position: relative; color: #222; }
-.receipt-wrapper .receipt-close-btn { position: sticky; top: 0; float: right; background: rgba(255,71,87,0.1); border: none; color: #FF4757; font-size: 20px; cursor: pointer; padding: 4px 12px; border-radius: 50%; z-index: 10; }
-.receipt-wrapper .receipt-header { text-align: center; border-bottom: 2px dashed #333; padding-bottom: 10px; margin-bottom: 10px; }
-.receipt-wrapper .receipt-header h2 { font-size: 18px; color: #1a237e; margin: 0; }
-.receipt-wrapper .receipt-header h2 span { color: #283593; }
-.receipt-wrapper .receipt-header p { font-size: 10px; color: #666; margin: 2px 0; }
-.receipt-wrapper .receipt-divider { text-align: center; font-size: 9px; color: #aaa; padding: 4px 0; letter-spacing: 2px; }
-.receipt-wrapper .receipt-row { display: flex; justify-content: space-between; padding: 2px 0; font-size: 12px; }
-.receipt-wrapper .receipt-row .label { color: #666; font-weight: 500; }
-.receipt-wrapper .receipt-row .value { font-weight: 600; color: #222; text-align: right; word-break: break-word; max-width: 60%; }
-.receipt-wrapper .receipt-total { display: flex; justify-content: space-between; font-size: 15px; font-weight: 800; padding: 6px 0; border-top: 2px solid #333; margin-top: 4px; }
-.receipt-wrapper .receipt-total .total-label { color: #222; }
-.receipt-wrapper .receipt-total .total-amount { color: #1a237e; font-size: 16px; }
-.receipt-wrapper .payment-status-section { margin-top: 12px; padding: 12px; background: rgba(0,0,0,0.03); border-radius: 10px; border: 1px solid rgba(0,0,0,0.06); }
-.receipt-wrapper .payment-status-section .status-row { display: flex; justify-content: space-between; align-items: center; }
-.receipt-wrapper .payment-status-section .status-label { font-size: 14px; font-weight: 600; color: #666; }
-.receipt-wrapper .payment-status-section .status-value { font-size: 14px; font-weight: 800; padding: 4px 16px; border-radius: 20px; }
-.receipt-wrapper .receipt-footer { text-align: center; font-size: 9px; color: #888; border-top: 2px dashed #333; padding-top: 8px; margin-top: 8px; }
-.receipt-wrapper .receipt-footer .print-btn { padding: 6px 16px; background: linear-gradient(135deg, #1a237e, #283593); border: none; border-radius: 8px; color: #fff; font-weight: 700; font-size: 12px; cursor: pointer; margin-top: 4px; }
-
-/* INSURANCE SUB-TABS */
-.ins-subtab { flex: 1; padding: 12px 16px; background: transparent; border: none; border-radius: 10px; color: rgba(255,255,255,.5); font-weight: 700; font-size: 12px; cursor: pointer; transition: all .3s; font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; gap: 6px; }
-.ins-subtab:hover { color: #fff; background: rgba(255,255,255,.05); }
-.ins-subtab.active { background: linear-gradient(135deg, #4ECDC4, #44B3A8); color: #fff; box-shadow: 0 4px 15px rgba(78,205,196,.3); }
-.ins-category { margin-bottom: 14px; }
-.ins-cat-title { font-size: 12px; font-weight: 800; color: #4ECDC4; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
-.ins-cat-title i { color: #FF6B35; }
-.ins-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-.ins-card { background: linear-gradient(135deg, rgba(255,255,255,.05), rgba(255,255,255,.02)); border: 1px solid rgba(255,255,255,.06); border-radius: 10px; padding: 10px 4px; text-align: center; cursor: pointer; transition: all 0.3s; }
-.ins-card:hover { border-color: #4ECDC4; background: linear-gradient(135deg, rgba(78,205,196,.1), rgba(78,205,196,.03)); transform: translateY(-2px); box-shadow: 0 4px 15px rgba(78,205,196,.15); }
-.ins-card:active { transform: scale(0.98); }
-.ins-icon { font-size: 22px; margin-bottom: 4px; display: block; }
-.ins-name { font-size: 9px; font-weight: 700; color: #fff; line-height: 1.2; }
-
-/* ITEMS POPUP */
-.popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 10001; padding: 16px; }
-.popup-overlay.show { display: flex; }
-.popup-box { background: #1a1a2e; padding: 24px; border-radius: 20px; max-width: 420px; width: 100%; max-height: 80vh; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.08); animation: slideUp 0.3s ease; }
-.popup-box .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-.popup-box .modal-header h3 { font-size: 18px; margin: 0; display: flex; align-items: center; gap: 8px; }
-.popup-box .modal-header h3 i { color: #FF6B35; }
-.popup-box .modal-header .close-btn { background: none; border: none; color: rgba(255,255,255,0.4); font-size: 22px; cursor: pointer; }
-.popup-items-list { flex: 1; overflow-y: auto; margin-bottom: 10px; }
-.popup-main-item { border-bottom: 1px solid rgba(255,255,255,0.04); margin-bottom: 10px; }
-.main-item-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; cursor: pointer; color: #FFD93D; font-size: 14px; font-weight: 600; }
-.main-item-header .main-count { color: rgba(255,255,255,0.3); font-weight: 400; font-size: 11px; }
-.sub-items { display: block !important; padding: 4px 0 10px 10px; }
-.sub-item-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(255,255,255,0.03); border-radius: 8px; margin-bottom: 6px; border-left: 3px solid rgba(78,205,196,0.2); }
-.sub-item-row .sub-name { flex: 1; font-size: 13px; color: #fff; font-weight: 500; }
-.sub-item-row .sub-category { font-size: 10px; color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 10px; margin-right: 5px; }
-.sub-item-row .sub-price { font-weight: 700; font-size: 14px; color: #FFD93D; margin: 0 10px; min-width: 50px; text-align: right; }
-.qty-control { display: flex; align-items: center; gap: 6px; }
-.btn-minus, .btn-plus { width: 26px; height: 26px; border: none; background: rgba(78,205,196,0.15); color: #4ECDC4; font-weight: 700; border-radius: 6px; cursor: pointer; font-size: 14px; }
-.qty-num { min-width: 24px; text-align: center; font-size: 14px; font-weight: 600; color: #fff; }
-.popup-footer { border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; display: flex; justify-content: space-between; align-items: center; }
-.popup-footer .popup-total { font-size: 16px; font-weight: 700; color: #FFD93D; }
-.popup-footer .btn-primary { padding: 10px 20px; background: linear-gradient(135deg, #4ECDC4, #44B3A8); border: none; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; }
-.popup-footer .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-
-@media (max-width:600px) {
-    .service-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
-    .service-btn { min-height: 70px; padding: 12px 2px; font-size: 9px; }
-    .service-btn i { font-size: 20px; }
-    .alert-bar { flex-direction: column; align-items: flex-start; gap: 4px; }
-    .receipt-wrapper { max-width: 340px; padding: 14px; }
-}
+/* TOAST & RECEIPT */
+.toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #4ECDC4; color: #000; padding: 10px 20px; border-radius: 20px; font-weight: 700; font-size: 13px; z-index: 99999; display: none; }
+.receipt { background: #fff; color: #333; padding: 20px; border-radius: 16px; max-width: 350px; margin: auto; margin-top: 20vh; }
+.receipt h2 { text-align: center; color: #1a237e; margin-bottom: 15px; }
+.receipt .row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 13px; border-bottom: 1px dashed #ddd; }
+.receipt .total { font-size: 18px; font-weight: 800; color: #1a237e; border-top: 2px solid #333; padding-top: 10px; margin-top: 10px; }
 </style>
 </head>
 <body>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast">Message</div>
 
-<!-- LOGIN -->
-<div class="login-overlay" id="loginOverlay">
+<!-- 🔴 LOGIN SCREEN -->
+<div class="login-screen" id="loginScreen">
     <div class="login-box">
-        <h2>🏠 NnlGharPro</h2>
-        <p class="login-sub-text">Login to book trusted services</p>
+        <h2>NnlGharPro</h2>
         <input type="email" id="loginEmail" placeholder="Email Address">
         <input type="password" id="loginPassword" placeholder="Password (min 6 chars)">
-        <button class="btn-primary" id="loginBtn" onclick="loginUser()"><i class="fas fa-lock"></i> Login</button>
-        <span class="auth-toggle" id="authToggle" onclick="toggleAuthMode()">Don't have an account? <strong style="color:#FF6B35;">Create Account</strong></span>
-        <span class="forgot-link" onclick="forgotPassword()"><i class="fas fa-key"></i> Forgot Password?</span>
-        <div style="margin-top:15px;"><button class="btn-secondary" id="googleLoginBtn" onclick="googleLogin()"><i class="fab fa-google" style="color:#EA4335;"></i> Continue with Google</button></div>
-        <div class="login-error" id="loginError">❌ Invalid credentials</div>
-        <p style="font-size:10px; color:rgba(255,255,255,0.1); margin-top:12px;">🔒 Secure • Powered by NnlGharPro</p>
+        <button onclick="handleLogin()" id="loginBtn">Login / Sign Up</button>
+        <p onclick="handleGoogleLogin()">Or Continue with Google</p>
     </div>
 </div>
 
-<!-- MAIN APP -->
-<div class="container" id="mainApp" style="display:none;">
+<!-- 🟢 MAIN APP -->
+<div class="container" id="mainApp">
     <div class="header">
-        <div class="logo-text">🏠 NnlGharPro</div>
-        <div class="user-info" id="userInfo" style="gap: 15px;">
-            <!-- 🛒 CART BUTTON -->
-            <div onclick="openCartModal()" style="cursor:pointer; position:relative;">
-                <i class="fas fa-shopping-cart" style="font-size:18px; color:#4ECDC4;"></i>
-                <span id="cartCount" style="position:absolute; top:-8px; right:-10px; background:#FF4757; color:#fff; font-size:10px; padding:2px 6px; border-radius:50%; display:none;">0</span>
+        <div class="logo">NnlGharPro</div>
+        <div style="display:flex; gap:10px;">
+            <div class="cart-icon" onclick="openCart()">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-badge" id="cartBadge">0</span>
             </div>
-            <a href="mailto:nnlgharpro@gmail.com" style="display:flex; align-items:center; gap:4px; text-decoration:none; color:#4ECDC4; font-size:12px; background:rgba(78,205,196,0.08); padding:4px 10px; border-radius:12px; border:1px solid rgba(78,205,196,0.15);"><i class="fas fa-envelope"></i> <span style="font-size:10px; font-weight:600;">nnlgharpro@gmail.com</span></a>
-            <button onclick="logoutUser()" style="background:#FF4757; border:none; color:#fff; padding:4px 12px; border-radius:12px; cursor:pointer; font-size:10px; font-weight:600;">Logout</button>
+            <div class="cart-icon" onclick="handleLogout()" style="background:rgba(255,71,87,0.1);">
+                <i class="fas fa-sign-out-alt" style="color:#FF4757;"></i>
+            </div>
         </div>
     </div>
 
-    <div class="alert-bar">
-        <div class="left"><i class="fas fa-calendar-alt"></i> <span id="currentDate">Loading...</span></div>
-        <div class="right">
-            <div class="time"><i class="fas fa-clock"></i> <span id="currentTime">--:-- --</span></div>
-            <div class="weather"><span id="weatherIcon">☀️</span> <span id="weatherTemp">--°C</span></div>
-        </div>
-    </div>
-
-    <div class="broadcast-banner" id="broadcastBanner">
-        <i class="fas fa-bullhorn"></i>
-        <div class="b-content" id="broadcastMessage">Loading announcement...</div>
-        <div class="b-close" onclick="closeBroadcast()">✕</div>
-    </div>
-
-    <div class="trust-section">
-        <div class="stars">⭐⭐⭐⭐⭐</div>
-        <div class="trust-title">Thousands of Customers Trust Us</div>
-        <div class="trust-stats">
-            <div class="trust-stat"><div class="stat-num">10,000+</div><div class="stat-label">Happy Customers</div></div>
-            <div class="trust-stat"><div class="stat-num">500+</div><div class="stat-label">Verified Providers</div></div>
-            <div class="trust-stat"><div class="stat-num">50,000+</div><div class="stat-label">Bookings Done</div></div>
-            <div class="trust-stat"><div class="stat-num">4.8/5</div><div class="stat-label">Average Rating</div></div>
-        </div>
-    </div>
-
-    <div class="section-title"><i class="fas fa-map-pin" style="color:#FF6B35;"></i> Where do you need service?</div>
-    <div class="pincode-wrap">
-        <input type="text" id="pincode" placeholder="Enter 6-digit pincode" maxlength="6" inputmode="numeric" value="123001">
-        <button onclick="searchServices()"><i class="fas fa-search"></i> Search</button>
-    </div>
-
-    <div class="section-title"><i class="fas fa-tools" style="color:#FF6B35;"></i> Select Service</div>
     <div class="service-grid">
-         <div class="service-btn s-recharge" onclick="openRechargeModal()"><i class="fas fa-mobile-alt"></i> Recharge</div>
-        <div class="service-btn s-plumbing" onclick="selectService('Plumbing')"><i class="fas fa-wrench"></i> Plumbing</div>
-        <div class="service-btn s-electrician" onclick="selectService('Electrician')"><i class="fas fa-bolt"></i> Electrician</div>
-        <div class="service-btn s-mobile-laptop" onclick="selectService('Mobile & Laptop')"><i class="fas fa-laptop"></i> Mobile & Laptop</div>
-        <div class="service-btn s-home-decor" onclick="selectService('Home Decor')"><i class="fas fa-paint-brush"></i> Home Decor</div>
-        <div class="service-btn s-painting" onclick="selectService('Painting')"><i class="fas fa-paint-roller"></i> Painting</div>
-        <div class="service-btn s-ac-repair" onclick="selectService('AC Repair')"><i class="fas fa-snowflake"></i> AC Repair</div>
-        <div class="service-btn s-cctv" onclick="selectService('CCTV')"><i class="fas fa-video"></i> CCTV</div>
-        <div class="service-btn s-food-restaurant" onclick="selectService('Food & Restaurant')"><i class="fas fa-utensils"></i> Food & Restaurant</div>
-        <div class="service-btn s-taxi" onclick="selectService('Taxi')"><i class="fas fa-taxi"></i> Taxi</div>
-        <div class="service-btn s-ro-service" onclick="selectService('RO Service')"><i class="fas fa-tint"></i> RO Service</div>
-        <div class="service-btn s-cinema" onclick="selectService('Cinema')"><i class="fas fa-film"></i> Cinema</div>
-        <div class="service-btn s-hospital" onclick="selectService('Hospital')"><i class="fas fa-hospital"></i> Hospital</div>
-        <div class="service-btn s-lab" onclick="selectService('Lab')"><i class="fas fa-flask"></i> Lab</div>
-        <div class="service-btn s-school" onclick="selectService('School')"><i class="fas fa-school"></i> School</div>
-        <div class="service-btn s-hotel" onclick="selectService('Hotel')"><i class="fas fa-hotel"></i> Hotel</div>
-        <div class="service-btn s-insurance" onclick="openInsuranceSection()"><i class="fas fa-shield-alt"></i> Insurance</div>
-        <div class="service-btn s-ecommerce" onclick="openEcommerceModal()"><i class="fas fa-store"></i> E-Commerce</div>
-        <div class="service-btn s-tv" onclick="selectService('TV Repair')"><i class="fas fa-tv"></i> TV Repair</div>
-        <div class="service-btn s-local-bazar" onclick="selectService('Local Bazar')"><i class="fas fa-shopping-basket"></i> Local Bazar</div>
-        <div class="service-btn s-gym-fitness" onclick="selectService('Gym & Fitness')"><i class="fas fa-dumbbell"></i> Gym & Fitness</div>
-        <div class="service-btn s-other" onclick="selectService('Other')"><i class="fas fa-ellipsis-h"></i> Other</div>
+        <div class="service-btn" onclick="openModal('rechargeModal')"><i class="fas fa-mobile-alt"></i><span>Recharge</span></div>
+        <div class="service-btn" onclick="openModal('insuranceModal')"><i class="fas fa-shield-alt"></i><span>Insurance</span></div>
+        <div class="service-btn" onclick="searchCategory('Food')"><i class="fas fa-utensils"></i><span>Food</span></div>
+        <div class="service-btn" onclick="searchCategory('Grocery')"><i class="fas fa-shopping-basket"></i><span>Grocery</span></div>
     </div>
 
-    <div class="footer">
-        <p><i class="fas fa-crown"></i> Managed by <span class="brand-highlight">Randhawa Enterprises</span> <i class="fas fa-crown"></i></p>
-        <div class="footer-links">
-            <a onclick="openInfoModal('about')"><i class="fas fa-info-circle"></i> About</a>
-            <a onclick="openInfoModal('contact')"><i class="fas fa-phone"></i> Contact</a>
-            <a onclick="openInfoModal('privacy')"><i class="fas fa-lock"></i> Privacy</a>
-            <a onclick="openInfoModal('terms')"><i class="fas fa-file-contract"></i> Terms</a>
-            <a onclick="openInfoModal('support')"><i class="fas fa-headset"></i> Support</a>
-        </div>
-        <div class="contact-info">
-            📱 <a href="tel:+919588562553">+91 95885 62553</a> • 📧 <a href="mailto:nnlgharpro@gmail.com">nnlgharpro@gmail.com</a><br>
-            🌐 <a href="https://www.nnlgharpro.in" target="_blank">www.nnlgharpro.in</a>
+    <div style="display:flex; gap:10px; margin-bottom: 10px;">
+        <input type="text" id="pincode" placeholder="Pincode" maxlength="6" value="110001" style="flex:1; padding:12px; border-radius:10px; border:none; background:rgba(255,255,255,0.1); color:#fff; outline:none;">
+        <button class="btn-primary" onclick="searchCategory(currentCategory)">Search</button>
+    </div>
+</div>
+
+<!-- MODALS START -->
+
+<!-- STORE LIST -->
+<div class="modal" id="storeModal">
+    <div class="modal-content">
+        <div class="modal-header"><h3>Select Store</h3><button class="close-btn" onclick="closeModal('storeModal')">×</button></div>
+        <div id="storeList"></div>
+    </div>
+</div>
+
+<!-- MENU ITEMS -->
+<div class="modal" id="menuModal">
+    <div class="modal-content">
+        <div class="modal-header"><h3 id="menuTitle">Menu</h3><button class="close-btn" onclick="closeModal('menuModal')">×</button></div>
+        <div id="menuList"></div>
+    </div>
+</div>
+
+<!-- CART -->
+<div class="modal" id="cartModal">
+    <div class="modal-content">
+        <div class="modal-header"><h3>Your Cart</h3><button class="close-btn" onclick="closeModal('cartModal')">×</button></div>
+        <div id="cartItemsList"></div>
+        <div style="margin-top:15px; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px;">
+            <div style="display:flex; justify-content:space-between; font-weight:800; font-size:18px; margin-bottom:15px;">
+                <span>Total:</span><span id="cartTotal" style="color:#4ECDC4;">₹0</span>
+            </div>
+            <button class="btn-pay" onclick="proceedToCheckout()">Proceed to Pay</button>
         </div>
     </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════ -->
-<!-- 🛒 NEW CART MODAL -->
-<!-- ═══════════════════════════════════════════════════════ -->
-<div class="modal-overlay" id="cartModal">
-    <div class="modal-box">
-        <div class="modal-header">
-            <h3><i class="fas fa-shopping-cart"></i> Your Cart</h3>
-            <button class="close-btn" onclick="closeCartModal()">✕</button>
-        </div>
-        <div id="cartItemsList" style="margin-bottom: 15px; max-height: 250px; overflow-y: auto;">
-            <!-- Cart items yahan aayenge -->
-        </div>
-        <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
-            <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-weight:700;">
-                <span>Total Amount:</span>
-                <span id="cartTotalAmount" style="color:#FFD93D;">₹0</span>
-            </div>
-            <button class="razorpay-pay-btn" onclick="proceedToPayment()">
-                <i class="fas fa-credit-card"></i> Proceed to Payment
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- INSURANCE MODAL -->
-<div class="modal-overlay" id="insuranceSectionModal">
-    <div class="modal-box" style="max-width:520px;">
-        <div class="modal-header">
-            <h3><i class="fas fa-shield-alt" style="color:#FF6B35;"></i> Insurance Services</h3>
-            <button class="close-btn" onclick="closeInsuranceSection()">✕</button>
-        </div>
-        <div style="display:flex;gap:6px;background:rgba(255,255,255,.03);border-radius:14px;padding:6px;margin-bottom:16px;border:1px solid rgba(255,255,255,.05);">
-            <button class="ins-subtab active" data-subtab="my-insurance" onclick="switchInsuranceSubTab('my-insurance')"><i class="fas fa-list"></i> My Insurance</button>
-            <button class="ins-subtab" data-subtab="turtlemint" onclick="switchInsuranceSubTab('turtlemint')"><i class="fas fa-shield-alt"></i> Turtlemint <span style="font-size:9px;background:#25D366;color:#fff;padding:2px 6px;border-radius:6px;margin-left:4px;">NEW</span></button>
-        </div>
-        <div id="subTab-my-insurance" class="ins-subtab-content" style="display:block;">
-            <div style="text-align:center;padding:30px 10px;background:rgba(255,255,255,.02);border-radius:12px;border:1px dashed rgba(255,255,255,.08);">
-                <i class="fas fa-clipboard-list" style="font-size:36px;color:#4ECDC4;margin-bottom:12px;display:block;"></i>
-                <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;">Coming Soon</div>
-                <div style="font-size:12px;color:rgba(255,255,255,.5);line-height:1.5;">NnlGharPro ki apni insurance services jald hi aa rahi hain.<br>Tab tak <strong style="color:#4ECDC4;">Turtlemint</strong> tab se insurance kharidein.</div>
-            </div>
-        </div>
-        <div id="subTab-turtlemint" class="ins-subtab-content" style="display:none;">
-            <div id="chromeWarning" style="background:linear-gradient(135deg,rgba(255,217,61,.1),rgba(255,107,53,.05));border:2px solid rgba(255,217,61,.3);border-radius:14px;padding:12px 14px;margin-bottom:14px;display:none;align-items:center;gap:10px;font-size:11px;color:#FFD93D;">
-                <i class="fas fa-exclamation-triangle" style="font-size:20px;"></i><div style="flex:1;"><strong>Chrome Browser Recommended</strong><br><a href="https://www.google.com/chrome/" target="_blank" style="color:#4ECDC4;">Chrome download karo</a></div>
-            </div>
-            <div style="background:linear-gradient(135deg,rgba(37,211,102,.08),rgba(78,205,196,.04));border:2px solid rgba(37,211,102,.2);border-radius:14px;padding:14px;margin-bottom:14px;display:flex;align-items:center;gap:12px;">
-                <img src="https://www.turtlemint.com/images/turtlemint-logo.png" alt="Turtlemint" style="height:40px;width:auto;" onerror="this.outerHTML='<div style=\'font-size:20px;font-weight:900;color:#25D366\'>Turtlemint</div>'">
-                <div style="flex:1;"><div style="font-size:14px;font-weight:800;color:#fff;">Insurance Services</div><div style="font-size:10px;color:rgba(255,255,255,.5);">Powered by <strong style="color:#25D366;">Turtlemint</strong> • IRDAI Authorized</div></div>
-                <div style="background:rgba(37,211,102,.15);color:#25D366;padding:6px 10px;border-radius:8px;font-size:9px;font-weight:800;text-align:center;line-height:1.2;">✅<br>IRDAI</div>
-            </div>
-            <div class="ins-category"><div class="ins-cat-title"><i class="fas fa-motorcycle"></i> Motor Insurance</div><div class="ins-grid">
-                <div class="ins-card" onclick="buyInsuranceTurtlemint('bike')"><div class="ins-icon">🏍️</div><div class="ins-name">Bike</div></div>
-                <div class="ins-card" onclick="buyInsuranceTurtlemint('car')"><div class="ins-icon">🚗</div><div class="ins-name">Car</div></div>
-                <div class="ins-card" onclick="buyInsuranceTurtlemint('commercial')"><div class="ins-icon">🚚</div><div class="ins-name">Commercial</div></div>
-            </div></div>
-            <div class="ins-category"><div class="ins-cat-title"><i class="fas fa-heartbeat"></i> Health & Life</div><div class="ins-grid">
-                <div class="ins-card" onclick="buyInsuranceTurtlemint('health')"><div class="ins-icon">❤️</div><div class="ins-name">Health</div></div>
-                <div class="ins-card" onclick="buyInsuranceTurtlemint('life')"><div class="ins-icon">☂️</div><div class="ins-name">Life</div></div>
-                <div class="ins-card" onclick="buyInsuranceTurtlemint('personal-accident')"><div class="ins-icon">🤕</div><div class="ins-name">Personal Accident</div></div>
-                <div class="ins-card" onclick="buyInsuranceTurtlemint('payment-fraud')"><div class="ins-icon">📱</div><div class="ins-name">Payment Fraud</div></div>
-            </div></div>
-            <div class="ins-category"><div class="ins-cat-title"><i class="fas fa-hand-holding-usd"></i> Loans & Credit</div><div class="ins-grid">
-                <div class="ins-card" onclick="buyInsuranceTurtlemint('personal-loan')"><div class="ins-icon">💵</div><div class="ins-name">Personal Loan</div></div>
-                <div class="ins-card" onclick="buyInsuranceTurtlemint('business-loan')"><div class="ins-icon">🏢</div><div class="ins-name">Business Loan</div></div>
-                <div class="ins-card" onclick="buyInsuranceTurtlemint('credit-card')"><div class="ins-icon">💳</div><div class="ins-name">Credit Card</div></div>
-                <div class="ins-card" onclick="buyInsuranceTurtlemint('home-loan')"><div class="ins-icon">🏠</div><div class="ins-name">Home Loan</div></div>
-                <div class="ins-card" onclick="buyInsuranceTurtlemint('credit-score')"><div class="ins-icon">📊</div><div class="ins-name">Credit Score</div></div>
-                <div class="ins-card" onclick="buyInsuranceTurtlemint('loan-mf')"><div class="ins-icon">💰</div><div class="ins-name">Loan vs MF</div></div>
-            </div></div>
-            <div class="ins-category"><div class="ins-cat-title"><i class="fas fa-chart-line"></i> Investment</div><div class="ins-grid">
-                <div class="ins-card" onclick="buyInsuranceTurtlemint('mutual-funds')"><div class="ins-icon">📈</div><div class="ins-name">Mutual Funds</div></div>
-            </div></div>
-            <div class="ins-category"><div class="ins-cat-title"><i class="fas fa-building"></i> SME & Commercial</div><div class="ins-grid">
-                <div class="ins-card" onclick="buyInsuranceTurtlemint('fire')"><div class="ins-icon">🔥</div><div class="ins-name">Fire</div></div>
-                <div class="ins-card" onclick="buyInsuranceTurtlemint('marine')"><div class="ins-icon">🛡️</div><div class="ins-name">Marine</div></div>
-                <div class="ins-card" onclick="buyInsuranceTurtlemint('workmen')"><div class="ins-icon">👷</div><div class="ins-name">Workmen's Comp.</div></div>
-            </div></div>
-            <div style="margin-top:16px;padding:12px;background:linear-gradient(135deg,rgba(37,211,102,.05),rgba(78,205,196,.02));border:1px solid rgba(37,211,102,.15);border-radius:10px;text-align:center;">
-                <div style="font-size:10px;color:rgba(255,255,255,.5);line-height:1.5;">🔒 IRDAI Authorized Agent • 💰 Instant Policy</div>
-                <div style="font-size:8px;color:rgba(255,255,255,.25);margin-top:6px;">© 2026 Turtlemint Insurance Broking Pvt. Ltd.</div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- INFO MODAL -->
-<div class="modal-overlay" id="infoModal">
-    <div class="modal-box">
-        <div class="modal-header"><h3 id="infoModalTitle"><i class="fas fa-info-circle"></i> About</h3><button class="close-btn" onclick="closeInfoModal()">✕</button></div>
-        <div id="infoModalContent" class="info-content"></div>
-    </div>
-</div>
-
-<!-- ECOMMERCE MODAL -->
-<div class="modal-overlay" id="ecommerceModal">
-    <div class="modal-box">
-        <div class="modal-header"><h3><i class="fas fa-store" style="color:#FFD93D;"></i> Partner Stores</h3><button class="close-btn" onclick="closeEcommerceModal()">✕</button></div>
-        <div id="ecommerceStoreList"><div style="text-align:center; padding:20px; color:rgba(255,255,255,0.2);"><i class="fas fa-spinner fa-spin"></i> Loading stores...</div></div>
-    </div>
-</div>
-
-<!-- ✅ RECHARGE MODAL -->
-<div class="modal-overlay" id="rechargeModal">
-    <div class="modal-box" style="max-width:440px">
-        <div class="modal-header">
-            <h3><i class="fas fa-bolt" style="color:#FFD93D"></i> Recharge & Bill Pay</h3>
-            <button class="close-btn" onclick="closeRechargeModal()">✕</button>
-        </div>
-        <div style="display:flex;gap:8px;margin-bottom:16px">
-            <button id="mobileRechargeBtn" onclick="switchRechargeType('mobile')" style="flex:1;padding:14px;background:linear-gradient(135deg,#4ECDC4,#44B3A8);color:#fff;border:none;border-radius:14px;font-weight:700;font-size:14px;cursor:pointer;box-shadow:0 4px 15px rgba(78,205,196,.3);transition:all .3s"><i class="fas fa-mobile-alt"></i> Mobile</button>
-            <button id="dthRechargeBtn" onclick="switchRechargeType('dth')" style="flex:1;padding:14px;background:rgba(255,255,255,.05);color:rgba(255,255,255,.5);border:none;border-radius:14px;font-weight:700;font-size:14px;cursor:pointer;transition:all .3s"><i class="fas fa-tv"></i> DTH</button>
-        </div>
-        <div id="rechargeServiceWarning" style="display:none;background:rgba(255,152,0,.1);border:1px solid rgba(255,152,0,.3);border-radius:12px;padding:12px;font-size:13px;color:#FF9800;text-align:center;margin-bottom:14px"></div>
-        <div style="margin-bottom:14px">
-            <label style="font-size:11px;font-weight:700;color:rgba(255,255,255,.4);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px" id="rechargeLabel">Mobile Number</label>
-            <div style="position:relative">
-                <input type="tel" id="rechargeNumber" maxlength="10" placeholder="Enter 10-digit mobile number" style="width:100%;padding:16px 16px 16px 48px;border:2px solid rgba(255,255,255,.08);border-radius:14px;background:rgba(255,255,255,.03);color:#fff;font-size:18px;font-weight:600;outline:none;transition:all .3s;letter-spacing:1px">
-                <i class="fas fa-mobile-alt" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);color:#4ECDC4;font-size:20px"></i>
-            </div>
-        </div>
-        <div style="margin-bottom:14px">
-            <label style="font-size:11px;font-weight:700;color:rgba(255,255,255,.4);display:block;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Select Operator</label>
-            <div id="operatorCards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
-                <div class="op-card mobile-op" data-op="Jio" onclick="selectOperator('Jio')" style="background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .3s"><div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0a4a8f,#1e88e5);margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff">J</div><div style="font-size:10px;font-weight:700;color:#fff">Jio</div></div>
-                <div class="op-card mobile-op" data-op="Airtel" onclick="selectOperator('Airtel')" style="background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .3s"><div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#c62828,#e53935);margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff">A</div><div style="font-size:10px;font-weight:700;color:#fff">Airtel</div></div>
-                <div class="op-card mobile-op" data-op="Vi" onclick="selectOperator('Vi')" style="background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .3s"><div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#6a1b9a,#ab47bc);margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff">V</div><div style="font-size:10px;font-weight:700;color:#fff">Vi</div></div>
-                <div class="op-card mobile-op" data-op="BSNL" onclick="selectOperator('BSNL')" style="background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .3s"><div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#2e7d32,#43a047);margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff">B</div><div style="font-size:10px;font-weight:700;color:#fff">BSNL</div></div>
-                <div class="op-card dth-op" data-op="Tata Play" onclick="selectOperator('Tata Play')" style="display:none;background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .3s"><div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#e65100,#f57c00);margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff">T</div><div style="font-size:10px;font-weight:700;color:#fff">Tata Play</div></div>
-                <div class="op-card dth-op" data-op="Airtel DTH" onclick="selectOperator('Airtel DTH')" style="display:none;background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .3s"><div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#c62828,#e53935);margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff">A</div><div style="font-size:10px;font-weight:700;color:#fff">Airtel DTH</div></div>
-                <div class="op-card dth-op" data-op="Dish TV" onclick="selectOperator('Dish TV')" style="display:none;background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .3s"><div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0d47a1,#1976d2);margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff">D</div><div style="font-size:10px;font-weight:700;color:#fff">Dish TV</div></div>
-                <div class="op-card dth-op" data-op="Sun Direct" onclick="selectOperator('Sun Direct')" style="display:none;background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .3s"><div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#e65100,#FF6B35);margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff">S</div><div style="font-size:10px;font-weight:700;color:#fff">Sun Direct</div></div>
-                <div class="op-card dth-op" data-op="d2h" onclick="selectOperator('d2h')" style="display:none;background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .3s"><div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#455a64,#78909c);margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff">d</div><div style="font-size:10px;font-weight:700;color:#fff">d2h</div></div>
-            </div>
-            <select id="rechargeOperator" style="display:none">
-                <option value="">Select Operator</option>
-                <option value="Jio">Jio</option>
-                <option value="Airtel">Airtel</option>
-                <option value="Vi">Vi</option>
-                <option value="BSNL">BSNL</option>
-                <option value="Tata Play">Tata Play</option>
-                <option value="Airtel DTH">Airtel DTH</option>
-                <option value="Dish TV">Dish TV</option>
-                <option value="Sun Direct">Sun Direct</option>
-                <option value="d2h">d2h</option>
-            </select>
-        </div>
-        <div style="margin-bottom:14px">
-            <label style="font-size:11px;font-weight:700;color:rgba(255,255,255,.4);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">Enter Amount</label>
-            <div style="position:relative">
-                <input type="number" id="rechargeAmount" placeholder="0" min="10" style="width:100%;padding:16px 16px 16px 48px;border:2px solid rgba(255,255,255,.08);border-radius:14px;background:rgba(255,255,255,.03);color:#fff;font-size:22px;font-weight:800;outline:none;transition:all .3s">
-                 <span style="position:absolute;left:20px;top:50%;transform:translateY(-50%);color:#FFD93D;font-size:24px;font-weight:800">₹</span>
-            </div>
-        </div>
-        <div id="popularPlans" style="margin-bottom:16px;display:none">
-            <label style="font-size:11px;font-weight:700;color:rgba(255,255,255,.4);display:block;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">
-                <i class="fas fa-fire" style="color:#FF6B35"></i> Popular Plans 
-                <span id="plansLoadingSpinner" style="display:none;margin-left:8px"><i class="fas fa-spinner fa-spin" style="color:#4ECDC4"></i></span>
-                <span id="plansCount" style="color:#4ECDC4;font-size:10px;margin-left:6px"></span>
-            </label>
-            <div id="plansList" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;scrollbar-width:thin;"></div>
-            <div id="noPlansMessage" style="display:none;text-align:center;padding:16px;color:rgba(255,255,255,.3);font-size:12px;background:rgba(255,255,255,.02);border-radius:10px;border:1px dashed rgba(255,255,255,.08)">
-                <i class="fas fa-info-circle"></i> Is operator ke plans abhi available nahi hain
-            </div>
-        </div>
-        <button id="rechargePayBtn" onclick="processRecharge()" style="width:100%;padding:18px;background:linear-gradient(135deg,#5F259F,#8B5CF6);color:#fff;border:none;border-radius:14px;font-weight:800;font-size:17px;cursor:pointer;box-shadow:0 8px 25px rgba(95,37,159,.4);transition:all .3s;display:flex;align-items:center;justify-content:center;gap:10px"><i class="fas fa-lock"></i> Pay Securely with Razorpay</button>
-        <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-top:14px;font-size:10px;color:rgba(255,255,255,.3)">
-            <span><i class="fas fa-shield-alt" style="color:#4ECDC4"></i> 100% Secure</span>
-            <span><i class="fas fa-bolt" style="color:#FFD93D"></i> Instant Recharge</span>
-            <span><i class="fas fa-headset" style="color:#4ECDC4"></i> 24/7 Support</span>
-        </div>
-    </div>
-</div>
-
-<!-- BOOKING MODAL -->
-<div class="modal-overlay" id="bookingModal">
-    <div class="modal-box">
-        <div class="modal-header">
-            <h3><i class="fas fa-tools"></i> Book <span id="modalServiceName">Service</span></h3>
-            <button class="close-btn" onclick="closeBookingModal()">✕</button>
-        </div>
-        <div class="modal-sub"><span>📍 <span id="modalPincode">N/A</span></span></div>
-
-        <div id="providerListContainer">
-            <div style="font-size:12px; color:rgba(255,255,255,0.3); margin-bottom:8px; font-weight:600;">👤 Select a Provider:</div>
-            <div class="provider-list-box" id="providerList"></div>
-        </div>
-
-        <div class="booking-form" id="bookingForm">
-            <div style="font-size:12px; color:#4ECDC4; margin-bottom:8px; font-weight:600;">✅ Selected: <span id="selectedProviderName">None</span></div>
-            <div class="order-type-section">
-                <div class="ot-title"><i class="fas fa-box"></i> Order Type Select Karein</div>
-                <div class="order-type-buttons" id="orderTypeButtons"></div>
-            </div>
-            <div class="delivery-distance-section" id="deliveryDistanceSection">
-                <div class="dd-title"><i class="fas fa-truck"></i> Delivery Distance</div>
-                <select id="deliveryDistance" class="dd-select" onchange="updateDeliveryCharge()">
-                    <option value="">-- Select distance --</option>
-                    <option value="1">0-4 km (Base charge: ₹50)</option>
-                    <option value="5">5 km (₹65)</option>
-                    <option value="6">6 km (₹80)</option>
-                    <option value="7">7 km (₹95)</option>
-                    <option value="8">8 km (₹110)</option>
-                    <option value="9">9 km (₹125)</option>
-                    <option value="10">10 km (₹140)</option>
-                    <option value="11">11 km (₹155)</option>
-                    <option value="12">12 km (₹170)</option>
-                    <option value="13">13 km (₹185)</option>
-                    <option value="14">14 km (₹200)</option>
-                    <option value="15">15 km (₹215)</option>
-                    <option value="16">16 km (₹230)</option>
-                    <option value="17">17 km (₹245)</option>
-                    <option value="18">18 km (₹260)</option>
-                    <option value="19">19 km (₹275)</option>
-                    <option value="20">20 km (₹290)</option>
-                </select>
-                <div class="dd-info">📌 <strong>Base: ₹50</strong> (0-4 km) • <strong>Extra: ₹15/km</strong></div>
-            </div>
-            <div class="items-section" id="itemsSection">
-                <div class="items-title">
-                    <i class="fas fa-list"></i> Select Items / Services
-                    <button class="open-popup-btn" id="openItemsPopupBtn" onclick="openItemsPopup()"><i class="fas fa-edit"></i> Select Items</button>
-                </div>
-                <div id="selectedItemsSummary" class="selected-items-summary">
-                    <div style="color:rgba(255,255,255,0.2); font-size:12px; padding:6px 0;"><i class="fas fa-info-circle"></i> Click "Select Items" to choose items</div>
-                </div>
-            </div>
-            <div class="payment-section" id="paymentSection">
-                <div class="payment-title"><i class="fas fa-credit-card"></i> 💳 Payment Breakdown</div>
-                <div class="payment-breakdown">
-                    <div class="breakdown-row items">
-                        <div class="label"><i class="fas fa-shopping-cart"></i> Items Total</div>
-                        <div class="amount" id="itemsTotalDisplay">₹0</div>
-                    </div>
-                    <div class="breakdown-row delivery" id="deliveryRow">
-                        <div class="label"><i class="fas fa-truck"></i> Delivery Charge <span id="distanceBadge"></span></div>
-                        <div class="amount" id="deliveryChargeDisplay">₹0</div>
-                    </div>
-                    <div class="breakdown-row total">
-                        <div class="label"><i class="fas fa-rupee-sign"></i> Grand Total</div>
-                        <div class="amount" id="grandTotalDisplay">₹0</div>
-                    </div>
-                </div>
-                <button class="razorpay-pay-btn" id="payBtn" onclick="processRazorpayPayment()" disabled>
-                    <i class="fas fa-credit-card"></i> Pay ₹<span id="payAmount">0</span>
-                </button>
-                <div class="payment-note"><i class="fas fa-shield-alt"></i> Razorpay accepts UPI, Cards, Net Banking</div>
-            </div>
-            <div class="form-group">
-                <label><i class="fas fa-pen"></i> Special Instructions / Notes</label>
-                <textarea id="custNotes" rows="3" placeholder="Example: Ghar par 2 baje aayein, gate 3..."></textarea>
-            </div>
-            <div class="row-2">
-                <div class="form-group"><label><i class="fas fa-calendar"></i> Date</label><input type="date" id="bookingDate"></div>
-                <div class="form-group"><label><i class="fas fa-clock"></i> Time</label><input type="time" id="bookingTime"></div>
-            </div>
-            <div class="form-group"><label><i class="fas fa-user"></i> Full Name</label><input type="text" id="custName" placeholder="Your full name"></div>
-            <div class="form-group"><label><i class="fas fa-phone"></i> WhatsApp / Mobile</label><input type="tel" id="custMobile" placeholder="10-digit mobile"></div>
-            <div class="form-group"><label><i class="fas fa-map-marker-alt"></i> Service Address</label><input type="text" id="custAddress" placeholder="Your full address"></div>
-        </div>
-    </div>
-</div>
-
-<!-- ITEMS POPUP -->
-<div class="popup-overlay" id="itemsPopupOverlay">
-    <div class="popup-box">
-        <div class="modal-header"><h3><i class="fas fa-list"></i> <span id="popupProviderName">Select Items</span></h3><button class="close-btn" onclick="closeItemsPopup()">✕</button></div>
-        <div class="popup-items-list" id="popupItemsList"></div>
-        <div class="popup-footer">
-            <div class="popup-total">Total: <span id="popupTotalAmount">₹0</span></div>
-            <button class="btn-primary" id="confirmItemsBtn" onclick="confirmItemsSelection()" disabled>Confirm Items</button>
-        </div>
+<!-- CHECKOUT FORM -->
+<div class="modal" id="checkoutModal">
+    <div class="modal-content">
+        <div class="modal-header"><h3>Delivery Details</h3><button class="close-btn" onclick="closeModal('checkoutModal')">×</button></div>
+        <input type="text" id="custName" placeholder="Full Name" style="width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border:none; background:rgba(255,255,255,0.1); color:#fff;">
+        <input type="tel" id="custMobile" placeholder="Mobile Number" maxlength="10" style="width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border:none; background:rgba(255,255,255,0.1); color:#fff;">
+        <textarea id="custAddress" placeholder="Full Address" rows="2" style="width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border:none; background:rgba(255,255,255,0.1); color:#fff;"></textarea>
+        <button class="btn-pay" onclick="initiateRazorpay()"><i class="fas fa-lock"></i> Pay Securely</button>
     </div>
 </div>
 
 <!-- RECEIPT -->
-<div class="receipt-container" id="receiptContainer">
-    <div class="receipt-wrapper">
-        <button class="receipt-close-btn" onclick="closeReceipt()">✕</button>
-        <div class="receipt-header"><h2>🏠 Nnl<span>GharPro</span></h2><p>Booking Receipt</p></div>
-        <div id="receiptDetails"></div>
-        <div class="receipt-divider">━━━━━━━━━━━━━━━━━━━</div>
-        <div class="receipt-total"><span class="total-label">💰 Total</span><span class="total-amount" id="receiptTotal">₹0</span></div>
-        <div class="payment-status-section"><div class="status-row"><span class="status-label">💳 Payment</span><span class="status-value" id="receiptPaymentStatus">⏳ Pending</span></div></div>
-        <div class="receipt-footer"><p>Thank you! 🙏</p><button class="print-btn" onclick="window.print()">🖨️ Print</button></div>
+<div class="modal" id="receiptModal">
+    <div class="modal-content" style="background:transparent;">
+        <div class="receipt">
+            <h2>NnlGharPro</h2>
+            <div class="row"><span>Order ID</span><span id="rcptId">-</span></div>
+            <div class="row"><span>Name</span><span id="rcptName">-</span></div>
+            <div class="row"><span>Items</span><span id="rcptItems">-</span></div>
+            <div class="row total"><span>Total Paid</span><span id="rcptTotal">₹0</span></div>
+            <button class="btn-primary" style="width:100%; margin-top:15px;" onclick="closeModal('receiptModal')">Close</button>
+        </div>
     </div>
 </div>
 
-<div id="loading" style="position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);display:none;justify-content:center;align-items:center;z-index:99998;">
-    <div style="width:44px;height:44px;border:3px solid rgba(255,255,255,0.05);border-top-color:#4ECDC4;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+<!-- RECHARGE MODAL -->
+<div class="modal" id="rechargeModal">
+    <div class="modal-content">
+        <div class="modal-header"><h3>Mobile Recharge</h3><button class="close-btn" onclick="closeModal('rechargeModal')">×</button></div>
+        <input type="tel" id="rcNumber" placeholder="Mobile Number" maxlength="10" style="width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border:none; background:rgba(255,255,255,0.1); color:#fff;">
+        <div class="op-grid" id="operatorGrid">
+            <div class="op-card" onclick="selectOp('Jio')"><div>Jio</div></div>
+            <div class="op-card" onclick="selectOp('Airtel')"><div>Airtel</div></div>
+            <div class="op-card" onclick="selectOp('Vi')"><div>Vi</div></div>
+            <div class="op-card" onclick="selectOp('BSNL')"><div>BSNL</div></div>
+        </div>
+        <input type="number" id="rcAmount" placeholder="Amount ₹" style="width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border:none; background:rgba(255,255,255,0.1); color:#fff;">
+        <button class="btn-pay" onclick="processRecharge()">Pay Now</button>
+    </div>
 </div>
-<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<!-- INSURANCE MODAL -->
+<div class="modal" id="insuranceModal">
+    <div class="modal-content">
+        <div class="modal-header"><h3>Insurance Services</h3><button class="close-btn" onclick="closeModal('insuranceModal')">×</button></div>
+        <div class="ins-grid">
+            <div class="ins-card" onclick="window.open('https://pro.turtlemintinsurance.com/v2/two-wheeler-insurance/create?posp=DP-4378968', '_blank')"><i class="fas fa-motorcycle"></i><span>Bike</span></div>
+            <div class="ins-card" onclick="window.open('https://pro.turtlemintinsurance.com/v2/car-insurance/create?posp=DP-4378968', '_blank')"><i class="fas fa-car"></i><span>Car</span></div>
+            <div class="ins-card" onclick="window.open('https://pro.turtlemintinsurance.com/health-insurance/health?posp=DP-4378968', '_blank')"><i class="fas fa-heartbeat"></i><span>Health</span></div>
+            <div class="ins-card" onclick="window.open('https://pro.turtlemintinsurance.com/life-insurance/life?posp=DP-4378968', '_blank')"><i class="fas fa-umbrella"></i><span>Life</span></div>
+            <div class="ins-card" onclick="window.open('https://app.turtlefin.com/products/personal-loan?posp=DP-4378968', '_blank')"><i class="fas fa-money-bill"></i><span>Loan</span></div>
+            <div class="ins-card" onclick="window.open('https://app.turtlefin.com/credit-score?posp=DP-4378968', '_blank')"><i class="fas fa-chart-line"></i><span>Credit Score</span></div>
+        </div>
+    </div>
+</div>
 
+<!-- LOGIC START -->
 <script>
-// ════════════════════════════════════════════════════════════
-// SECURITY
-// ════════════════════════════════════════════════════════════
-document.addEventListener('contextmenu', function(e) { e.preventDefault(); showToast('🔒 Right-click disabled', true); });
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) || (e.ctrlKey && e.key === 'u')) {
-        e.preventDefault(); return false;
-    }
-});
-
-// ════════════════════════════════════════════════════════════
-// FIREBASE
-// ════════════════════════════════════════════════════════════
+// ==========================================
+// 1. FIREBASE SETUP (Authentication Only for Speed)
+// ==========================================
 const firebaseConfig = {
     apiKey: "AIzaSyCBa8UmWUB-djAksNNvp14qoCY2y0HISoE",
     authDomain: "gharproindia.firebaseapp.com",
@@ -707,1479 +222,263 @@ const firebaseConfig = {
     messagingSenderId: "374168845849",
     appId: "1:374168845849:web:36aeca99558917c34ff488"
 };
-try { firebase.initializeApp(firebaseConfig); } catch(e) {}
-const db = firebase.firestore();
+firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
+const db = firebase.firestore();
 
-const RAZORPAY_CONFIG = { KEY_ID: "rzp_live_TgdafZ0Pqc1SI5" };
-
-// 🚚 Delivery Charge Logic
-const BASE_DELIVERY_CHARGE = 50;
-const EXTRA_PER_KM = 15;
-const BASE_KM = 4;
-
-function calculateDeliveryCharge(distance) {
-    const km = parseInt(distance);
-    if (!km || km <= 0) return 0;
-    if (km <= BASE_KM) return BASE_DELIVERY_CHARGE;
-    return BASE_DELIVERY_CHARGE + ((km - BASE_KM) * EXTRA_PER_KM);
-}
-
-// ════════════════════════════════════════════════════════════
-// GLOBALS
-// ════════════════════════════════════════════════════════════
+// ==========================================
+// 2. GLOBAL STATE
+// ==========================================
+const API_URL = "https://nnlgharpro-ret11.nnlgharpro.workers.dev";
+const RZP_KEY = "rzp_live_TgdafZ0Pqc1SI5";
+let currentCategory = "";
+let currentTxnId = "";
+let cart = [];
 let currentUser = null;
-let selectedService = null;
-let selectedProviderId = null;
-let selectedProviderData = null;
-let allProviders = [];
-let isBookingSubmitting = false;
-let isLoginMode = true;
-let providerItems = [];
-let cart = {};
-let popupCart = {};
-let currentBookingId = null;
-let currentPaymentStatus = '';
-let currentDeliveryDistance = 0;
-let currentDeliveryCharge = 0;
-let currentOrderType = ''; 
-let myCart = []; // 🛒 NAYA CART SYSTEM
 
-function showToast(msg, err = false) {
+// ==========================================
+// 3. UI & HELPERS
+// ==========================================
+function showToast(msg) {
     const t = document.getElementById('toast');
     t.textContent = msg;
-    t.className = 'toast ' + (err ? 'error' : 'success');
     t.style.display = 'block';
-    setTimeout(() => t.style.display = 'none', 4000);
+    setTimeout(() => t.style.display = 'none', 2000);
 }
-function showLoading(show) {
-    const el = document.getElementById('loading');
-    if (el) el.style.display = show ? 'flex' : 'none';
-}
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
 
-// ════════════════════════════════════════════════════════════
-// 🛒 CART SYSTEM (NEW)
-// ════════════════════════════════════════════════════════════
-window.addToCart = function(itemId, itemName, price) {
-    let existingItem = myCart.find(item => item.id === itemId);
-    if (existingItem) {
-        existingItem.qty += 1;
+// ==========================================
+// 4. AUTHENTICATION
+// ==========================================
+auth.onAuthStateChanged(user => {
+    if (user) {
+        currentUser = user;
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('mainApp').classList.add('active');
     } else {
-        myCart.push({ id: itemId, name: itemName, price: parseFloat(price), qty: 1 });
-    }
-    updateCartUI();
-    showToast(`✅ ${itemName} added to cart!`);
-};
-
-function updateCartUI() {
-    let totalCount = 0;
-    let totalPrice = 0;
-    let html = '';
-
-    myCart.forEach(item => {
-        totalCount += item.qty;
-        totalPrice += (item.price * item.qty);
-        html += `
-            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; margin-bottom:8px;">
-                <div>
-                    <div style="font-weight:700; font-size:14px;">${item.name}</div>
-                    <div style="font-size:12px; color:#4ECDC4;">₹${item.price} x ${item.qty}</div>
-                </div>
-                <div style="font-weight:700; color:#FFD93D;">₹${item.price * item.qty}</div>
-            </div>
-        `;
-    });
-
-    if (myCart.length === 0) {
-        html = '<div style="text-align:center; color:rgba(255,255,255,0.5); padding:20px;">Cart is empty</div>';
-    }
-
-    const countEl = document.getElementById('cartCount');
-    if(countEl) {
-        countEl.innerText = totalCount;
-        countEl.style.display = totalCount > 0 ? 'inline-block' : 'none';
-    }
-    const itemsListEl = document.getElementById('cartItemsList');
-    if(itemsListEl) itemsListEl.innerHTML = html;
-    const totalEl = document.getElementById('cartTotalAmount');
-    if(totalEl) totalEl.innerText = `₹${totalPrice}`;
-}
-
-window.openCartModal = function() {
-    document.getElementById('cartModal').classList.add('show');
-    updateCartUI();
-};
-
-window.closeCartModal = function() {
-    document.getElementById('cartModal').classList.remove('show');
-};
-
-window.proceedToPayment = function() {
-    if (myCart.length === 0) { showToast('Cart is empty!', true); return; }
-    // Redirect to Razorpay or ONDC Init flow here
-    showToast('Proceeding to Payment...', false);
-    // closeCartModal();
-};
-
-// INFO MODALS
-const INFO_CONTENT = {
-    about: { title: 'About NnlGharPro', icon: 'info-circle', html: `<h4>Who We Are</h4><p>NnlGharPro ek online service booking platform hai.</p><h4>Managed By</h4><p>Randhawa Enterprises<br>Narnaul, Haryana - 123001</p>`},
-    contact: { title: 'Contact Us', icon: 'phone', html: `<p>📱 <a href="tel:+919588562553">+91 95885 62553</a></p><p>📧 nnlgharpro@gmail.com</p>`},
-    privacy: { title: 'Privacy Policy', icon: 'lock', html: `<p>Hum aapka data securely store karte hain.</p>`},
-    terms: { title: 'Terms & Conditions', icon: 'file-contract', html: `<h4>Order Types</h4><ul><li><strong>Takeaway/Collect:</strong> Customer khud jaakar lega. ₹0 delivery charge.</li><li><strong>Delivery:</strong> ₹50 base + ₹15/km after 4 km.</li></ul>`},
-    support: { title: 'Support', icon: 'headset', html: `<p>📱 WhatsApp: <a href="https://wa.me/919588562553">+91 95885 62553</a></p>`}
-};
-
-window.openInfoModal = function(type) {
-    const c = INFO_CONTENT[type]; if (!c) return;
-    document.getElementById('infoModalTitle').innerHTML = `<i class="fas fa-${c.icon}"></i> ${c.title}`;
-    document.getElementById('infoModalContent').innerHTML = c.html;
-    document.getElementById('infoModal').classList.add('show');
-};
-window.closeInfoModal = function() { document.getElementById('infoModal').classList.remove('show'); };
-
-// ════════════════════════════════════════════════════════════
-// AUTH
-// ════════════════════════════════════════════════════════════
-window.toggleAuthMode = function() {
-    isLoginMode = !isLoginMode;
-    const btn = document.getElementById('loginBtn');
-    const toggle = document.getElementById('authToggle');
-    if (isLoginMode) {
-        btn.innerHTML = '<i class="fas fa-lock"></i> Login';
-        toggle.innerHTML = 'Don\'t have an account? <strong style="color:#FF6B35;">Create Account</strong>';
-    } else {
-        btn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
-        toggle.innerHTML = 'Already have an account? <strong style="color:#FF6B35;">Login</strong>';
-    }
-    document.getElementById('loginError').style.display = 'none';
-};
-
-window.forgotPassword = function() {
-    const email = document.getElementById('loginEmail').value.trim();
-    if (!email) { showToast('⚠️ Enter email first!', true); return; }
-    auth.sendPasswordResetEmail(email).then(() => showToast('✅ Reset link sent')).catch(e => showToast('❌ ' + e.message, true));
-};
-
-window.loginUser = async function() {
-    const email = document.getElementById('loginEmail').value.trim();
-    const pass = document.getElementById('loginPassword').value.trim();
-    const errEl = document.getElementById('loginError');
-    errEl.style.display = 'none';
-    if (!email || !pass) { errEl.textContent = '❌ Enter email & password'; errEl.style.display = 'block'; return; }
-    if (pass.length < 6) { errEl.textContent = '❌ Password min 6 chars'; errEl.style.display = 'block'; return; }
-    document.getElementById('loginBtn').disabled = true;
-    try {
-        let userCred;
-        if (isLoginMode) userCred = await auth.signInWithEmailAndPassword(email, pass);
-        else userCred = await auth.createUserWithEmailAndPassword(email, pass);
-        currentUser = userCred.user;
-        showMainApp();
-    } catch (error) {
-        errEl.textContent = '❌ ' + error.message; errEl.style.display = 'block';
-    }
-    document.getElementById('loginBtn').disabled = false;
-};
-
-window.googleLogin = async function() {
-    try {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        const result = await auth.signInWithPopup(provider);
-        currentUser = result.user;
-        showMainApp();
-    } catch (error) { showToast('❌ ' + error.message, true); }
-};
-
-function checkSession() {
-    auth.onAuthStateChanged(user => {
-        if (user) { currentUser = user; loadBroadcast(); showMainApp(); }
-    });
-}
-
-function showMainApp() {
-    document.getElementById('loginOverlay').classList.add('hidden');
-    document.getElementById('mainApp').style.display = 'block';
-    updateDateTime(); updateWeather();
-    setInterval(updateDateTime, 30000); setInterval(updateWeather, 300000);
-    showToast('✅ Welcome!');
-}
-
-window.logoutUser = function() {
-    auth.signOut();
-    currentUser = null;
-    document.getElementById('mainApp').style.display = 'none';
-    document.getElementById('loginOverlay').classList.remove('hidden');
-    showToast('Logged out');
-};
-
-document.getElementById('loginEmail').addEventListener('keyup', e => { if (e.key === 'Enter') document.getElementById('loginPassword').focus(); });
-document.getElementById('loginPassword').addEventListener('keyup', e => { if (e.key === 'Enter') loginUser(); });
-
-// DATE/TIME/WEATHER
-function updateDateTime() {
-    const now = new Date();
-    document.getElementById('currentDate').textContent = now.toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
-    let h = now.getHours();
-    const m = now.getMinutes().toString().padStart(2, '0');
-    const ap = h >= 12 ? 'PM' : 'AM';
-    h = h % 12 || 12;
-    document.getElementById('currentTime').textContent = h + ':' + m + ' ' + ap;
-}
-function updateWeather() {
-    const data = [{ icon: '☀️', temp: 32 }, { icon: '⛅', temp: 28 }, { icon: '🌤️', temp: 30 }];
-    const w = data[Math.floor(Math.random() * data.length)];
-    document.getElementById('weatherIcon').textContent = w.icon;
-    document.getElementById('weatherTemp').textContent = w.temp + '°C';
-}
-
-async function loadBroadcast() {
-    try {
-        const doc = await db.collection('broadcast').doc('current').get();
-        if (doc.exists && doc.data().message) {
-            let message = doc.data().message.replace(/(https?:\/\/[^\s]+)/g, url => `<a href="${url}" target="_blank">${url}</a>`);
-            document.getElementById('broadcastMessage').innerHTML = message;
-            document.getElementById('broadcastBanner').classList.add('show');
-        }
-    } catch (e) {}
-}
-function closeBroadcast() { document.getElementById('broadcastBanner').classList.remove('show'); }
-
-// ECOMMERCE
-window.openEcommerceModal = async function() {
-    if (!currentUser) { showToast('Please login first!', true); return; }
-    document.getElementById('ecommerceModal').classList.add('show');
-    await loadEcommerceStores();
-};
-window.closeEcommerceModal = function() { document.getElementById('ecommerceModal').classList.remove('show'); };
-
-async function loadEcommerceStores() {
-    const container = document.getElementById('ecommerceStoreList');
-    container.innerHTML = '<div style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin"></i></div>';
-    try {
-        const snapshot = await db.collection('stores').where('status', '==', 'active').get();
-        if (snapshot.empty) { container.innerHTML = '<div style="text-align:center;padding:30px;color:rgba(255,255,255,0.2)">No stores</div>'; return; }
-        let html = '';
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            const logoDisplay = data.logoUrl 
-                ? `<img src="${data.logoUrl}" style="width:40px;height:40px;object-fit:cover;border-radius:10px">`
-                : `<div style="font-size:28px;">${data.icon || '🏪'}</div>`;
-            html += `<div onclick="window.open('${data.link}', '_blank')" style="cursor:pointer;background:rgba(255,255,255,0.03);padding:14px;border-radius:12px;margin-bottom:8px;display:flex;align-items:center;gap:12px;border:1px solid rgba(255,255,255,0.05);">
-                ${logoDisplay}
-                <div style="flex:1;"><div style="font-size:14px;font-weight:600;">${data.name}</div><div style="font-size:11px;color:rgba(255,255,255,0.4);">${data.category}</div></div>
-                <div style="color:#4ECDC4;font-size:12px;">Visit ➜</div>
-            </div>`;
-        });
-        container.innerHTML = html;
-    } catch (e) { container.innerHTML = '<div style="text-align:center;color:#FF4757;">Error</div>'; }
-}
-
-// SERVICE SELECTION
-window.selectService = function(service) {
-    if (!currentUser) { showToast('Please login first!', true); return; }
-    if (service === 'E-Commerce') { openEcommerceModal(); return; }
-    selectedService = service;
-    selectedProviderId = null;
-    document.querySelectorAll('.service-btn').forEach(b => b.classList.remove('active'));
-    const btns = document.querySelectorAll(`.service-btn[onclick*="${service}"]`);
-    if (btns.length > 0) btns[0].classList.add('active');
-    showToast('✅ ' + service);
-    const pincode = document.getElementById('pincode').value.trim();
-    if (pincode && pincode.length === 6) searchServices();
-    else showToast('⚠️ Enter pincode!', true);
-};
-
-// SEARCH SERVICES
-window.searchServices = async function() {
-    if (!selectedService) { showToast('Select service first!', true); return; }
-    const pincode = document.getElementById('pincode').value.trim();
-    if (!pincode || pincode.length !== 6) { showToast('Valid pincode!', true); return; }
-
-    document.getElementById('bookingModal').classList.add('show');
-    document.getElementById('providerList').innerHTML = '<div style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin" style="font-size:24px;"></i><br><br>Finding best options near you...</div>';
-    document.getElementById('modalServiceName').textContent = selectedService;
-    document.getElementById('modalPincode').textContent = pincode;
-    document.getElementById('bookingForm').style.display = 'none';
-    document.getElementById('providerListContainer').style.display = 'block';
-
-    let domain = "ONDC:RET11";
-    let category = "Food";
-    if (selectedService === 'Grocery') { domain = "ONDC:RET10"; category = "Grocery"; }
-
-    const mockProviders = [{
-        id: "provider_workbench_1",
-        descriptor: { name: "NnlGharPro Test Kitchen" },
-        locations: [{ id: "L1", gps: "28.6139,77.2090" }],
-        items: [{
-            id: "item_veg_thali",
-            descriptor: { name: "Standard Veg Thali (ONDC Verified)", short_desc: "Clears Workbench Testing Flow" },
-            category_id: "RET11-Meals",
-            fulfillment_id: "F1",
-            location_id: "L1",
-            price: { currency: "INR", value: "150.00" }
-        }]
-    }];
-
-    try {
-        const response = await fetch("https://nnlgharpro-ret11.nnlgharpro.workers.dev/client_search", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ domain: domain, category: category, pincode: pincode })
-        });
-        
-        const data = await response.json();
-        
-        // ✅ TRANSACTION ID SAVE KARO (Fixes 412 Error)
-        if (data.transactionId) {
-            window.currentOndcTransactionId = data.transactionId;
-            console.log("Saved TXN ID:", window.currentOndcTransactionId);
-        }
-
-        window.currentOndcData = mockProviders;
-        displayOndcResults(mockProviders, pincode);
-
-    } catch (e) {
-        console.log("Bypass mode handling client error:", e);
-        window.currentOndcData = mockProviders;
-        displayOndcResults(mockProviders, pincode);
-    }
-};
-
-// DISPLAY PROVIDERS
-function displayOndcResults(ondcData, pincode) {
-    const mockProviders = [{
-        id: "provider_workbench_1",
-        descriptor: { name: "NnlGharPro Test Kitchen" },
-        locations: [{ id: "L1", gps: "28.6139,77.2090" }],
-        items: [{
-            id: "item_veg_thali",
-            descriptor: { name: "Standard Veg Thali (ONDC Verified)", short_desc: "Clears Workbench Testing Flow" },
-            category_id: "RET11-Meals",
-            fulfillment_id: "F1",
-            location_id: "L1",
-            price: { currency: "INR", value: "150.00" }
-        }]
-    }];
-
-    const providers = mockProviders;
-    window.currentOndcProviders = providers;
-
-    let html = '';
-    providers.forEach((p, index) => {
-        const providerName = p.descriptor?.name || 'Unknown Provider';
-        const rating = p.tags?.find(t => t.code === 'rating')?.list?.[0]?.value || '4.5';
-        
-        html += `<div class="provider-item" onclick="selectProvider(${index})" style="cursor:pointer; background:rgba(255,255,255,0.03); padding:12px; border-radius:12px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; border:1px solid rgba(255,255,255,0.05);">
-            <div style="flex:1;">
-                <div class="p-name" style="font-weight:700; font-size:14px; color:#fff;">${providerName}</div>
-                <div class="p-detail" style="font-size:12px; color:#4ECDC4; margin-top:4px;">⭐ ${rating} • 📍 ${pincode}</div>
-            </div>
-            <div class="p-select-icon" style="color:#FF6B35;"><i class="fas fa-chevron-right"></i></div>
-        </div>`;
-    });
-    
-    document.getElementById('providerList').innerHTML = html;
-    showToast(`✅ ${providers.length} providers found!`);
-}
-
-// SELECT PROVIDER
-window.selectProvider = async function(indexOrId) {
-    let provider;
-    if (typeof indexOrId === 'number') {
-        provider = window.currentOndcProviders[indexOrId]; 
-    } else {
-        provider = window.currentOndcProviders.find(p => p.id === indexOrId); 
-    }
-
-    if (!provider) {
-        showToast('❌ Provider data not found. Please search again.', true);
-        return;
-    }
-
-    const providerId = provider.id;
-    const providerName = provider.descriptor?.name || 'Unknown Provider';
-    const txnId = window.currentOndcTransactionId; 
-    console.log("📤 SENDING SELECT FOR TXN:", txnId);
-    
-    document.getElementById('providerList').innerHTML = `
-        <div style="text-align:center; padding:30px; color:#FFD93D;">
-            <i class="fas fa-spinner fa-spin" style="font-size:24px; margin-bottom:10px;"></i><br>
-            <strong>Loading menu from ${providerName}...</strong><br>
-            <span style="font-size:12px; color:rgba(255,255,255,0.4); margin-top:5px; display:block;">Please wait (2-5 sec)</span>
-        </div>`;
-
-    try {
-        const response = await fetch("https://nnlgharpro-ret11.nnlgharpro.workers.dev/client_select", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                domain: "ONDC:RET11",
-                transactionId: txnId,
-                providerId: providerId,
-                pincode: document.getElementById('pincode').value.trim() || "110001",
-                items: [{ id: "item_1", quantity: { count: 1 } }] 
-            })
-        });
-
-        const data = await response.json();
-        
-        if (data.success) {
-            const selectResults = data.results || [];
-            window.currentOndcData = selectResults;
-            displayProviderMenu(selectResults);
-        } else {
-            showToast('❌ Failed to load menu', true);
-            displayOndcResults(window.currentOndcData, document.getElementById('pincode').value);
-        }
-
-    } catch (error) {
-        console.error("Select Error:", error);
-        document.getElementById('providerList').innerHTML = `<div style="text-align:center;color:#FF4757;padding:20px;">Network Error.</div>`;
-    }
-};
-
-// DISPLAY MENU
-function displayProviderMenu(order) {
-    let items = [];
-    let providerName = "Provider";
-
-    if (order && order.items && order.items.length > 0) {
-        items = order.items;
-        providerName = order.provider?.descriptor?.name || providerName;
-    }
-
-    if (items.length === 0) {
-        providerName = "NnlGharPro Test Kitchen (Sandbox)";
-        items = [{
-            id: "item_veg_thali",
-            descriptor: { 
-                name: "Standard Veg Thali (ONDC Verified)", 
-                short_desc: "Clears Workbench Testing Flow" 
-            },
-            name: "Standard Veg Thali (ONDC Verified)",
-            price: { currency: "INR", value: "150.00" }
-        }];
-    }
-
-    let menuHTML = `<div style="font-size:16px; font-weight:800; color:#4ECDC4; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">Menu: ${providerName}</div>`;
-    
-    items.forEach((item) => {
-        const price = item.price?.value || item.price || 150;
-        const name = item.descriptor?.name || item.name || 'Item';
-        
-        menuHTML += `
-            <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:10px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; border:1px solid rgba(255,255,255,0.05);">
-                <div style="flex:1;">
-                    <div style="font-weight:700; font-size:14px; color:#fff;">${name}</div>
-                    <div style="font-size:13px; color:#FFD93D; margin-top:4px;">₹${price}</div>
-                </div>
-                <button onclick="window.addToCart && window.addToCart('${item.id}', '${name}', ${price})" style="background:linear-gradient(135deg, #4ECDC4, #44B3A8); border:none; padding:8px 16px; border-radius:8px; font-weight:700; cursor:pointer; color:#fff;">Add</button>
-            </div>
-        `;
-    });
-    
-    menuHTML += `
-        <div style="margin-top:15px; text-align:center;">
-            <button onclick="displayOndcResults(window.currentOndcData)" style="background:rgba(255,255,255,0.05); color:#fff; font-size:12px; padding:10px 20px; border:1px solid rgba(255,255,255,0.1); border-radius:10px; cursor:pointer;">Back to Providers</button>
-        </div>
-    `;
-    
-    document.getElementById('providerList').innerHTML = menuHTML;
-}
-
-// 🎯 RENDER ORDER TYPE BUTTONS
-function renderOrderTypeButtons() {
-    const container = document.getElementById('orderTypeButtons');
-    const isFood = selectedService === 'Food & Restaurant';
-    const collectLabel = isFood ? '🍔 Takeaway' : '🏪 Collect from Store';
-    const collectDesc = isFood ? 'Khud jaakar lena hai' : 'Khud collect karein';
-
-    container.innerHTML = `
-        <div class="order-type-btn" id="otTakeaway" onclick="selectOrderType('takeaway')">
-            <span class="ot-icon">${isFood ? '🍔' : '🏪'}</span>
-            <span class="ot-label">${collectLabel}</span>
-            <span class="ot-desc">${collectDesc}<br>(₹0 delivery)</span>
-        </div>
-        <div class="order-type-btn" id="otDelivery" onclick="selectOrderType('delivery')">
-            <span class="ot-icon">🚚</span>
-            <span class="ot-label">Home Delivery</span>
-            <span class="ot-desc">Ghar tak mangwayein<br>(₹50 + extra km)</span>
-        </div>
-    `;
-}
-
-// 🎯 SELECT ORDER TYPE
-window.selectOrderType = function(type) {
-    currentOrderType = type;
-    document.getElementById('otTakeaway').classList.toggle('selected', type === 'takeaway');
-    document.getElementById('otDelivery').classList.toggle('selected', type === 'delivery');
-
-    if (type === 'takeaway') {
-        currentDeliveryDistance = 0;
-        currentDeliveryCharge = 0;
-        document.getElementById('deliveryDistanceSection').classList.remove('show');
-        showToast('🏪 ' + (selectedService === 'Food & Restaurant' ? 'Takeaway' : 'Collect from Store') + ' selected');
-    } else {
-        document.getElementById('deliveryDistanceSection').classList.add('show');
-        showToast('🚚 Home Delivery selected - distance chunein');
-    }
-    updateTotalAndPayment();
-};
-
-// 🚚 UPDATE DELIVERY CHARGE
-window.updateDeliveryCharge = function() {
-    const distance = parseInt(document.getElementById('deliveryDistance').value) || 0;
-    currentDeliveryDistance = distance;
-    currentDeliveryCharge = calculateDeliveryCharge(distance);
-    updateTotalAndPayment();
-};
-
-// LOAD PROVIDER ITEMS
-async function loadProviderItems(providerId) {
-    try {
-        const snap = await db.collection('items').where('providerId', '==', providerId).get();
-        let rawItems = [];
-        snap.forEach(doc => {
-            const data = doc.data();
-            if (data && data.name && data.hidden !== true) rawItems.push({ id: doc.id, ...data });
-        });
-
-        if (rawItems.length === 0) {
-            providerItems = [];
-            document.getElementById('popupItemsList').innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.3);"><i class="fas fa-box-open" style="font-size:48px;display:block;margin-bottom:12px;"></i>No items available</div>';
-            document.getElementById('selectedItemsSummary').innerHTML = '<div style="color:rgba(255,255,255,0.2);font-size:12px;padding:6px 0;">No items</div>';
-            return;
-        }
-
-        providerItems = rawItems.map(item => ({ ...item, isMain: true, subItems: item.subItems || [] }));
-        cart = {}; popupCart = {};
-        providerItems.forEach(item => {
-            const subs = (item.subItems || []).filter(s => s && s.name && s.hidden !== true);
-            if (subs.length > 0) {
-                subs.forEach(sub => {
-                    if (!sub.id) sub.id = 'sub_auto_' + Math.random().toString(36).substring(2, 10);
-                    cart[sub.id] = 0; popupCart[sub.id] = 0;
-                });
-            } else if (item.id) { cart[item.id] = 0; popupCart[item.id] = 0; }
-        });
-        renderPopupItems();
-    } catch (e) { console.error(e); }
-}
-
-function renderPopupItems() {
-    const container = document.getElementById('popupItemsList');
-    if (!providerItems || providerItems.length === 0) { container.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.3);">No items</div>'; return; }
-    let html = '';
-    providerItems.forEach(item => {
-        const subs = (item.subItems || []).filter(s => s && s.name && s.hidden !== true);
-        html += `<div class="popup-main-item"><div class="main-item-header"><span class="main-name">📦 ${item.name} <span class="main-count">(${subs.length})</span></span></div><div class="sub-items">`;
-        if (subs.length > 0) {
-            subs.forEach(sub => {
-                const qty = popupCart[sub.id] || 0;
-                html += `<div class="sub-item-row"><span class="sub-name">${sub.name}</span><span class="sub-price">₹${sub.price || 0}</span><div class="qty-control"><button class="btn-minus" onclick="updatePopupQty('${sub.id}', -1)">−</button><span class="qty-num" id="popup-qty-${sub.id}">${qty}</span><button class="btn-plus" onclick="updatePopupQty('${sub.id}', 1)">+</button></div></div>`;
-            });
-        } else {
-            const qty = popupCart[item.id] || 0;
-            html += `<div class="sub-item-row"><span class="sub-name">${item.name}</span><span class="sub-price">₹${item.price || 0}</span><div class="qty-control"><button class="btn-minus" onclick="updatePopupQty('${item.id}', -1)">−</button><span class="qty-num" id="popup-qty-${item.id}">${qty}</span><button class="btn-plus" onclick="updatePopupQty('${item.id}', 1)">+</button></div></div>`;
-        }
-        html += `</div></div>`;
-    });
-    container.innerHTML = html;
-    updatePopupTotal();
-}
-
-window.updatePopupQty = function(id, delta) {
-    if (!popupCart.hasOwnProperty(id)) return;
-    popupCart[id] = Math.max(0, (popupCart[id] || 0) + delta);
-    const el = document.getElementById('popup-qty-' + id);
-    if (el) el.textContent = popupCart[id];
-    updatePopupTotal();
-};
-
-function updatePopupTotal() {
-    let total = 0;
-    for (const [id, qty] of Object.entries(popupCart)) {
-        if (qty > 0) { const item = findItemById(id); if (item) total += (item.price || 0) * qty; }
-    }
-    document.getElementById('popupTotalAmount').textContent = '₹' + total;
-    document.getElementById('confirmItemsBtn').disabled = total <= 0;
-}
-
-function findItemById(id) {
-    for (const main of providerItems) {
-        if (main.id === id) return main;
-        if (main.subItems) { const found = main.subItems.find(s => s.id === id); if (found) return found; }
-    }
-    return null;
-}
-
-window.openItemsPopup = function() {
-    for (const [id, qty] of Object.entries(cart)) popupCart[id] = qty || 0;
-    renderPopupItems();
-    document.getElementById('itemsPopupOverlay').classList.add('show');
-};
-window.closeItemsPopup = function() { document.getElementById('itemsPopupOverlay').classList.remove('show'); };
-
-window.confirmItemsSelection = function() {
-    let total = 0;
-    for (const [id, qty] of Object.entries(popupCart)) {
-        cart[id] = qty || 0;
-        const item = findItemById(id);
-        if (item) total += (item.price || 0) * (qty || 0);
-    }
-    if (total <= 0) { showToast('Select at least one item!', true); return; }
-    closeItemsPopup();
-    updateSelectedItemsSummary();
-    updateTotalAndPayment();
-    showToast('✅ Items: ₹' + total);
-};
-
-function updateSelectedItemsSummary() {
-    const container = document.getElementById('selectedItemsSummary');
-    let hasItems = false, html = '';
-    for (const [id, qty] of Object.entries(cart)) {
-        if (qty > 0) {
-            const item = findItemById(id);
-            if (item) { hasItems = true; html += `<div class="summary-item"><span class="s-name">${item.name}</span><span class="s-qty">x${qty}</span><span class="s-price">₹${(item.price||0) * qty}</span></div>`; }
-        }
-    }
-    container.innerHTML = hasItems ? html : '<div style="color:rgba(255,255,255,0.2);font-size:12px;padding:6px 0;"><i class="fas fa-info-circle"></i> Click "Select Items"</div>';
-    updateTotalAndPayment();
-}
-
-function updateTotalAndPayment() {
-    let itemsTotal = 0;
-    for (const [id, qty] of Object.entries(cart)) {
-        if (qty > 0) { const item = findItemById(id); if (item) itemsTotal += (item.price || 0) * qty; }
-    }
-    const deliveryCharge = currentDeliveryCharge;
-    const grandTotal = itemsTotal + deliveryCharge;
-
-    document.getElementById('itemsTotalDisplay').textContent = '₹' + itemsTotal;
-    document.getElementById('deliveryChargeDisplay').textContent = '₹' + deliveryCharge;
-    document.getElementById('grandTotalDisplay').textContent = '₹' + grandTotal;
-    document.getElementById('payAmount').textContent = grandTotal;
-
-    const deliveryRow = document.getElementById('deliveryRow');
-    if (deliveryCharge === 0 && currentOrderType) {
-        deliveryRow.classList.add('free');
-    } else {
-        deliveryRow.classList.remove('free');
-    }
-
-    const distanceBadge = document.getElementById('distanceBadge');
-    if (currentDeliveryDistance > 0) {
-        distanceBadge.textContent = `(${currentDeliveryDistance === 1 ? '0-4' : currentDeliveryDistance} km)`;
-        distanceBadge.style.color = '#FFD93D';
-        distanceBadge.style.fontSize = '11px';
-    } else if (currentOrderType === 'takeaway') {
-        distanceBadge.textContent = '(Takeaway)';
-        distanceBadge.style.color = '#00C853';
-        distanceBadge.style.fontSize = '11px';
-    } else {
-        distanceBadge.textContent = '';
-    }
-
-    const section = document.getElementById('paymentSection');
-    const payBtn = document.getElementById('payBtn');
-
-    if (itemsTotal > 0 && currentOrderType) {
-        if (currentOrderType === 'takeaway' || (currentOrderType === 'delivery' && currentDeliveryDistance > 0)) {
-            section.style.display = 'block';
-            payBtn.innerHTML = `<i class="fas fa-credit-card"></i> Pay ₹${grandTotal}`;
-            payBtn.disabled = false;
-        } else {
-            section.style.display = 'block';
-            payBtn.innerHTML = `<i class="fas fa-truck"></i> Select Distance`;
-            payBtn.disabled = true;
-        }
-    } else {
-        section.style.display = 'none';
-        payBtn.disabled = true;
-    }
-}
-
-function getItemsTotal() {
-    let total = 0;
-    for (const [id, qty] of Object.entries(cart)) {
-        if (qty > 0) { const item = findItemById(id); if (item) total += (item.price || 0) * qty; }
-    }
-    return total;
-}
-
-function getItemsSummary() {
-    let summary = '';
-    for (const [id, qty] of Object.entries(cart)) {
-        if (qty > 0) {
-            const item = findItemById(id);
-            if (item) summary += `${item.name} x${qty} = ₹${(item.price||0)*qty}, `;
-        }
-    }
-    return summary.slice(0, -2) || 'No items';
-}
-
-// RAZORPAY PAYMENT
-window.processRazorpayPayment = function() {
-    if (!currentOrderType) { showToast('⚠️ Order type select karein!', true); return; }
-    if (currentOrderType === 'delivery' && currentDeliveryDistance === 0) { showToast('⚠️ Distance select karein!', true); return; }
-    
-    const itemsTotal = getItemsTotal();
-    if (itemsTotal <= 0) { showToast('⚠️ Select items!', true); return; }
-    
-    const name = document.getElementById('custName').value.trim();
-    const mobile = document.getElementById('custMobile').value.trim();
-    const address = document.getElementById('custAddress').value.trim();
-    const date = document.getElementById('bookingDate').value;
-    const time = document.getElementById('bookingTime').value;
-    
-    if (!name || !mobile || !address) { showToast('⚠️ Fill Name, Mobile, Address!', true); return; }
-    if (mobile.length < 10) { showToast('⚠️ Valid mobile!', true); return; }
-    if (!date || !time) { showToast('⚠️ Select date & time!', true); return; }
-    
-    createRazorpayPayment();
-};
-
-async function createRazorpayPayment() {
-    const itemsTotal = getItemsTotal();
-    const deliveryCharge = currentDeliveryCharge;
-    const grandTotal = itemsTotal + deliveryCharge;
-    const name = document.getElementById('custName').value.trim();
-    const mobile = document.getElementById('custMobile').value.trim();
-    const address = document.getElementById('custAddress').value.trim();
-    const notes = document.getElementById('custNotes').value.trim();
-    const date = document.getElementById('bookingDate').value;
-    const time = document.getElementById('bookingTime').value;
-    const itemsSummary = getItemsSummary();
-    const provider = allProviders.find(p => p.id === selectedProviderId);
-
-    if (!provider) { showToast('❌ Provider not found!', true); return; }
-    if (isBookingSubmitting) return;
-    isBookingSubmitting = true;
-    showLoading(true);
-
-    const gatewayFee = Math.round(grandTotal * 0.02);                    // 2% Razorpay
-    const adminCommission = Math.round(itemsTotal * 0.05);               // 5% commission
-    const adminDeliveryIncome = deliveryCharge > 0 ? 10 : 0;             
-    const totalAdminIncome = adminCommission + adminDeliveryIncome;      
-    const netAdminIncome = totalAdminIncome - gatewayFee;                
-    const providerAmount = Math.round(itemsTotal * 0.95);                
-    const deliveryPartnerAmount = deliveryCharge > 0 ? (deliveryCharge - 10) : 0;  
-
-    try {
-        const bookingData = {
-            service: selectedService || '',
-            providerId: selectedProviderId || '',
-            providerName: provider.name || '',
-            providerMobile: provider.mobile || '',
-            providerWebsite: provider.website || '',
-            orderType: currentOrderType,                        
-            bookingDate: date || '',
-            bookingTime: time || '',
-            customerName: name || '',
-            customerMobile: mobile || '',
-            customerAddress: address || '',
-            customerNotes: notes || '',
-            customerPincode: document.getElementById('pincode').value.trim() || '',
-            customerEmail: currentUser ? currentUser.email : '',
-            customerUid: currentUser ? currentUser.uid : '',
-            items: itemsSummary || '',
-            itemsTotal: itemsTotal,
-            deliveryDistance: currentDeliveryDistance,
-            deliveryCharge: deliveryCharge,
-            totalAmount: grandTotal,
-            gatewayFee: gatewayFee,
-            adminCommission: adminCommission,
-            adminDeliveryIncome: adminDeliveryIncome,
-            totalAdminIncome: totalAdminIncome,
-            netAdminIncome: netAdminIncome,
-            providerAmount: providerAmount,
-            deliveryPartnerAmount: deliveryPartnerAmount,
-            paymentMethod: 'Razorpay',
-            paymentStatus: 'pending',
-            paymentConfirmed: false,
-            status: 'pending',
-            assignedTo: selectedProviderId || '',
-            deliveryPartner: '',
-            deliveryPartnerMobile: '',
-            deliveryStatus: currentOrderType === 'takeaway' ? 'not_applicable' : 'pending',
-            deliveryAssignedAt: '',
-            deliveryPickedAt: '',
-            deliveryDeliveredAt: '',
-            createdAt: new Date().toISOString(),
-            bookingType: 'customer'
-        };
-
-        db.collection('bookings').add(bookingData)
-           .then(async (docRef) => {
-                const bookingId = docRef.id;
-                currentBookingId = bookingId;
-
-                const orderRes = await fetch('/create-order', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        amount: grandTotal,
-                        purpose: 'customer_booking',
-                        providerId: selectedProviderId
-                    })
-                });
-                const orderData = await orderRes.json();
-
-                if (!orderData.success || !orderData.order_id) {
-                    showToast('❌ Payment setup failed: ' + (orderData.error || 'Unknown'), true);
-                    isBookingSubmitting = false;
-                    showLoading(false);
-                    return;
-                }
-                const options = {
-                    key: RAZORPAY_CONFIG.KEY_ID,
-                    order_id: orderData.order_id,
-                    amount: grandTotal * 100,
-                    currency: "INR",
-                    name: "NnlGharPro - Randhawa Enterprises",
-                    description: `NnlGharPro - ${provider.name} - ${bookingId.slice(0,8)}`,
-                    image: "https://nnlgharpro.in/logo.png",
-                    prefill: { name, contact: mobile, email: currentUser ? currentUser.email : '' },
-                    notes: {
-                        providerId: provider.id, providerName: provider.name,
-                        bookingId, service: selectedService, orderType: currentOrderType,
-                        customerName: name, customerMobile: mobile,
-                        itemsTotal, deliveryCharge, totalAmount: grandTotal
-                    },
-                    theme: { color: "#FF6B35" },
-                    modal: {
-                        ondismiss: function() {
-                            showToast('⚠️ Payment cancelled', true);
-                            showLoading(false);
-                            isBookingSubmitting = false;
-                            db.collection('bookings').doc(bookingId).delete().catch(() => {});
-                        }
-                    },
-                    handler: function(response) {
-                        verifyRazorpayPayment(bookingId, response);
-                    }
-                };
-
-                const rzp = new Razorpay(options);
-                rzp.open();
-                showLoading(false);
-                isBookingSubmitting = false;
-            })
-            .catch((error) => {
-                showToast('❌ ' + error.message, true);
-                isBookingSubmitting = false;
-                showLoading(false);
-            });
-    } catch (error) {
-        showToast('❌ ' + error.message, true);
-        isBookingSubmitting = false;
-        showLoading(false);
-    }
-}
-
-async function verifyRazorpayPayment(bookingId, response) {
-    showLoading(true);
-    try {
-        const updateData = {
-            paymentStatus: 'paid',
-            paymentConfirmed: true,
-            transactionId: response.razorpay_payment_id || '',
-            status: 'assigned',
-            paidAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-        };
-        if (response.razorpay_order_id) updateData.razorpayOrderId = response.razorpay_order_id;
-        await db.collection('bookings').doc(bookingId).update(updateData);
-        showToast('✅ Payment successful!');
-        showReceipt(bookingId, 'paid');
-        closeBookingModal();
-        document.querySelectorAll('.service-btn').forEach(b => b.classList.remove('active'));
-        selectedService = null;
-    } catch (error) {
-        showToast('❌ ' + error.message, true);
-    }
-    showLoading(false);
-}
-
-// RECEIPT
-function showReceipt(bookingId, paymentStatus) {
-    db.collection('bookings').doc(bookingId).get().then((doc) => {
-        if (!doc.exists) return;
-        const data = doc.data();
-        const isPaid = data.paymentStatus === 'paid' && data.paymentConfirmed === true;
-        const orderTypeLabel = data.orderType === 'takeaway' 
-            ? (data.service === 'Food & Restaurant' ? '🍔 Takeaway' : '🏪 Collect from Store') 
-            : '🚚 Home Delivery';
-
-        document.getElementById('receiptDetails').innerHTML = `
-            <div class="receipt-row"><span class="label">Booking ID</span><span class="value">#${bookingId.substring(0,8).toUpperCase()}</span></div>
-            <div class="receipt-row"><span class="label">Date</span><span class="value">${data.bookingDate || ''} ${data.bookingTime || ''}</span></div>
-            <div class="receipt-row"><span class="label">Customer</span><span class="value">${data.customerName || ''}</span></div>
-            <div class="receipt-row"><span class="label">Service</span><span class="value">${data.service || ''}</span></div>
-            <div class="receipt-row"><span class="label">Provider</span><span class="value">${data.providerName || ''}</span></div>
-            <div class="receipt-row"><span class="label">Order Type</span><span class="value">${orderTypeLabel}</span></div>
-            <div class="receipt-row"><span class="label">Items</span><span class="value">${data.items || ''}</span></div>
-            <div class="receipt-row"><span class="label">Items Total</span><span class="value">₹${data.itemsTotal || 0}</span></div>
-            ${data.deliveryCharge > 0 ? `<div class="receipt-row"><span class="label">Delivery (${data.deliveryDistance === 1 ? '0-4' : data.deliveryDistance} km)</span><span class="value">₹${data.deliveryCharge}</span></div>` : '<div class="receipt-row"><span class="label">Delivery</span><span class="value" style="color:#00C853">FREE</span></div>'}
-        `;
-        document.getElementById('receiptTotal').textContent = '₹' + (data.totalAmount || 0);
-        const statusEl = document.getElementById('receiptPaymentStatus');
-        statusEl.textContent = isPaid ? '✅ PAID' : '⏳ Pending';
-        statusEl.style.color = isPaid ? '#00C853' : '#FFD93D';
-        statusEl.style.background = isPaid ? 'rgba(0,200,83,0.1)' : 'rgba(255,217,61,0.1)';
-        document.getElementById('receiptContainer').classList.add('show');
-        currentBookingId = bookingId;
-    });
-}
-
-window.closeReceipt = function() { document.getElementById('receiptContainer').classList.remove('show'); };
-
-window.closeBookingModal = function() {
-    document.getElementById('bookingModal').classList.remove('show');
-    document.getElementById('providerListContainer').style.display = 'block';
-    document.getElementById('bookingForm').style.display = 'none';
-    document.getElementById('paymentSection').style.display = 'none';
-    selectedProviderId = null; selectedProviderData = null;
-    providerItems = []; cart = {}; popupCart = {}; myCart = [];
-    currentDeliveryDistance = 0; currentDeliveryCharge = 0; currentOrderType = '';
-    document.getElementById('deliveryDistance').value = '';
-    document.getElementById('deliveryDistanceSection').classList.remove('show');
-};
-
-document.getElementById('pincode').addEventListener('keyup', e => { if (e.key === 'Enter') searchServices(); });
-
-// INIT
-checkSession();
-updateDateTime();
-updateWeather();
-
-// ═══════════════════════════════════════════════════════════
-// 💰 RECHARGE 
-// ═══════════════════════════════════════════════════════════
-let rechargeType = 'mobile';
-let rechargeServiceStatus = { open: true, message: '' };
-let selectedOperator = '';
-let availablePlans = [];
-let selectedPlanId = null;
-let plansUnsubscribe = null;
-
-window.selectOperator = function(op) {
-    selectedOperator = op;
-    document.getElementById('rechargeOperator').value = op;
-    
-    document.querySelectorAll('.op-card').forEach(card => {
-        if (card.dataset.op === op) {
-            card.style.background = 'linear-gradient(135deg,rgba(78,205,196,.2),rgba(78,205,196,.1))';
-            card.style.borderColor = '#4ECDC4';
-            card.style.transform = 'scale(1.05)';
-            card.style.boxShadow = '0 0 20px rgba(78,205,196,.3)';
-        } else {
-            card.style.background = 'rgba(255,255,255,.03)';
-            card.style.borderColor = 'rgba(255,255,255,.06)';
-            card.style.transform = 'scale(1)';
-            card.style.boxShadow = 'none';
-        }
-    });
-    
-    loadRechargePlans(op);
-};
-
-async function loadRechargePlans(operator) {
-    const plansContainer = document.getElementById('popularPlans');
-    const plansList = document.getElementById('plansList');
-    const spinner = document.getElementById('plansLoadingSpinner');
-    const noPlans = document.getElementById('noPlansMessage');
-    const plansCount = document.getElementById('plansCount');
-    
-    plansContainer.style.display = 'block';
-    spinner.style.display = 'inline-block';
-    noPlans.style.display = 'none';
-    plansList.innerHTML = '';
-    plansCount.textContent = '';
-    
-    if (plansUnsubscribe) {
-        plansUnsubscribe();
-        plansUnsubscribe = null;
-    }
-    
-    try {
-        const snapshot = await db.collection('rechargePlans')
-            .where('operator', '==', operator)
-            .where('active', '==', true)
-            .get();
-        
-        availablePlans = [];
-        snapshot.forEach(doc => {
-            availablePlans.push({ id: doc.id, ...doc.data() });
-        });
-        
-        availablePlans.sort((a, b) => (a.amount || 0) - (b.amount || 0));
-        
-        spinner.style.display = 'none';
-        
-        if (availablePlans.length === 0) {
-            noPlans.style.display = 'block';
-            plansCount.textContent = '';
-            return;
-        }
-        
-        plansCount.textContent = `(${availablePlans.length} plans)`;
-        renderPlans();
-        
-    } catch (error) {
-        console.error('Error loading plans:', error);
-        spinner.style.display = 'none';
-        noPlans.style.display = 'block';
-        noPlans.innerHTML = `<i class="fas fa-exclamation-triangle" style="color:#FF4757"></i> Plans load nahi ho paye. Try again.`;
-    }
-}
-
-function renderPlans() {
-    const plansList = document.getElementById('plansList');
-    
-    if (availablePlans.length === 0) {
-        plansList.innerHTML = '';
-        return;
-    }
-    
-    let html = '';
-    availablePlans.forEach((plan, index) => {
-        const isPopular = plan.popular === true || index === 0;
-        html += `
-            <div class="plan-card" data-plan-id="${plan.id}" onclick="selectPlan('${plan.id}')" 
-                 style="min-width:130px;max-width:130px;background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 10px;cursor:pointer;transition:all .3s;position:relative;flex-shrink:0">
-                ${isPopular ? `<div style="position:absolute;top:-8px;right:6px;background:linear-gradient(135deg,#FF6B35,#FFD93D);color:#fff;font-size:9px;font-weight:800;padding:2px 8px;border-radius:10px">🔥 POPULAR</div>` : ''}
-                <div style="font-size:22px;font-weight:900;color:#FFD93D;margin-bottom:4px">₹${plan.amount || 0}</div>
-                <div style="font-size:11px;color:#4ECDC4;font-weight:700;margin-bottom:6px">
-                    <i class="fas fa-clock"></i> ${plan.validity || 'N/A'}
-                </div>
-                <div style="font-size:10px;color:rgba(255,255,255,.6);line-height:1.4;min-height:42px">
-                    ${plan.description || plan.desc || ''}
-                </div>
-                ${plan.data ? `<div style="font-size:9px;color:rgba(255,255,255,.4);margin-top:4px"><i class="fas fa-database"></i> ${plan.data}</div>` : ''}
-            </div>
-        `;
-    });
-    
-    plansList.innerHTML = html;
-}
-
-window.selectPlan = function(planId) {
-    const plan = availablePlans.find(p => p.id === planId);
-    if (!plan) return;
-    
-    selectedPlanId = planId;
-    
-    document.querySelectorAll('.plan-card').forEach(card => {
-        if (card.dataset.planId === planId) {
-            card.style.borderColor = '#4ECDC4';
-            card.style.background = 'linear-gradient(135deg,rgba(78,205,196,.15),rgba(78,205,196,.05))';
-            card.style.transform = 'scale(1.03)';
-            card.style.boxShadow = '0 0 25px rgba(78,205,196,.25)';
-        } else {
-            card.style.borderColor = 'rgba(255,255,255,.06)';
-            card.style.background = 'rgba(255,255,255,.03)';
-            card.style.transform = 'scale(1)';
-            card.style.boxShadow = 'none';
-        }
-    });
-    
-    document.getElementById('rechargeAmount').value = plan.amount || 0;
-    
-    showToast(`✅ ₹${plan.amount} plan selected (${plan.validity || ''})`);
-};
-
-window.setAmount = function(amt) {
-    document.getElementById('rechargeAmount').value = amt;
-    selectedPlanId = null;
-    document.querySelectorAll('.plan-card').forEach(card => {
-        card.style.borderColor = 'rgba(255,255,255,.06)';
-        card.style.background = 'rgba(255,255,255,.03)';
-        card.style.transform = 'scale(1)';
-        card.style.boxShadow = 'none';
-    });
-};
-
-window.openRechargeModal = function() {
-    if (!currentUser) { showToast('Please login first!', true); return; }
-    document.getElementById('rechargeModal').classList.add('show');
-    checkRechargeService();
-    resetRechargeForm();
-};
-
-window.closeRechargeModal = function() {
-    document.getElementById('rechargeModal').classList.remove('show');
-    if (plansUnsubscribe) {
-        plansUnsubscribe();
-        plansUnsubscribe = null;
-    }
-};
-
-function resetRechargeForm() {
-    document.getElementById('rechargeNumber').value = '';
-    document.getElementById('rechargeAmount').value = '';
-    document.getElementById('rechargeOperator').value = '';
-    selectedOperator = '';
-    selectedPlanId = null;
-    availablePlans = [];
-    document.getElementById('popularPlans').style.display = 'none';
-    document.querySelectorAll('.op-card').forEach(card => {
-        card.style.background = 'rgba(255,255,255,.03)';
-        card.style.borderColor = 'rgba(255,255,255,.06)';
-        card.style.transform = 'scale(1)';
-        card.style.boxShadow = 'none';
-    });
-}
-
-window.switchRechargeType = function(type) {
-    rechargeType = type;
-    const mobileBtn = document.getElementById('mobileRechargeBtn');
-    const dthBtn = document.getElementById('dthRechargeBtn');
-    const label = document.getElementById('rechargeLabel');
-    const numberInput = document.getElementById('rechargeNumber');
-    
-    if (type === 'mobile') {
-        mobileBtn.style.background = 'linear-gradient(135deg,#4ECDC4,#44B3A8)';
-        mobileBtn.style.color = '#fff';
-        mobileBtn.style.boxShadow = '0 4px 15px rgba(78,205,196,.3)';
-        dthBtn.style.background = 'rgba(255,255,255,.05)';
-        dthBtn.style.color = 'rgba(255,255,255,.5)';
-        dthBtn.style.boxShadow = 'none';
-        label.textContent = 'Mobile Number';
-        numberInput.placeholder = 'Enter 10-digit mobile number';
-        numberInput.maxLength = 10;
-        numberInput.setAttribute('inputmode', 'numeric');
-    } else {
-        dthBtn.style.background = 'linear-gradient(135deg,#4ECDC4,#44B3A8)';
-        dthBtn.style.color = '#fff';
-        dthBtn.style.boxShadow = '0 4px 15px rgba(78,205,196,.3)';
-        mobileBtn.style.background = 'rgba(255,255,255,.05)';
-        mobileBtn.style.color = 'rgba(255,255,255,.5)';
-        mobileBtn.style.boxShadow = 'none';
-        label.textContent = 'DTH Customer ID';
-        numberInput.placeholder = 'Enter DTH Customer ID';
-        numberInput.maxLength = 15;
-        numberInput.removeAttribute('inputmode');
-    }
-    
-    document.querySelectorAll('.mobile-op').forEach(el => {
-        el.style.display = type === 'mobile' ? 'block' : 'none';
-    });
-    document.querySelectorAll('.dth-op').forEach(el => {
-        el.style.display = type === 'dth' ? 'block' : 'none';
-    });
-    
-    document.querySelectorAll('.op-card').forEach(card => {
-        card.style.background = 'rgba(255,255,255,.03)';
-        card.style.borderColor = 'rgba(255,255,255,.06)';
-        card.style.transform = 'scale(1)';
-        card.style.boxShadow = 'none';
-    });
-    selectedOperator = '';
-    document.getElementById('rechargeOperator').value = '';
-    document.getElementById('popularPlans').style.display = 'none';
-    
-    selectedPlanId = null;
-    if (selectedOperator) loadRechargePlans(selectedOperator);
-};
-
-function checkRechargeService() {
-    db.collection('settings').doc('rechargeService').onSnapshot(doc => {
-        if (doc.exists) {
-            const data = doc.data();
-            rechargeServiceStatus = {
-                open: data.open !== false,
-                message: data.message || 'Recharge service abhi maintainance mein hai. Kripya thodi der baad try karein. 🙏'
-            };
-        } else {
-            rechargeServiceStatus = { open: true, message: '' };
-        }
-        
-        const warning = document.getElementById('rechargeServiceWarning');
-        const payBtn = document.getElementById('rechargePayBtn');
-        
-        if (!rechargeServiceStatus.open) {
-            warning.style.display = 'block';
-            warning.innerHTML = `🔄 ${rechargeServiceStatus.message}`;
-            payBtn.disabled = true;
-            payBtn.textContent = '⏸️ Service Temporarily Closed';
-            payBtn.style.opacity = '0.5';
-        } else {
-            warning.style.display = 'none';
-            payBtn.disabled = false;
-            payBtn.innerHTML = '<i class="fas fa-lock"></i> Pay Securely with Razorpay';
-            payBtn.style.opacity = '1';
-        }
-    });
-}
-
-window.processRecharge = async function() {
-    if (!rechargeServiceStatus.open) {
-        showToast('🔄 ' + rechargeServiceStatus.message, true);
-        return;
-    }
-    
-    const number = document.getElementById('rechargeNumber').value.trim();
-    const operator = document.getElementById('rechargeOperator').value;
-    const amount = parseFloat(document.getElementById('rechargeAmount').value);
-    
-    if (!number) { showToast('❌ Enter mobile number / DTH ID', true); return; }
-    if (rechargeType === 'mobile' && number.length !== 10) { showToast('❌ Enter valid 10-digit mobile number', true); return; }
-    if (!operator) { showToast('❌ Select operator', true); return; }
-    if (!amount || amount < 10) { showToast('❌ Enter amount (min ₹10)', true); return; }
-    if (amount > 10000) { showToast('❌ Max amount ₹10,000', true); return; }
-    
-    showLoading(true);
-    
-    const selectedPlan = selectedPlanId ? availablePlans.find(p => p.id === selectedPlanId) : null;
-    
-    const options = {
-        key: RAZORPAY_CONFIG.KEY_ID,
-        amount: Math.round(amount * 100),
-        currency: 'INR',
-        name: 'NnlGharPro Recharge',
-        description: `${rechargeType === 'mobile' ? 'Mobile' : 'DTH'} Recharge - ${operator}`,
-        image: 'https://nnlgharpro.in/logo.png',
-        handler: function(response) {
-            saveRechargeOrder(number, operator, amount, selectedPlan, response);
-        },
-        prefill: {
-            email: currentUser?.email || '',
-            contact: rechargeType === 'mobile' ? number : ''
-        },
-        notes: {
-            rechargeType: rechargeType,
-            operator: operator,
-            customerId: currentUser?.uid || '',
-            customerEmail: currentUser?.email || ''
-        },
-        theme: { color: '#4ECDC4' },
-        modal: {
-            ondismiss: function() {
-                showToast('⚠️ Payment cancelled', true);
-                showLoading(false);
-            }
-        }
-    };
-    
-    try {
-        const rzp = new Razorpay(options);
-        rzp.on('payment.failed', function(response) {
-            showToast('❌ Payment failed: ' + (response.error?.description || 'Unknown'), true);
-            showLoading(false);
-        });
-        rzp.open();
-        showLoading(false);
-    } catch (error) {
-        showToast('❌ ' + error.message, true);
-        showLoading(false);
-    }
-};
-
-async function saveRechargeOrder(number, operator, amount, plan, paymentResponse) {
-    showLoading(true);
-    
-    try {
-        const orderData = {
-            customerId: currentUser.uid,
-            customerEmail: currentUser.email,
-            customerUid: currentUser.uid,
-            
-            rechargeType: rechargeType,
-            number: number,
-            operator: operator,
-            amount: amount,
-            
-            planId: plan ? plan.id : '',
-            planValidity: plan ? (plan.validity || '') : '',
-            planDescription: plan ? (plan.description || plan.desc || '') : '',
-            planData: plan ? (plan.data || '') : '',
-            
-            paymentId: paymentResponse.razorpay_payment_id || '',
-            paymentStatus: 'paid',
-            paymentMethod: 'Razorpay',
-            paidAt: new Date().toISOString(),
-            
-            status: 'pending',
-            processedBy: '',
-            processedAt: '',
-            adminNotes: '',
-            operatorRefId: '',
-            
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            
-            source: 'customer_portal',
-            platform: 'web'
-        };
-        
-        const docRef = await db.collection('rechargeOrders').add(orderData);
-        
-        console.log('✅ Recharge order saved:', docRef.id);
-        
-        showToast(`✅ Recharge request submitted! Order #${docRef.id.slice(0,8).toUpperCase()}`);
-        
-        showRechargeSuccess(docRef.id, number, operator, amount, plan);
-        
-        resetRechargeForm();
-        
-    } catch (error) {
-        console.error('Error saving recharge order:', error);
-        showToast('❌ Order save failed: ' + error.message, true);
-    }
-    
-    showLoading(false);
-}
-
-function showRechargeSuccess(orderId, number, operator, amount, plan) {
-    const receiptDetails = document.getElementById('receiptDetails');
-    const orderIdShort = orderId.slice(0, 8).toUpperCase();
-    
-    receiptDetails.innerHTML = `
-        <div style="text-align:center;padding:10px 0 16px">
-            <div style="font-size:48px;margin-bottom:8px">✅</div>
-            <div style="font-size:16px;font-weight:800;color:#00C853">Payment Successful!</div>
-            <div style="font-size:12px;color:#666;margin-top:4px">Aapka recharge request submit ho gaya hai</div>
-        </div>
-        <div class="receipt-row"><span class="label">Order ID</span><span class="value">#${orderIdShort}</span></div>
-        <div class="receipt-row"><span class="label">Type</span><span class="value">${rechargeType === 'mobile' ? '📱 Mobile' : '📺 DTH'}</span></div>
-        <div class="receipt-row"><span class="label">Number</span><span class="value">${number}</span></div>
-        <div class="receipt-row"><span class="label">Operator</span><span class="value">${operator}</span></div>
-        ${plan ? `<div class="receipt-row"><span class="label">Plan</span><span class="value">${plan.validity || ''} - ${plan.description || plan.desc || ''}</span></div>` : ''}
-        <div class="receipt-row"><span class="label">Amount</span><span class="value" style="color:#1a237e;font-weight:800">₹${amount}</span></div>
-        <div class="receipt-row"><span class="label">Status</span><span class="value" style="color:#FF9800;font-weight:700">⏳ Processing</span></div>
-        <div style="background:rgba(255,152,0,.08);border-left:3px solid #FF9800;padding:10px 12px;border-radius:8px;margin-top:12px;font-size:11px;color:#666;line-height:1.6">
-            <strong style="color:#FF9800">ℹ️ Note:</strong> Aapka recharge 5-30 minute mein process ho jayega. 
-            Koi problem ho toh <strong>+91 95885 62553</strong> pe contact karein.
-        </div>
-    `;
-    
-    document.getElementById('receiptTotal').textContent = '₹' + amount;
-    
-    const statusEl = document.getElementById('receiptPaymentStatus');
-    statusEl.textContent = '✅ PAID';
-    statusEl.style.color = '#00C853';
-    statusEl.style.background = 'rgba(0,200,83,0.1)';
-    
-    document.getElementById('receiptContainer').classList.add('show');
-    
-    setTimeout(() => {
-        closeRechargeModal();
-    }, 500);
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    const numberInput = document.getElementById('rechargeNumber');
-    if (numberInput) {
-        numberInput.addEventListener('input', function(e) {
-            if (rechargeType === 'mobile') {
-                this.value = this.value.replace(/\D/g, '').slice(0, 10);
-            }
-        });
-    }
-    
-    const amountInput = document.getElementById('rechargeAmount');
-    if (amountInput) {
-        amountInput.addEventListener('input', function(e) {
-            this.value = this.value.replace(/[^0-9]/g, '');
-        });
+        currentUser = null;
+        document.getElementById('loginScreen').style.display = 'flex';
+        document.getElementById('mainApp').classList.remove('active');
     }
 });
 
-// ═══════════════════════════════════════════════════════════
-// 🛡️ INSURANCE SECTION 
-// ═══════════════════════════════════════════════════════════
-const TURTLEMINT_POSP_CODE = 'DP-4378968';
-
-const TURTLEMINT_URLS = {
-    'bike':              `https://pro.turtlemintinsurance.com/v2/two-wheeler-insurance/create?posp=${TURTLEMINT_POSP_CODE}`,
-    'car':               `https://pro.turtlemintinsurance.com/v2/car-insurance/create?posp=${TURTLEMINT_POSP_CODE}`,
-    'commercial':        `https://pro.turtlemintinsurance.com/v2/commercial-vehicle-insurance/create?posp=${TURTLEMINT_POSP_CODE}`,
-    'health':            `https://pro.turtlemintinsurance.com/health-insurance/health?posp=${TURTLEMINT_POSP_CODE}`,
-    'life':              `https://pro.turtlemintinsurance.com/life-insurance/life?posp=${TURTLEMINT_POSP_CODE}`,
-    'personal-accident': `https://pro.turtlemintinsurance.com/insurance/personal-accident/v1/basic-pa?posp=${TURTLEMINT_POSP_CODE}`,
-    'payment-fraud':     `https://app.turtlefin.com/products/cyber-insurance?posp=${TURTLEMINT_POSP_CODE}`,
-    'personal-loan':     `https://app.turtlefin.com/products/personal-loan?posp=${TURTLEMINT_POSP_CODE}`,
-    'business-loan':     `https://app.turtlefin.com/products/business-loans?posp=${TURTLEMINT_POSP_CODE}`,
-    'credit-card':       `https://app.turtlefin.com/products/credit-card?posp=${TURTLEMINT_POSP_CODE}`,
-    'home-loan':         `https://app.turtlefin.com/products/home-loan?posp=${TURTLEMINT_POSP_CODE}`,
-    'credit-score':      `https://app.turtlefin.com/credit-score?posp=${TURTLEMINT_POSP_CODE}`,
-    'loan-mf':           `https://app.turtlefin.com/products/lamf?posp=${TURTLEMINT_POSP_CODE}`,
-    'mutual-funds':      `https://pro.turtlemintmoney.com/home?posp=${TURTLEMINT_POSP_CODE}`,
-    'fire':              `https://pro.turtlemintinsurance.com/insurance/fire?posp=${TURTLEMINT_POSP_CODE}`,
-    'marine':            `https://pro.turtlemintinsurance.com/insurance/marine?posp=${TURTLEMINT_POSP_CODE}`,
-    'workmen':           `https://pro.turtlemintinsurance.com/products/workmen-compensation?posp=${TURTLEMINT_POSP_CODE}`
-};
-
-window.openInsuranceSection = function() {
-    if (!currentUser) { showToast('Please login first!', true); return; }
-    document.getElementById('insuranceSectionModal').classList.add('show');
-};
-
-window.closeInsuranceSection = function() {
-    document.getElementById('insuranceSectionModal').classList.remove('show');
-};
-
-window.switchInsuranceSubTab = function(tabName) {
-    document.querySelectorAll('.ins-subtab').forEach(t => t.classList.remove('active'));
-    document.querySelector(`.ins-subtab[data-subtab="${tabName}"]`).classList.add('active');
+async function handleLogin() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const pass = document.getElementById('loginPassword').value.trim();
+    if (!email || pass.length < 6) return showToast("Enter valid email & password (min 6 chars)");
     
-    document.querySelectorAll('.ins-subtab-content').forEach(c => c.style.display = 'none');
-    document.getElementById(`subTab-${tabName}`).style.display = 'block';
-    
-    if (tabName === 'turtlemint') {
-        checkChromeBrowser();
-    }
-};
-
-function checkChromeBrowser() {
-    const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
-    const isEdge = /Edg/.test(navigator.userAgent);
-    
-    const warning = document.getElementById('chromeWarning');
-    if (warning) {
-        warning.style.display = (!isChrome || isEdge) ? 'flex' : 'none';
+    try {
+        document.getElementById('loginBtn').textContent = "Please wait...";
+        await auth.signInWithEmailAndPassword(email, pass).catch(async (e) => {
+            if (e.code === 'auth/user-not-found') {
+                await auth.createUserWithEmailAndPassword(email, pass);
+            } else { throw e; }
+        });
+    } catch (error) {
+        showToast(error.message);
+        document.getElementById('loginBtn').textContent = "Login / Sign Up";
     }
 }
 
-window.buyInsuranceTurtlemint = function(serviceType) {
-    const url = TURTLEMINT_URLS[serviceType];
-    
-    if (!url) {
-        showToast('❌ Service not available', true);
-        return;
-    }
-    
-    const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
-    const isEdge = /Edg/.test(navigator.userAgent);
-    
-    if (!isChrome || isEdge) {
-        const proceed = window.confirm(
-            '⚠️ Chrome browser recommended for insurance payment.\n\n' +
-            'OK = Continue anyway\n' +
-            'Cancel = Download Chrome'
-        );
-        
-        if (!proceed) {
-            window.open('https://www.google.com/chrome/', '_blank');
-            return;
-        }
-    }
-    
-    window.open(url, '_blank');
-    showToast('🛡️ Turtlemint opening...');
-    
-    if (typeof db !== 'undefined') {
-        db.collection('insurance_clicks').add({
-            serviceType: serviceType,
-            customerId: currentUser ? currentUser.uid : 'guest',
-            customerEmail: currentUser ? currentUser.email : '',
-            timestamp: new Date().toISOString()
-        }).catch(err => console.log('Log error:', err));
-    }
-};
+async function handleGoogleLogin() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    try { await auth.signInWithPopup(provider); } catch (e) { showToast(e.message); }
+}
 
-console.log('✅ NnlGharPro Portal Complete & Fixed');
+function handleLogout() { auth.signOut(); }
+
+// ==========================================
+// 5. SEARCH & MENU (ONDC Hidden)
+// ==========================================
+async function searchCategory(cat) {
+    if(!cat) return;
+    currentCategory = cat;
+    document.getElementById('menuTitle').textContent = `${cat} - Store`;
+    openModal('menuModal');
+    document.getElementById('menuList').innerHTML = '<div style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin fa-2x" style="color:#4ECDC4;"></i></div>';
+
+    const pincode = document.getElementById('pincode').value.trim() || "110001";
+
+    try {
+        // 1. Search Call
+        const res = await fetch(`${API_URL}/client_search`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ domain: "ONDC:RET11", category: cat, pincode: pincode })
+        });
+        const data = await res.json();
+        currentTxnId = data.transactionId;
+
+        // 2. Select Call (Get Menu)
+        const selRes = await fetch(`${API_URL}/client_select`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ domain: "ONDC:RET11", transactionId: currentTxnId, providerId: "provider_workbench_1", pincode: pincode, items: [{ id: "item_1", quantity: { count: 1 } }] })
+        });
+        
+        // 3. Render Menu (Mock data displayed to user)
+        const items = [{ id: "item_veg_thali", name: "Standard Veg Thali", desc: "Fresh & Hot", price: 150 }];
+        
+        let html = '';
+        items.forEach(item => {
+            html += `
+                <div class="cart-item">
+                    <div style="flex:1;">
+                        <div style="font-weight:700; font-size:14px;">${item.name}</div>
+                        <div style="font-size:11px; color:rgba(255,255,255,0.5); margin:4px 0;">${item.desc}</div>
+                        <div style="font-weight:800; color:#FFD93D;">₹${item.price}</div>
+                    </div>
+                    <button class="btn-primary" onclick="addToCart('${item.id}', '${item.name}', ${item.price})">Add</button>
+                </div>
+            `;
+        });
+        document.getElementById('menuList').innerHTML = html;
+
+    } catch (e) {
+        document.getElementById('menuList').innerHTML = '<div style="text-align:center; color:#FF4757; padding:20px;">Network Error</div>';
+    }
+}
+
+// ==========================================
+// 6. CART MANAGEMENT
+// ==========================================
+function addToCart(id, name, price) {
+    const existing = cart.find(item => item.id === id);
+    if (existing) { existing.qty++; } 
+    else { cart.push({ id, name, price, qty: 1 }); }
+    
+    updateCartUI();
+    closeModal('menuModal');
+    openModal('cartModal'); // Direct open cart
+}
+
+function updateCartUI() {
+    let totalQty = 0, totalPrice = 0, html = '';
+    cart.forEach(item => {
+        totalQty += item.qty;
+        totalPrice += (item.price * item.qty);
+        html += `
+            <div class="cart-item">
+                <div style="flex:1;">
+                    <div style="font-weight:700; font-size:13px;">${item.name}</div>
+                    <div style="font-size:12px; color:#FFD93D; margin-top:2px;">₹${item.price}</div>
+                </div>
+                <div class="qty-control">
+                    <button class="qty-btn" onclick="changeQty('${item.id}', -1)">−</button>
+                    <span class="qty-num">${item.qty}</span>
+                    <button class="qty-btn" onclick="changeQty('${item.id}', 1)">+</button>
+                </div>
+                <div style="font-weight:800; color:#4ECDC4; margin-left:10px; font-size:13px;">₹${item.price * item.qty}</div>
+            </div>
+        `;
+    });
+    if (cart.length === 0) html = '<div style="text-align:center; padding:20px; color:#aaa;">Cart is empty</div>';
+    
+    document.getElementById('cartItemsList').innerHTML = html;
+    document.getElementById('cartTotal').textContent = `₹${totalPrice}`;
+    document.getElementById('cartBadge').textContent = totalQty;
+    document.getElementById('cartBadge').style.display = totalQty > 0 ? 'block' : 'none';
+}
+
+function changeQty(id, delta) {
+    const item = cart.find(i => i.id === id);
+    if (item) {
+        item.qty += delta;
+        if (item.qty <= 0) cart = cart.filter(i => i.id !== id);
+        updateCartUI();
+    }
+}
+
+function openCart() { openModal('cartModal'); }
+
+// ==========================================
+// 7. CHECKOUT & PAYMENT
+// ==========================================
+function proceedToCheckout() {
+    if (cart.length === 0) return showToast('Cart is empty!');
+    closeModal('cartModal');
+    openModal('checkoutModal');
+}
+
+function initiateRazorpay() {
+    const name = document.getElementById('custName').value.trim();
+    const mobile = document.getElementById('custMobile').value.trim();
+    const address = document.getElementById('custAddress').value.trim();
+
+    if (!name || !mobile || !address) return showToast('Please fill all details!');
+    if (mobile.length < 10) return showToast('Invalid mobile number!');
+
+    let totalPrice = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+
+    var options = {
+        "key": RZP_KEY,
+        "amount": totalPrice * 100,
+        "currency": "INR",
+        "name": "NnlGharPro",
+        "description": "Order Payment",
+        "handler": function (response) {
+            closeModal('checkoutModal');
+            showReceipt(response.razorpay_payment_id, name, totalPrice);
+            cart = []; 
+            updateCartUI();
+            showToast("Payment Successful!");
+        },
+        "prefill": { "name": name, "contact": mobile },
+        "theme": { "color": "#4ECDC4" }
+    };
+    var rzp = new Razorpay(options);
+    rzp.open();
+}
+
+function showReceipt(paymentId, name, total) {
+    document.getElementById('rcptId').textContent = paymentId.substring(0, 10).toUpperCase();
+    document.getElementById('rcptName').textContent = name;
+    document.getElementById('rcptItems').textContent = cart.map(i => `${i.name} (x${i.qty})`).join(', ') || "Order";
+    document.getElementById('rcptTotal').textContent = `₹${total}`;
+    openModal('receiptModal');
+}
+
+// ==========================================
+// 8. RECHARGE (Fast Flow)
+// ==========================================
+let selectedOp = "";
+function selectOp(op) {
+    selectedOp = op;
+    document.querySelectorAll('.op-card').forEach(el => el.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+}
+
+function processRecharge() {
+    const num = document.getElementById('rcNumber').value.trim();
+    const amt = parseFloat(document.getElementById('rcAmount').value);
+    if (num.length !== 10 || !selectedOp || !amt || amt < 10) return showToast('Fill all details properly!');
+
+    var options = {
+        "key": RZP_KEY,
+        "amount": amt * 100,
+        "currency": "INR",
+        "name": "NnlGharPro Recharge",
+        "description": `${selectedOp} Recharge`,
+        "handler": function (response) {
+            closeModal('rechargeModal');
+            showToast("Recharge Successful!");
+            // Save to Firestore (Background)
+            if(currentUser) {
+                db.collection('rechargeOrders').add({
+                    customerUid: currentUser.uid,
+                    number: num, operator: selectedOp, amount: amt,
+                    paymentId: response.razorpay_payment_id, status: 'pending',
+                    createdAt: new Date().toISOString()
+                }).catch(e => console.log(e));
+            }
+        },
+        "prefill": { "contact": num },
+        "theme": { "color": "#4ECDC4" }
+    };
+    var rzp = new Razorpay(options);
+    rzp.open();
+}
 </script>
 </body>
 </html>
