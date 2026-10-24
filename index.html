@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
 <title>NnlGharPro - Super App</title>
-<meta name="google-site-verification" content="w6qm7tonraRh8hHgflqJmZaubqzFv7_CYz-vrh1Zbmw" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
@@ -14,7 +13,7 @@
 
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-body { background: #0f0c29; background: linear-gradient(to right, #24243e, #302b63, #0f0c29); min-height: 100vh; color: #fff; padding: 12px; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
+body { background: linear-gradient(to right, #24243e, #302b63, #0f0c29); min-height: 100vh; color: #fff; padding: 12px; }
 .container { max-width: 480px; margin: 0 auto; display: none; }
 .container.active { display: block; }
 input, textarea { -webkit-user-select: text; user-select: text; }
@@ -34,7 +33,7 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .cart-icon i { font-size: 18px; color: #4ECDC4; }
 .cart-badge { position: absolute; top: -5px; right: -5px; background: #FF4757; color: #fff; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 10px; display: none; }
 
-/* SERVICES GRID - Scrollable */
+/* SERVICES GRID */
 .services-scroll { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 15px; scrollbar-width: none; margin-bottom: 10px; }
 .services-scroll::-webkit-scrollbar { display: none; }
 .service-card { min-width: 80px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 14px; padding: 12px 5px; text-align: center; cursor: pointer; transition: 0.2s; flex-shrink: 0; }
@@ -64,18 +63,6 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .qty-num { font-weight: 700; font-size: 13px; }
 .btn-primary { background: linear-gradient(135deg, #4ECDC4, #44B3A8); border: none; padding: 12px 20px; border-radius: 8px; color: #fff; font-weight: 700; cursor: pointer; }
 .btn-pay { background: linear-gradient(135deg, #5F259F, #8B5CF6); width: 100%; padding: 14px; font-size: 16px; border-radius: 10px; border: none; color: #fff; font-weight: 700; margin-top: 15px; }
-
-/* RECHARGE */
-.op-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px; }
-.op-card { background: rgba(255,255,255,0.05); padding: 10px 5px; border-radius: 8px; text-align: center; cursor: pointer; border: 1px solid transparent; }
-.op-card.active { border-color: #4ECDC4; background: rgba(78,205,196,0.1); }
-.op-card div { font-size: 11px; font-weight: 600; }
-
-/* INSURANCE */
-.ins-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.ins-card { background: rgba(255,255,255,0.03); padding: 12px 5px; border-radius: 10px; text-align: center; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; }
-.ins-card i { font-size: 20px; color: #FFD93D; margin-bottom: 5px; display: block; }
-.ins-card span { font-size: 10px; }
 
 /* TOAST & RECEIPT */
 .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #4ECDC4; color: #000; padding: 10px 20px; border-radius: 20px; font-weight: 700; font-size: 13px; z-index: 99999; display: none; }
@@ -137,9 +124,6 @@ input, textarea { -webkit-user-select: text; user-select: text; }
         <div class="service-card" onclick="searchCategory('Fashion', 'ONDC:RET12')"><i class="fas fa-tshirt"></i><span>Fashion</span></div>
         <div class="service-card" onclick="searchCategory('Electronics', 'ONDC:RET14')"><i class="fas fa-laptop"></i><span>Electronics</span></div>
         <div class="service-card" onclick="searchCategory('Beauty', 'ONDC:RET13')"><i class="fas fa-spa"></i><span>Beauty</span></div>
-        <div class="service-card" onclick="searchCategory('Home', 'ONDC:RET16')"><i class="fas fa-couch"></i><span>Home Decor</span></div>
-        <div class="service-card" onclick="searchCategory('Pharmacy', 'ONDC:RET15')"><i class="fas fa-pills"></i><span>Pharmacy</span></div>
-        <div class="service-card" onclick="searchCategory('Agriculture', 'ONDC:RET10')"><i class="fas fa-seedling"></i><span>Agri</span></div>
     </div>
 
     <!-- PINCODE -->
@@ -203,12 +187,6 @@ input, textarea { -webkit-user-select: text; user-select: text; }
     <div class="modal-content">
         <div class="modal-header"><h3>Mobile Recharge</h3><button class="close-btn" onclick="closeModal('rechargeModal')">×</button></div>
         <input type="tel" id="rcNumber" placeholder="Mobile Number" maxlength="10" style="width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border:none; background:rgba(255,255,255,0.1); color:#fff;">
-        <div class="op-grid" id="operatorGrid">
-            <div class="op-card" onclick="selectOp('Jio', event)"><div>Jio</div></div>
-            <div class="op-card" onclick="selectOp('Airtel', event)"><div>Airtel</div></div>
-            <div class="op-card" onclick="selectOp('Vi', event)"><div>Vi</div></div>
-            <div class="op-card" onclick="selectOp('BSNL', event)"><div>BSNL</div></div>
-        </div>
         <input type="number" id="rcAmount" placeholder="Amount ₹" style="width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border:none; background:rgba(255,255,255,0.1); color:#fff;">
         <button class="btn-pay" onclick="processRecharge()">Pay Now</button>
     </div>
@@ -218,22 +196,18 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 <div class="modal" id="insuranceModal">
     <div class="modal-content">
         <div class="modal-header"><h3>Insurance Services</h3><button class="close-btn" onclick="closeModal('insuranceModal')">×</button></div>
-        <div class="ins-grid">
-            <div class="ins-card" onclick="window.open('https://pro.turtlemintinsurance.com/v2/two-wheeler-insurance/create?posp=DP-4378968', '_blank')"><i class="fas fa-motorcycle"></i><span>Bike</span></div>
-            <div class="ins-card" onclick="window.open('https://pro.turtlemintinsurance.com/v2/car-insurance/create?posp=DP-4378968', '_blank')"><i class="fas fa-car"></i><span>Car</span></div>
-            <div class="ins-card" onclick="window.open('https://pro.turtlemintinsurance.com/health-insurance/health?posp=DP-4378968', '_blank')"><i class="fas fa-heartbeat"></i><span>Health</span></div>
-            <div class="ins-card" onclick="window.open('https://pro.turtlemintinsurance.com/life-insurance/life?posp=DP-4378968', '_blank')"><i class="fas fa-umbrella"></i><span>Life</span></div>
-            <div class="ins-card" onclick="window.open('https://app.turtlefin.com/products/personal-loan?posp=DP-4378968', '_blank')"><i class="fas fa-money-bill"></i><span>Loan</span></div>
-            <div class="ins-card" onclick="window.open('https://app.turtlefin.com/credit-score?posp=DP-4378968', '_blank')"><i class="fas fa-chart-line"></i><span>Credit Score</span></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <button class="btn-primary" onclick="window.open('https://pro.turtlemintinsurance.com/v2/two-wheeler-insurance/create?posp=DP-4378968', '_blank')">Bike Insurance</button>
+            <button class="btn-primary" onclick="window.open('https://pro.turtlemintinsurance.com/v2/car-insurance/create?posp=DP-4378968', '_blank')">Car Insurance</button>
+            <button class="btn-primary" onclick="window.open('https://pro.turtlemintinsurance.com/health-insurance/health?posp=DP-4378968', '_blank')">Health Insurance</button>
+            <button class="btn-primary" onclick="window.open('https://pro.turtlemintinsurance.com/life-insurance/life?posp=DP-4378968', '_blank')">Life Insurance</button>
         </div>
     </div>
 </div>
 
 <!-- LOGIC START -->
 <script>
-// ==========================================
-// 1. FIREBASE SETUP
-// ==========================================
+// FIREBASE SETUP
 const firebaseConfig = {
     apiKey: "AIzaSyCBa8UmWUB-djAksNNvp14qoCY2y0HISoE",
     authDomain: "gharproindia.firebaseapp.com",
@@ -246,9 +220,6 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// ==========================================
-// 2. GLOBAL STATE
-// ==========================================
 const API_URL = "https://nnlgharpro-ret11.nnlgharpro.workers.dev";
 const RZP_KEY = "rzp_live_TgdafZ0Pqc1SI5";
 let currentCategory = "Food";
@@ -257,9 +228,6 @@ let currentTxnId = "";
 let cart = [];
 let currentUser = null;
 
-// ==========================================
-// 3. UI & HELPERS
-// ==========================================
 function showToast(msg) {
     const t = document.getElementById('toast');
     t.textContent = msg;
@@ -269,9 +237,7 @@ function showToast(msg) {
 function openModal(id) { document.getElementById(id).classList.add('show'); }
 function closeModal(id) { document.getElementById(id).classList.remove('show'); }
 
-// ==========================================
-// 4. AUTHENTICATION
-// ==========================================
+// AUTH
 auth.onAuthStateChanged(user => {
     if (user) {
         currentUser = user;
@@ -287,31 +253,21 @@ auth.onAuthStateChanged(user => {
 async function handleLogin() {
     const email = document.getElementById('loginEmail').value.trim();
     const pass = document.getElementById('loginPassword').value.trim();
-    if (!email || pass.length < 6) return showToast("Enter valid email & password (min 6 chars)");
-    
+    if (!email || pass.length < 6) return showToast("Enter valid email & pass (min 6 chars)");
     try {
         document.getElementById('loginBtn').textContent = "Please wait...";
         await auth.signInWithEmailAndPassword(email, pass).catch(async (e) => {
-            if (e.code === 'auth/user-not-found') {
-                await auth.createUserWithEmailAndPassword(email, pass);
-            } else { throw e; }
+            if (e.code === 'auth/user-not-found') await auth.createUserWithEmailAndPassword(email, pass);
+            else throw e;
         });
-    } catch (error) {
-        showToast(error.message);
-        document.getElementById('loginBtn').textContent = "Login / Sign Up";
-    }
+    } catch (error) { showToast(error.message); document.getElementById('loginBtn').textContent = "Login / Sign Up"; }
 }
-
 async function handleGoogleLogin() {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    try { await auth.signInWithPopup(provider); } catch (e) { showToast(e.message); }
+    try { await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); } catch (e) { showToast(e.message); }
 }
-
 function handleLogout() { auth.signOut(); }
 
-// ==========================================
-// 5. DYNAMIC SEARCH & MENU (All Domains)
-// ==========================================
+// SEARCH & MENU
 async function searchCategory(cat, domain) {
     if(cat) currentCategory = cat;
     if(domain) currentDomain = domain;
@@ -321,186 +277,26 @@ async function searchCategory(cat, domain) {
     document.getElementById('menuList').innerHTML = '<div style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin fa-2x" style="color:#4ECDC4;"></i></div>';
 
     const pincode = document.getElementById('pincode').value.trim() || "110001";
-
     try {
-        // 1. Search Call (Domain Dynamic)
         const res = await fetch(`${API_URL}/client_search`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ domain: currentDomain, category: currentCategory, pincode: pincode })
         });
         const data = await res.json();
-        currentTxnId = data.transactionId;
+        if(data.transactionId) currentTxnId = data.transactionId;
 
-        // 2. Select Call 
-        const selRes = await fetch(`${API_URL}/client_select`, {
+        // Mock Select Call
+        await fetch(`${API_URL}/client_select`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ domain: currentDomain, transactionId: currentTxnId, providerId: "provider_workbench_1", pincode: pincode, items: [{ id: "item_1", quantity: { count: 1 } }] })
         });
         
-        // 3. Render Menu (Mock data displayed to user for testing)
-        // Note: Backend se real data aane par yeh dynamic ho jayega
         const items = [{ id: "item_veg_thali", name: `Sample ${currentCategory} Item`, desc: "Fast Delivery", price: 199 }];
-        
         let html = '';
         items.forEach(item => {
             html += `
                 <div class="cart-item">
-                    <div style="flex:1;">
-                        <div style="font-weight:700; font-size:14px;">${item.name}</div>
-                        <div style="font-size:11px; color:rgba(255,255,255,0.5); margin:4px 0;">${item.desc}</div>
-                        <div style="font-weight:800; color:#FFD93D;">₹${item.price}</div>
-                    </div>
-                    <button class="btn-primary" onclick="addToCart('${item.id}', '${item.name}', ${item.price})">Add</button>
-                </div>
-            `;
-        });
-        document.getElementById('menuList').innerHTML = html;
-
-    } catch (e) {
-        document.getElementById('menuList').innerHTML = '<div style="text-align:center; color:#FF4757; padding:20px;">Network Error or Store Unavailable</div>';
-    }
-}
-
-// ==========================================
-// 6. CART MANAGEMENT
-// ==========================================
-function addToCart(id, name, price) {
-    const existing = cart.find(item => item.id === id);
-    if (existing) { existing.qty++; } 
-    else { cart.push({ id, name, price, qty: 1 }); }
-    
-    updateCartUI();
-    closeModal('menuModal');
-    openModal('cartModal'); 
-}
-
-function updateCartUI() {
-    let totalQty = 0, totalPrice = 0, html = '';
-    cart.forEach(item => {
-        totalQty += item.qty;
-        totalPrice += (item.price * item.qty);
-        html += `
-            <div class="cart-item">
-                <div style="flex:1;">
-                    <div style="font-weight:700; font-size:13px;">${item.name}</div>
-                    <div style="font-size:12px; color:#FFD93D; margin-top:2px;">₹${item.price}</div>
-                </div>
-                <div class="qty-control">
-                    <button class="qty-btn" onclick="changeQty('${item.id}', -1)">−</button>
-                    <span class="qty-num">${item.qty}</span>
-                    <button class="qty-btn" onclick="changeQty('${item.id}', 1)">+</button>
-                </div>
-                <div style="font-weight:800; color:#4ECDC4; margin-left:10px; font-size:13px;">₹${item.price * item.qty}</div>
-            </div>
-        `;
-    });
-    if (cart.length === 0) html = '<div style="text-align:center; padding:20px; color:#aaa;">Cart is empty</div>';
-    
-    document.getElementById('cartItemsList').innerHTML = html;
-    document.getElementById('cartTotal').textContent = `₹${totalPrice}`;
-    document.getElementById('cartBadge').textContent = totalQty;
-    document.getElementById('cartBadge').style.display = totalQty > 0 ? 'block' : 'none';
-}
-
-function changeQty(id, delta) {
-    const item = cart.find(i => i.id === id);
-    if (item) {
-        item.qty += delta;
-        if (item.qty <= 0) cart = cart.filter(i => i.id !== id);
-        updateCartUI();
-    }
-}
-
-function openCart() { openModal('cartModal'); }
-
-// ==========================================
-// 7. CHECKOUT & PAYMENT
-// ==========================================
-function proceedToCheckout() {
-    if (cart.length === 0) return showToast('Cart is empty!');
-    closeModal('cartModal');
-    openModal('checkoutModal');
-}
-
-function initiateRazorpay() {
-    const name = document.getElementById('custName').value.trim();
-    const mobile = document.getElementById('custMobile').value.trim();
-    const address = document.getElementById('custAddress').value.trim();
-
-    if (!name || !mobile || !address) return showToast('Please fill all details!');
-    if (mobile.length < 10) return showToast('Invalid mobile number!');
-
-    let totalPrice = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-
-    var options = {
-        "key": RZP_KEY,
-        "amount": totalPrice * 100,
-        "currency": "INR",
-        "name": "NnlGharPro",
-        "description": `${currentCategory} Order Payment`,
-        "handler": function (response) {
-            closeModal('checkoutModal');
-            showReceipt(response.razorpay_payment_id, name, totalPrice);
-            cart = []; 
-            updateCartUI();
-            showToast("Payment Successful!");
-        },
-        "prefill": { "name": name, "contact": mobile },
-        "theme": { "color": "#4ECDC4" }
-    };
-    var rzp = new Razorpay(options);
-    rzp.open();
-}
-
-function showReceipt(paymentId, name, total) {
-    document.getElementById('rcptId').textContent = paymentId.substring(0, 10).toUpperCase();
-    document.getElementById('rcptName').textContent = name;
-    document.getElementById('rcptItems').textContent = cart.map(i => `${i.name} (x${i.qty})`).join(', ') || "Order";
-    document.getElementById('rcptTotal').textContent = `₹${total}`;
-    openModal('receiptModal');
-}
-
-// ==========================================
-// 8. RECHARGE
-// ==========================================
-let selectedOp = "";
-function selectOp(op, e) {
-    selectedOp = op;
-    document.querySelectorAll('.op-card').forEach(el => el.classList.remove('active'));
-    e.currentTarget.classList.add('active');
-}
-
-function processRecharge() {
-    const num = document.getElementById('rcNumber').value.trim();
-    const amt = parseFloat(document.getElementById('rcAmount').value);
-    if (num.length !== 10 || !selectedOp || !amt || amt < 10) return showToast('Fill all details properly!');
-
-    var options = {
-        "key": RZP_KEY,
-        "amount": amt * 100,
-        "currency": "INR",
-        "name": "NnlGharPro Recharge",
-        "description": `${selectedOp} Recharge`,
-        "handler": function (response) {
-            closeModal('rechargeModal');
-            showToast("Recharge Successful!");
-            if(currentUser) {
-                db.collection('rechargeOrders').add({
-                    customerUid: currentUser.uid,
-                    number: num, operator: selectedOp, amount: amt,
-                    paymentId: response.razorpay_payment_id, status: 'pending',
-                    createdAt: new Date().toISOString()
-                }).catch(e => console.log(e));
-            }
-        },
-        "prefill": { "contact": num },
-        "theme": { "color": "#4ECDC4" }
-    };
-    var rzp = new Razorpay(options);
-    rzp.open();
-}
-</script>
-</body>
-</html>
+                    <div style="flex:1;"><div style="font-weight:700; font-size:14px;">${item.name}</div><div style="font-size:11px; color:rgba(255,255,255,0.5); margin:4px 0;">${item.desc}</div><div style="font-weight:800; color:#FFD93D;">₹${item.price}</div></div>
+                    <button class="btn-primary" onclick="add
