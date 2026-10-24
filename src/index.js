@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC API — UNIVERSAL FINAL v12.5 (Select Fixed)
+// 🚀 NNLGHARPRO ONDC API — DEBUGGING MODE (v12.6)
 // ═══════════════════════════════════════════════════════════
 import { blake2b } from 'blakejs'; 
 import nacl from 'tweetnacl';
@@ -19,7 +19,7 @@ export default {
     
     try {
       if (path === '' || path === 'api/health') {
-        return jsonResponse({ status: 'active', version: '12.5.0', role: 'Absolute_Matcher' }, corsHeaders);
+        return jsonResponse({ status: 'active', version: '12.6.0', role: 'Absolute_Matcher' }, corsHeaders);
       }
       
       const mockProviders = [{
@@ -56,7 +56,7 @@ export default {
             }
         }
 
-        // 🔥 LIVE AUTO-PIPELINE TRIGGER (Updated to include 'update' step)
+        // 🔥 LIVE AUTO-PIPELINE TRIGGER (TEMPORARILY DISABLED FOR TESTING)
         /*
         if (action === 'on_search' && txnId) {
           ctx.waitUntil(
@@ -88,6 +88,7 @@ export default {
           );
         }
         */
+
         return jsonResponse({ message: { ack: { status: "ACK" } } }, corsHeaders);
       }
 
@@ -101,12 +102,19 @@ export default {
         const payload = buildBapPayload(action, domain, reqBody, transactionId, env);
         const authHeader = await generateOndcSignature(payload, env);
         
+        // ✅ LOGGING ENABLED
         ctx.waitUntil(
           fetch(env.ONDC_GATEWAY_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-Gateway-Authorization': authHeader, 'Authorization': authHeader },
             body: JSON.stringify(payload)
-          }).then(res => res.text()).catch(() => {})
+          })
+          .then(async (res) => {
+            const text = await res.text();
+            console.log(`[CLIENT_${action.toUpperCase()}] Gateway Response Status:`, res.status);
+            console.log(`[CLIENT_${action.toUpperCase()}] Gateway Response Body:`, text);
+          })
+          .catch((e) => console.log(`[CLIENT_${action.toUpperCase()}] Fetch Error:`, e.message))
         );
 
         return jsonResponse({ 
@@ -178,7 +186,6 @@ function buildBapPayload(action, domain, body, transactionId, env) {
         ]
       }
     } : action === 'select' ? {
-      // ✅ FIXED: billing + fulfillments added
       order: {
         provider: { id: "provider_workbench_1", locations: [{ id: "L1" }] },
         items: [{ id: "item_veg_thali", quantity: { count: 1 } }],
