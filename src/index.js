@@ -33,7 +33,7 @@ export default {
           }]
       }];
 
-      // GATEWAY INCOMING CALLBACKS
+      // 🚨 1. GATEWAY INCOMING CALLBACKS
       if (path.startsWith('on_')) {
         const body = await request.json();
         const txnId = body.context?.transaction_id;
@@ -45,7 +45,7 @@ export default {
         return jsonResponse({ message: { ack: { status: "ACK" } } }, corsHeaders);
       }
 
-      // FRONTEND OUTGOING
+      // 🚨 2. FRONTEND OUTGOING
       if (path.startsWith('client_')) {
         const action = path.replace('client_', '');
         const reqBody = await request.json();
@@ -94,6 +94,7 @@ function jsonResponse(data, headers, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { ...headers, 'Content-Type': 'application/json' } });
 }
 
+// ✅ SIGNATURE GENERATOR
 async function generateOndcSignature(body, env) {
   const created = Math.floor(Date.now() / 1000);
   const expires = created + 3600;
@@ -124,6 +125,7 @@ async function generateOndcSignature(body, env) {
   return `Signature keyId="${env.ONDC_BAP_ID}|${env.ONDC_UK_ID}|ed25519",algorithm="ed25519",created="${created}",expires="${expires}",headers="(created) (expires) digest",signature="${signature}"`;
 }
 
+// ✅ PAYLOAD BUILDER WITH COMPLETE ONDC SCHEMAS
 function buildBapPayload(action, domain, body, transactionId, env) {
   const timestamp = new Date().toISOString();
   
@@ -136,7 +138,7 @@ function buildBapPayload(action, domain, body, transactionId, env) {
     bap_id: env.ONDC_BAP_ID, 
     bap_uri: env.ONDC_BAP_URI, 
     bpp_id: "workbench.ondc.tech", 
-    bpp_uri: "https://workbench.ondc.tech/", // ✅ FIXED: Correct Workbench URL with trailing slash
+    bpp_uri: "https://workbench.ondc.tech/", // ✅ FIXED: Correct URL
     transaction_id: transactionId, 
     message_id: crypto.randomUUID(), 
     timestamp: timestamp, 
@@ -214,7 +216,7 @@ function buildBapPayload(action, domain, body, transactionId, env) {
         payment: {
             uri: "https://razorpay.com",
             tls_method: "string", 
-            status: "PAID", // ✅ FIXED: PAID instead of NOT-PAID
+            status: "PAID",
             type: "ON-ORDER",
             collected_by: "BAP"
         }
