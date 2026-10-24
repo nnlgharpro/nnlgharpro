@@ -1,8 +1,8 @@
 // ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC API — FINAL WORKBENCH CLEARANCE (v16.0)
+// 🚀 NNLGHARPRO ONDC API — BUYER UPDATE FLOW FIXED (v18.0)
 // ═══════════════════════════════════════════════════════════
 import { blake2b } from 'blakejs'; 
-import nacl from 'tweetnacl';  
+import nacl from 'tweetnacl';
 
 export default {
   async fetch(request, env, ctx) {
@@ -19,7 +19,7 @@ export default {
     
     try {
       if (path === '' || path === 'api/health') {
-        return jsonResponse({ status: 'active', version: '16.0.0' }, corsHeaders);
+        return jsonResponse({ status: 'active', version: '18.0.0' }, corsHeaders);
       }
       
       const mockProviders = [{
@@ -28,7 +28,7 @@ export default {
           locations: [{ id: "L1", gps: "28.6139,77.2090" }],
           items: [{
               id: "item_veg_thali",
-              descriptor: { name: "Standard Veg Thali (ONDC Verified)", short_desc: "Clears Workbench Testing Flow" },
+              descriptor: { name: "Standard Veg Thali", short_desc: "ONDC Verified" },
               category_id: "RET11-Meals",
               fulfillment_id: "F1",
               location_id: "L1",
@@ -231,22 +231,34 @@ function buildBapPayload(action, domain, body, transactionId, env) {
             status: "PAID", 
             type: "ON-ORDER", 
             collected_by: "BAP" 
-        },
-        tags: [{ 
-            code: "bap_terms",
-            list: [{ code: "static_signature_req", value: "true" }, { code: "finder_fee_type", value: "percent" }, { code: "finder_fee_amount", value: "3.0" }]
-        }]
+        }
       }
     };
   } else if (action === 'update') {
+    // ✅ YEH HAI BUYER INSTRUCTIONS UPDATE FLOW KA PAYLOAD
     message = {
       order: {
-        id: body.orderId || "YOUR_EXISTING_ORDER_ID", 
+        id: body.orderId || "test_order_123", 
         fulfillments: [{ 
-            id: "F1", type: "Delivery", 
+            id: "F1", 
+            type: "Delivery", 
             end: { 
-                location: { gps: body.newGps || "28.6139,77.2090", address: { name: body.newName || "Test User", building: body.newBuilding || "New Building, Flat 402", locality: body.newLocality || "New Locality", city: body.newCity || "Delhi", state: body.newState || "Delhi", country: "IND", area_code: body.newAreaCode || "110001" } }, 
-                instructions: { name: "delivery_instructions", short_desc: body.instructions || "Please ring the bell twice." } 
+                location: { 
+                    gps: body.newGps || "28.6139,77.2090", 
+                    address: { 
+                        name: "Test User", 
+                        building: body.newBuilding || "Updated Building, Flat 402", 
+                        locality: "Test Locality", 
+                        city: "Delhi", 
+                        state: "Delhi", 
+                        country: "IND", 
+                        area_code: "110001" 
+                    } 
+                }, 
+                instructions: { 
+                    name: "delivery_instructions", 
+                    short_desc: body.instructions || "Please ring the bell twice." 
+                } 
             } 
         }]
       }
