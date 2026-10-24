@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC API — SUPER FIXED (v13.0)
+// 🚀 NNLGHARPRO ONDC API — WORKBENCH FULL CLEARANCE (v14.0)
 // ═══════════════════════════════════════════════════════════
 import { blake2b } from 'blakejs'; 
 import nacl from 'tweetnacl';
@@ -19,7 +19,7 @@ export default {
     
     try {
       if (path === '' || path === 'api/health') {
-        return jsonResponse({ status: 'active', version: '13.0.0' }, corsHeaders);
+        return jsonResponse({ status: 'active', version: '14.0.0', role: 'BAP_FULL' }, corsHeaders);
       }
       
       const mockProviders = [{
@@ -48,12 +48,11 @@ export default {
         return jsonResponse({ message: { ack: { status: "ACK" } } }, corsHeaders);
       }
 
-      // 🚨 2. FRONTEND OUTGOING (client_search, client_select, etc.)
+      // 🚨 2. FRONTEND OUTGOING
       if (path.startsWith('client_')) {
         const action = path.replace('client_', '');
         const reqBody = await request.json();
         
-        // Agar frontend se transactionId aayi hai toh use karo, warna nayi banao
         const transactionId = reqBody.transactionId || crypto.randomUUID();
         const domain = reqBody.domain || env.ONDC_DOMAIN || "ONDC:RET11";
         
@@ -62,7 +61,6 @@ export default {
         
         const gatewayUrl = `${env.ONDC_GATEWAY_URL}/${action}`;
 
-        // Request Gateway ko bhejein
         ctx.waitUntil(
           fetch(gatewayUrl, {
             method: 'POST',
@@ -80,7 +78,6 @@ export default {
           .catch((e) => console.log(`[CLIENT_${action.toUpperCase()}] Fetch Error:`, e.message))
         );
 
-        // Frontend ko response bhejein (TXN ID zaroori hai select ke liye)
         return jsonResponse({ 
             success: true, 
             transactionId: transactionId,
@@ -100,7 +97,7 @@ function jsonResponse(data, headers, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { ...headers, 'Content-Type': 'application/json' } });
 }
 
-// ✅ SIGNATURE GENERATOR (ONDC STANDARD)
+// ✅ SIGNATURE GENERATOR
 async function generateOndcSignature(body, env) {
   const created = Math.floor(Date.now() / 1000);
   const expires = created + 3600;
@@ -131,11 +128,11 @@ async function generateOndcSignature(body, env) {
   return `Signature keyId="${env.ONDC_BAP_ID}|${env.ONDC_UK_ID}|ed25519",algorithm="ed25519",created="${created}",expires="${expires}",headers="(created) (expires) digest",signature="${signature}"`;
 }
 
-// ✅ PAYLOAD BUILDER (All Fixes Applied)
+// ✅ PAYLOAD BUILDER (100% WORKBENCH COMPLIANT)
 function buildBapPayload(action, domain, body, transactionId, env) {
   const timestamp = new Date().toISOString();
   
-  // Context mein bpp_id aur bpp_uri add karna zaroori tha (Workbench error fix)
+  // Context Setup (Mandatory for all ONDC calls)
   const context = {
     domain: domain, 
     country: "IND", 
@@ -154,6 +151,7 @@ function buildBapPayload(action, domain, body, transactionId, env) {
 
   let message = {};
 
+  // --- SEARCH ---
   if (action === 'search') {
     message = {
       intent: {
@@ -164,14 +162,17 @@ function buildBapPayload(action, domain, body, transactionId, env) {
         ]
       }
     };
-  } else if (action === 'select') {
+  } 
+  // --- SELECT ---
+  else if (action === 'select') {
     message = {
       order: {
         provider: { id: "provider_workbench_1", locations: [{ id: "L1" }] },
         items: [{ 
             id: "item_veg_thali", 
             quantity: { count: 1 },
-            location_id: "L1" // Workbench error fix: Item mein location_id zaroori hai
+            location_id: "L1",
+            tags: [{ code: "type", list: [{ code: "type", value: "item" }] }] // ✅ FIXED: Items Tags
         }],
         billing: {
           name: "Test User",
@@ -187,27 +188,68 @@ function buildBapPayload(action, domain, body, transactionId, env) {
         }]
       }
     };
-  } else if (action === 'init') {
+  } 
+  // --- INIT ---
+  else if (action === 'init') {
     message = {
       order: {
         provider: { id: "provider_workbench_1", locations: [{ id: "L1" }] },
-        items: [{ id: "item_veg_thali", quantity: { count: 1 }, location_id: "L1" }],
-        billing: { name: "Test User", address: { name: "Test User", building: "Main Road", city: "Delhi", state: "Delhi", country: "IND", area_code: "110001" }, phone: "9876543210", email: "test@nnlgharpro.com" },
-        fulfillments: [{ id: "F1", type: "Delivery", end: { location: { gps: "28.6139,77.2090", address: { area_code: "110001" } } } }]
+        items: [{ 
+            id: "item_veg_thali", 
+            quantity: { count: 1 }, 
+            location_id: "L1",
+            tags: [{ code: "type", list: [{ code: "type", value: "item" }] }] 
+        }],
+        billing: { 
+            name: "Test User", 
+            address: { name: "Test User", building: "Main Road", locality: "Test Locality", city: "Delhi", state: "Delhi", country: "IND", area_code: "110001" }, 
+            phone: "9876543210", email: "test@nnlgharpro.com" 
+        },
+        fulfillments: [{ 
+            id: "F1", type: "Delivery", 
+            end: { location: { gps: "28.6139,77.2090", address: { area_code: "110001" } }, contact: { phone: "9876543210" } } 
+        }]
       }
     };
-  } else if (action === 'confirm') {
+  } 
+  // --- CONFIRM ---
+  else if (action === 'confirm') {
     message = {
       order: {
-        id: crypto.randomUUID(), state: "Created",
+        id: crypto.randomUUID(), 
+        state: "Created",
         provider: { id: "provider_workbench_1", locations: [{ id: "L1" }] },
-        items: [{ id: "item_veg_thali", quantity: { count: 1 }, location_id: "L1" }],
-        billing: { name: "Test User", phone: "9876543210", address: { building: "Main Road", city: "Delhi", area_code: "110001" } },
-        fulfillments: [{ id: "F1", type: "Delivery", end: { location: { gps: "28.6139,77.2090", address: { area_code: "110001" } } } }],
-        payment: { uri: "https://razorpay.com", tls_method: "string", status: "PAID", type: "ON-ORDER", collected_by: "BAP" }
+        items: [{ 
+            id: "item_veg_thali", 
+            quantity: { count: 1 }, 
+            location_id: "L1",
+            tags: [{ code: "type", list: [{ code: "type", value: "item" }] }]
+        }],
+        billing: { 
+            name: "Test User", 
+            phone: "9876543210", 
+            address: { name: "Test User", building: "Main Road", locality: "Test Locality", city: "Delhi", state: "Delhi", country: "IND", area_code: "110001" } 
+        },
+        fulfillments: [{ 
+            id: "F1", type: "Delivery", 
+            end: { location: { gps: "28.6139,77.2090", address: { area_code: "110001" } }, contact: { phone: "9876543210" } } 
+        }],
+        payment: { 
+            uri: "https://razorpay.com", 
+            tls_method: "string", 
+            status: "PAID", 
+            type: "ON-ORDER", 
+            collected_by: "BAP" 
+        },
+        tags: [{ // ✅ FIXED: Order level tags for F&B
+            code: "bap_terms",
+            list: [{ code: "static_signature_req", value: "true" }, { code: "finder_fee_type", value: "percent" }, { code: "finder_fee_amount", value: "3.0" }]
+        }]
       }
     };
-  } else if (action === 'update') {
+  } 
+  // --- UPDATE ---
+  else if (action === 'update') {
     message = {
       order: {
         id: body.orderId || "YOUR_EXISTING_ORDER_ID", 
