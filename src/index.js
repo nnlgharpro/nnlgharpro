@@ -104,7 +104,7 @@ export default {
         
         // ✅ LOGGING ENABLED
         ctx.waitUntil(
-          fetch(env.ONDC_GATEWAY_URL, {
+           fetch(`${env.ONDC_GATEWAY_URL}/${action}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-Gateway-Authorization': authHeader, 'Authorization': authHeader },
             body: JSON.stringify(payload)
