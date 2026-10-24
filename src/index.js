@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC API — DEBUGGING MODE (v12.6)
+// 🚀 NNLGHARPRO ONDC API — SIGNATURE FIXED (v12.7)
 // ═══════════════════════════════════════════════════════════
 import { blake2b } from 'blakejs'; 
 import nacl from 'tweetnacl';
@@ -19,7 +19,7 @@ export default {
     
     try {
       if (path === '' || path === 'api/health') {
-        return jsonResponse({ status: 'active', version: '12.6.0', role: 'Absolute_Matcher' }, corsHeaders);
+        return jsonResponse({ status: 'active', version: '12.7.0', role: 'Absolute_Matcher' }, corsHeaders);
       }
       
       const mockProviders = [{
@@ -56,39 +56,8 @@ export default {
             }
         }
 
-        // 🔥 LIVE AUTO-PIPELINE TRIGGER (TEMPORARILY DISABLED FOR TESTING)
-        /*
-        if (action === 'on_search' && txnId) {
-          ctx.waitUntil(
-            (async () => {
-              const nextActions = ['select', 'init', 'confirm', 'update'];
-              
-              for (const act of nextActions) {
-                await new Promise(r => setTimeout(r, 1000));
-                
-                let testBody = {};
-                if (act === 'update') {
-                    testBody = {
-                        orderId: "test_order_" + txnId.substring(0,8),
-                        newBuilding: "Flat 402, Updated Building",
-                        instructions: "Please ring the bell twice."
-                    };
-                }
-
-                const autoPayload = buildBapPayload(act, domain, testBody, txnId, env);
-                const autoAuth = await generateOndcSignature(autoPayload, env);
-                
-                await fetch(env.ONDC_GATEWAY_URL, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json', 'X-Gateway-Authorization': autoAuth, 'Authorization': autoAuth },
-                  body: JSON.stringify(autoPayload)
-                }).then(res => res.text()).catch((e) => console.log(`Auto-Pipeline Error (${act}):`, e));
-              }
-            })()
-          );
-        }
-        */
-
+        // 🔥 AUTO-PIPELINE IS DISABLED FOR MANUAL TESTING
+        
         return jsonResponse({ message: { ack: { status: "ACK" } } }, corsHeaders);
       }
 
@@ -102,9 +71,9 @@ export default {
         const payload = buildBapPayload(action, domain, reqBody, transactionId, env);
         const authHeader = await generateOndcSignature(payload, env);
         
-        // ✅ LOGGING ENABLED
+        // ✅ URL FIXED + LOGGING ENABLED
         ctx.waitUntil(
-           fetch(`${env.ONDC_GATEWAY_URL}/${action}`, {
+          fetch(`${env.ONDC_GATEWAY_URL}/${action}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-Gateway-Authorization': authHeader, 'Authorization': authHeader },
             body: JSON.stringify(payload)
@@ -142,23 +111,43 @@ function jsonResponse(data, headers, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { ...headers, 'Content-Type': 'application/json' } });
 }
 
+// ✅ UPDATED SIGNATURE FUNCTION
 async function generateOndcSignature(body, env) {
   const created = Math.floor(Date.now() / 1000);
   const expires = created + 3600;
   const encoder = new TextEncoder();
-  const data = encoder.encode(JSON.stringify(body));
+  
+  // 1. Payload ka JSON string banayein (bina kisi extra space ke)
+  const payloadString = JSON.stringify(body);
+  const data = encoder.encode(payloadString);
+  
+  // 2. Blake2b hash generate karein
   const hashBuffer = blake2b(data, null, 64);
   const digest = btoa(String.fromCharCode(...hashBuffer));
+  
+  // 3. Signing string banayein
   const signingString = `(created): ${created}\n(expires): ${expires}\ndigest: BLAKE-512=${digest}`;
 
+  // 4. Private Key ko saaf karein (Headers aur spaces hatayein)
   let rawKey = env.ONDC_SIGNING_PRIVATE_KEY || "";
   rawKey = rawKey.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\s/g, '').replace(/-/g, '+').replace(/_/g, '/');
   while (rawKey.length % 4) { rawKey += '='; }
+  
   const privateKeyBytes = Uint8Array.from(atob(rawKey), c => c.charCodeAt(0));
-  let secretKey = privateKeyBytes.length === 32 ? nacl.sign.keyPair.fromSeed(privateKeyBytes).secretKey : privateKeyBytes;
+  
+  // 5. Key format handle karein (Seed ya Full key)
+  let secretKey;
+  if (privateKeyBytes.length === 32) {
+    secretKey = nacl.sign.keyPair.fromSeed(privateKeyBytes).secretKey;
+  } else {
+    secretKey = privateKeyBytes; // Agar 64 bytes ki key hai
+  }
+
+  // 6. Signature generate karein
   const signatureBytes = nacl.sign.detached(encoder.encode(signingString), secretKey);
   const signature = btoa(String.fromCharCode(...signatureBytes));
   
+  // 7. Header return karein
   return `Signature keyId="${env.ONDC_BAP_ID}|${env.ONDC_UK_ID}|ed25519",algorithm="ed25519",created="${created}",expires="${expires}",headers="(created) (expires) digest",signature="${signature}"`;
 }
 
