@@ -1,201 +1,282 @@
-// Version 2.0 - Final Fix
-import { blake2b } from 'blakejs'; 
-import nacl from 'tweetnacl'; 
+// ONDC BAP worker (RET11 / Workbench) - v3
+// Install: npm install blakejs tweetnacl
+import { blake2b } from 'blakejs';
+import nacl from 'tweetnacl';
 
-const CORE_VERSION = "1.2.5";
-const DEFAULT_CITY = "std:011"; 
-const DEFAULT_COUNTRY = "IND";
-const TTL_DURATION = "PT30S";
+const TTL = 'PT30S';
+const DEFAULT_CITY = 'std:011';
+const DEFAULT_COUNTRY = 'IND';
+const DEFAULT_GPS = '28.6139,77.2090';
+const DEFAULT_PIN = '110001';
+const ACTIONS = ['search', 'select', 'init', 'confirm'];
 
-const sessionStore = {};
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Gateway-Authorization',
+};
 
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    const path = url.pathname.replace(/^\/+|\/+$/g, ''); 
-    
-    const corsHeaders = {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Gateway-Authorization',
-    };
-    
-    if (request.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
-    
+    const path = url.pathname.replace(/^\/+|\/+$/g, '');
+
+    if (request.method === 'OPTIONS') return new Response(null, { headers: CORS });
+
     try {
+      // Health
       if (path === '' || path === 'api/health') {
-        return jsonResponse({ status: 'active', version: '100.0.0' }, corsHeaders);
+        return json({ status: 'active', domain: env.ONDC_DOMAIN, bap_id: env.ONDC_BAP_ID });
       }
-      
-      // 1. Callbacks
+
+      // 1. Callbacks from workbench: /on_search, /on_select, /on_init, /on_confirm ...
       if (path.startsWith('on_')) {
-        let reqBody = {};
+        let body = {};
         if (request.method === 'POST') {
-            try { reqBody = await request.json(); } catch(e) {}
+          try { body = await request.json(); } catch (e) {}
         }
-        
-        if (path === 'on_select' && reqBody.message && reqBody.message.order) {
-            const txId = reqBody.context.transaction_id;
-            sessionStore[txId] = reqBody.message.order;
-        }
-        
-        return jsonResponse({ message: { ack: { status: "ACK" } } }, corsHeaders);
+        console.log(`[CALLBACK ${path}]`, JSON.stringify(body).slice(0, 3000));
+        ctx.waitUntil(saveCallback(path, body, env));
+        return json({ message: { ack: { status: 'ACK' } } });
       }
 
-      // 2. Main Actions
-      if (path.startsWith('client_') || path === 'search' || path === 'select' || path === 'init' || path === 'confirm') {
-        
-        const action = path.startsWith('client_') ? path.replace('client_', '') : path;
-        
-        let reqBody = {};
+      // 2. Actions you trigger: /search, /select, /init, /confirm (or /client_search ...)
+      const action = path.startsWith('client_') ? path.replace('client_', '') : path;
+      if (ACTIONS.includes(action)) {
+        let body = {};
         if (request.method === 'POST') {
-            try { reqBody = await request.json(); } catch(e) {}
+          try { body = await request.json(); } catch (e) {}
         }
 
-        // ✅ FIX: Syntax error theek kiya gaya hai (comment lagaya hai)
-        // 🛑 DYNAMIC IDS (Workbench ke according)
-        let transactionId = "2ce4a2f8-5d88-479c-bbaf-b4b576f4ee13";
-        let messageId = "346c8832-f4b7-42f7-9eff-fc00439da9ee";
-        
-        if (reqBody.transaction_id) transactionId = reqBody.transaction_id;
-        if (reqBody.message_id) messageId = reqBody.message_id;
-        
-        const domain = reqBody.domain || env.ONDC_DOMAIN || "ONDC:RET11";
-        
-        const payload = buildPayload(action, domain, reqBody, transactionId, messageId, env);
-        
-       const gatewayUrl = `https://workbench.ondc.tech/api-service/ONDC:RET11/1.2.5/${action}`;
+        const transactionId = body.transaction_id || crypto.randomUUID();
+        const messageId = body.message_id || crypto.randomUUID();
+        const state = await loadState(transactionId, env);
 
-        ctx.waitUntil(
-          fetch(gatewayUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          })
-          .then(async (res) => {
-            const text = await res.text();
-            console.log(`[${action.toUpperCase()}] Status: ${res.status} | Response: ${text}`);
-          })
-          .catch((e) => console.log(`[${action.toUpperCase()}] Error:`, e.message))
-        );
+        if (action !== 'search' && !state.bpp_id && !body.bpp_id) {
+          return json({
+            error: 'Is transaction_id ka on_search abhi nahi aaya. Pehle /search bhejein, wait karein, phir same transaction_id se agla step.',
+            transaction_id: transactionId,
+          }, 400);
+        }
 
-        return jsonResponse({ 
-            success: true, 
-            transactionId: transactionId,
-            messageId: messageId
-        }, corsHeaders);
+        const payload = buildPayload(action, body, transactionId, messageId, state, env);
+        const bodyString = JSON.stringify(payload);
+        const authHeader = await signRequest(bodyString, env);
+        const gatewayUrl = `${env.ONDC_GATEWAY_URL}/${action}`;
+
+        const res = await fetch(gatewayUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: authHeader },
+          body: bodyString,
+        });
+        const text = await res.text();
+        console.log(`[${action.toUpperCase()}] ${gatewayUrl} | Status: ${res.status} | Response: ${text}`);
+
+        return json({
+          success: res.ok,
+          action,
+          transaction_id: transactionId,
+          message_id: messageId,
+          gateway_status: res.status,
+          gateway_response: safeParse(text),
+        }, res.ok ? 200 : 502);
       }
-      
-      return jsonResponse({ error: 'Route not mapped' }, corsHeaders, 404);
+
+      return json({ error: 'Route not mapped' }, 404);
     } catch (error) {
-      return jsonResponse({ error: error.message }, corsHeaders, 500);
+      console.log('[ERROR]', error.message);
+      return json({ error: error.message }, 500);
     }
-  }
+  },
 };
 
-function jsonResponse(data, headers, status = 200) {
-  return new Response(JSON.stringify(data), { status, headers: { ...headers, 'Content-Type': 'application/json' } });
+/* ---------------- helpers ---------------- */
+
+function json(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { ...CORS, 'Content-Type': 'application/json' },
+  });
 }
 
-function buildPayload(action, domain, body, transactionId, messageId, env) {
-  const timestamp = new Date().toISOString();
-  
+function safeParse(t) {
+  try { return JSON.parse(t); } catch (e) { return t; }
+}
+
+function b64ToBytes(b64) {
+  return Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+}
+
+function bytesToB64(bytes) {
+  let s = '';
+  for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+  return btoa(s);
+}
+
+// ONDC signature: ed25519 over (created)/(expires)/digest, digest = BLAKE-512
+async function signRequest(bodyString, env) {
+  if (!env.ONDC_PRIVATE_KEY) throw new Error('ONDC_PRIVATE_KEY secret set nahi hai (wrangler secret put ONDC_PRIVATE_KEY)');
+
+  const created = Math.floor(Date.now() / 1000);
+  const expires = created + 300;
+
+  const digest = bytesToB64(blake2b(new TextEncoder().encode(bodyString), null, 64));
+  const signingString = `(created): ${created}\n(expires): ${expires}\ndigest: BLAKE-512=${digest}`;
+
+  const priv = b64ToBytes(env.ONDC_PRIVATE_KEY.trim());
+  const secretKey = priv.length === 32 ? nacl.sign.keyPair.fromSeed(priv).secretKey : priv;
+
+  const signature = bytesToB64(nacl.sign.detached(new TextEncoder().encode(signingString), secretKey));
+
+  return (
+    `Signature keyId="${env.ONDC_BAP_ID}|${env.ONDC_UK_ID}|ed25519",` +
+    `algorithm="ed25519",created="${created}",expires="${expires}",` +
+    `headers="(created) (expires) digest",signature="${signature}"`
+  );
+}
+
+/* ---------------- state (KV) ---------------- */
+
+async function loadState(txId, env) {
+  try {
+    const v = await env.ONDC_DATA.get(`tx:${txId}`);
+    return v ? JSON.parse(v) : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+async function saveState(txId, patch, env) {
+  const cur = await loadState(txId, env);
+  await env.ONDC_DATA.put(`tx:${txId}`, JSON.stringify({ ...cur, ...patch }), { expirationTtl: 86400 });
+}
+
+async function saveCallback(path, body, env) {
+  try {
+    const txId = body?.context?.transaction_id;
+    if (!txId) return;
+
+    if (path === 'on_search') {
+      const providers = body.message?.catalog?.['bpp/providers'] || [];
+      const prov = providers[0];
+      const item = prov?.items?.[0];
+      await saveState(txId, {
+        bpp_id: body.context.bpp_id,
+        bpp_uri: body.context.bpp_uri,
+        provider: prov ? { id: prov.id, locations: prov.locations?.[0] ? [{ id: prov.locations[0].id }] : [] } : undefined,
+        item: item ? { id: item.id, location_id: item.location_id || prov.locations?.[0]?.id } : undefined,
+      }, env);
+    } else if (path === 'on_select' && body.message?.order) {
+      await saveState(txId, { on_select_order: body.message.order }, env);
+    } else if (path === 'on_init' && body.message?.order) {
+      await saveState(txId, { on_init_order: body.message.order }, env);
+    }
+  } catch (e) {
+    console.log('[saveCallback error]', e.message);
+  }
+}
+
+/* ---------------- payload builder ---------------- */
+
+function buildPayload(action, body, transactionId, messageId, state, env) {
   const context = {
-    domain: domain, 
-    country: "IND", 
-    city: "std:011", 
-    action: action, 
-    core_version: '1.2.5',
-    bap_id: env.ONDC_BAP_ID, 
+    domain: body.domain || env.ONDC_DOMAIN || 'ONDC:RET11',
+    country: DEFAULT_COUNTRY,
+    city: body.city || DEFAULT_CITY,
+    action,
+    core_version: env.ONDC_CORE_VERSION || '1.2.0',
+    bap_id: env.ONDC_BAP_ID,
     bap_uri: env.ONDC_BAP_URI,
-    bpp_id: "workbench.ondc.tech", 
-    bpp_uri: "https://workbench.ondc.tech", 
-    transaction_id: transactionId, 
+    transaction_id: transactionId,
     message_id: messageId,
-    timestamp: timestamp, 
-    ttl: 'PT30S'
+    timestamp: new Date().toISOString(),
+    ttl: TTL,
+  };
+
+  // search = broadcast, so no bpp_id / bpp_uri. Others use values from on_search.
+  if (action !== 'search') {
+    context.bpp_id = body.bpp_id || state.bpp_id;
+    context.bpp_uri = body.bpp_uri || state.bpp_uri;
+  }
+
+  const pincode = body.pincode || DEFAULT_PIN;
+  const gps = body.gps || DEFAULT_GPS;
+
+  const provider = state.provider || { id: 'provider_workbench_1', locations: [{ id: 'L1' }] };
+  const baseItem = {
+    id: state.item?.id || 'item_veg_thali',
+    location_id: state.item?.location_id || 'L1',
+    quantity: { count: body.quantity || 1 },
+  };
+
+  const billing = {
+    name: 'Test User',
+    address: {
+      name: 'Test User', building: 'Main Road', locality: 'Test Locality',
+      city: 'Delhi', state: 'Delhi', country: DEFAULT_COUNTRY, area_code: pincode,
+    },
+    phone: '9876543210',
+    email: 'test@nnlgharpro.com',
+  };
+
+  const fulfillment = {
+    id: 'F1',
+    type: 'Delivery',
+    end: {
+      location: { gps, address: { area_code: pincode } },
+      contact: { phone: '9876543210', email: 'test@nnlgharpro.com' },
+    },
   };
 
   let message = {};
-  
-  const baseItem = { 
-    id: "item_veg_thali", 
-    location_id: "L1", 
-    quantity: { count: 1 },
-    tags: [{ code: "type", list: [{ code: "type", value: "item" }] }]
-  };
 
   if (action === 'search') {
     message = {
       intent: {
-        item: { descriptor: { name: "Food" } },
-        fulfillment: { type: "Delivery", end: { location: { gps: "28.6139,77.2090", address: { area_code: body.pincode || "110001" } } } }
-      }
+        item: { descriptor: { name: body.query || 'Food' } },
+        fulfillment: { type: 'Delivery', end: { location: { gps, address: { area_code: pincode } } } },
+      },
     };
-  } 
-  else if (action === 'select') {
+  } else if (action === 'select') {
     message = {
       order: {
-        provider: { id: "provider_workbench_1", locations: [{ id: "L1" }] },
-        items: [baseItem]
-      }
+        provider,
+        items: [baseItem],
+        fulfillments: [{ end: { location: { gps, address: { area_code: pincode } } } }],
+      },
     };
-  } 
-  else if (action === 'init') {
-    const sessionOrder = sessionStore[transactionId] || {};
-    const items = sessionOrder.items || [baseItem];
-    const provider = sessionOrder.provider || { id: "provider_workbench_1", locations: [{ id: "L1" }] };
-
+  } else if (action === 'init') {
+    const sel = state.on_select_order || {};
     message = {
       order: {
-        provider: provider,
-        items: items,
-        billing: { 
-            name: "Test User", 
-            address: { name: "Test User", building: "Main Road", locality: "Test Locality", city: "Delhi", state: "Delhi", country: "IND", area_code: "110001" }, 
-            phone: "9876543210", email: "test@nnlgharpro.com" 
+        provider: sel.provider ? { id: sel.provider.id, locations: provider.locations } : provider,
+        items: sel.items || [baseItem],
+        billing,
+        fulfillments: [fulfillment],
+        payment: { type: 'POST-FULFILLMENT', collected_by: 'BPP' },
+      },
+    };
+  } else if (action === 'confirm') {
+    const ini = state.on_init_order || {};
+    const now = new Date().toISOString();
+    message = {
+      order: {
+        id: crypto.randomUUID(),
+        state: 'Created',
+        provider: ini.provider ? { id: ini.provider.id, locations: provider.locations } : provider,
+        items: ini.items || [baseItem],
+        billing,
+        fulfillments: [fulfillment],
+        quote: ini.quote,
+        payment: {
+          ...(ini.payment || {}),
+          type: 'POST-FULFILLMENT',
+          status: 'NOT-PAID',
+          collected_by: 'BPP',
         },
-        fulfillments: [{ 
-            id: "F1", 
-            type: "Delivery", 
-            end: { 
-                location: { gps: "28.6139,77.2090", address: { area_code: "110001" } }, 
-                contact: { phone: "9876543210", email: "test@nnlgharpro.com" } 
-            } 
-        }]
-      }
-    };
-  } 
-  else if (action === 'confirm') {
-    const sessionOrder = sessionStore[transactionId] || {};
-    const items = sessionOrder.items || [baseItem];
-    const provider = sessionOrder.provider || { id: "provider_workbench_1", locations: [{ id: "L1" }] };
-    
-    message = {
-      order: {
-        id: transactionId,
-        state: "Created",
-        provider: provider,
-        items: items,
-        billing: { 
-            name: "Test User", 
-            address: { name: "Test User", building: "Main Road", locality: "Test Locality", city: "Delhi", state: "Delhi", country: "IND", area_code: "110001" }, 
-            phone: "9876543210", email: "test@nnlgharpro.com" 
-        },
-        fulfillments: [{ 
-            id: "F1", 
-            type: "Delivery", 
-            end: { 
-                location: { gps: "28.6139,77.2090", address: { area_code: "110001" } }, 
-                contact: { phone: "9876543210", email: "test@nnlgharpro.com" } 
-            } 
-        }],
-        payment: { 
-            type: "POST-FULFILLMENT", 
-            status: "NOT-PAID", 
-            collected_by: "BPP" 
-        }
-      }
+        created_at: now,
+        updated_at: now,
+      },
     };
   }
 
