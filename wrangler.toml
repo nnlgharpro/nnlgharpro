@@ -7,22 +7,21 @@ compatibility_flags = ["nodejs_compat"]
 ENVIRONMENT = "preprod"
 ONDC_DOMAIN = "ONDC:RET11"
 
-# Workbench "Send your calls to" ka base (action code mein judta hai: /search, /select ...)
+# Workbench "Send your calls to" ka base. Action (search/select/init/confirm) code mein judta hai.
 ONDC_GATEWAY_URL = "https://workbench.ondc.tech/api-service/ONDC:RET11/1.2.5/seller"
 
-# Workbench "Subscriber ID" - gear icon (Settings) se confirm karein.
-# NOTE: Ye Session ID nahi hai. Agar settings mein alag subscriber ID hai to wahi daalein.
+# Workbench Settings (gear icon) wala Subscriber ID. Session ID nahi.
 ONDC_BAP_ID = "nnlgharpro-ret11.nnlgharpro.workers.dev"
 ONDC_BAP_URI = "https://nnlgharpro-ret11.nnlgharpro.workers.dev"
 
-# Context mein jaane wala version. Workbench ke sample payload se match karein.
+# Context ka core_version. Workbench ke sample payload se match karein.
 ONDC_CORE_VERSION = "1.2.0"
 
 ONDC_UK_ID = "05063c66-41f2-4f75-878a-22f28d07712a"
 ONDC_SIGNING_PUBLIC_KEY = "ONGFJUVn9K609lH0a+xA1RVeMG+PL5KtrpcCiJFhV08="
 
-# Private key yahan kabhi nahi. Ye command chalayein:
-#   npx wrangler secret put ONDC_PRIVATE_KEY
+# Private key yahan NAHI. Cloudflare mein Secret ke roop mein rakhein:
+#   ONDC_SIGNING_PRIVATE_KEY   (ya terminal: npx wrangler secret put ONDC_SIGNING_PRIVATE_KEY)
 
 [[kv_namespaces]]
 binding = "ONDC_DATA"
