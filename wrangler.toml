@@ -1,21 +1,28 @@
-name = "nnlgharpro-ret11" 
+name = "nnlgharpro-ret11"
 main = "src/index.js"
 compatibility_date = "2024-10-01"
-compatibility_flags = ["nodejs_compat"]  
-  
+compatibility_flags = ["nodejs_compat"]
+
 [vars]
-ENVIRONMENT = "production"
-ONDC_DOMAIN = "ONDC:RET11" 
+ENVIRONMENT = "preprod"
+ONDC_DOMAIN = "ONDC:RET11"
 
-# ✅ FIX: URL ke aage-peeche quotes laga diye hain
-ONDC_GATEWAY_URL = "https://workbench.ondc.tech/api-service/ONDC:RET11/1.2.5"
+# Workbench "Send your calls to" ka base (action code mein judta hai: /search, /select ...)
+ONDC_GATEWAY_URL = "https://workbench.ondc.tech/api-service/ONDC:RET11/1.2.5/seller"
 
-# ✅ FIX: Naya Session ID dala hai (Aapke latest screenshot ke hisaab se)
-ONDC_BAP_ID = "jPseRR5dWh6ocOZTeC6C9c7UoUKs84ME" 
-ONDC_BAP_URI = "https://nnlgharpro-ret11.nnlgharpro.workers.dev" 
+# Workbench "Subscriber ID" - gear icon (Settings) se confirm karein.
+# NOTE: Ye Session ID nahi hai. Agar settings mein alag subscriber ID hai to wahi daalein.
+ONDC_BAP_ID = "nnlgharpro-ret11.nnlgharpro.workers.dev"
+ONDC_BAP_URI = "https://nnlgharpro-ret11.nnlgharpro.workers.dev"
+
+# Context mein jaane wala version. Workbench ke sample payload se match karein.
+ONDC_CORE_VERSION = "1.2.0"
 
 ONDC_UK_ID = "05063c66-41f2-4f75-878a-22f28d07712a"
 ONDC_SIGNING_PUBLIC_KEY = "ONGFJUVn9K609lH0a+xA1RVeMG+PL5KtrpcCiJFhV08="
+
+# Private key yahan kabhi nahi. Ye command chalayein:
+#   npx wrangler secret put ONDC_PRIVATE_KEY
 
 [[kv_namespaces]]
 binding = "ONDC_DATA"
