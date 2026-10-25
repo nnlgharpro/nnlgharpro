@@ -1,3 +1,4 @@
+// Version 2.0 - Final Fix
 import { blake2b } from 'blakejs'; 
 import nacl from 'tweetnacl'; 
 
