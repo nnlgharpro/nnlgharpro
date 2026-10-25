@@ -19,6 +19,10 @@ ONDC_CORE_VERSION = "1.2.5"
 ONDC_BPP_ID = "workbench.ondc.tech"
 ONDC_BPP_URI = "https://workbench.ondc.tech"
 
+# Workbench flow ki asli IDs (flow delete/naya banane par badal jaati hain)
+ONDC_TRANSACTION_ID = "2ce4a2f8-5d88-479c-bbaf-b4b576f4ee13"
+ONDC_MESSAGE_ID = "346c8832-f4b7-42f7-9eff-fc00439da9ee"
+
 ONDC_UK_ID = "05063c66-41f2-4f75-878a-22f28d07712a"
 ONDC_SIGNING_PUBLIC_KEY = "ONGFJUVn9K609lH0a+xA1RVeMG+PL5KtrpcCiJFhV08="
 
