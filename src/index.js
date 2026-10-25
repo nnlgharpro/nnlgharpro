@@ -52,13 +52,6 @@ export default {
         const messageId = body.message_id || crypto.randomUUID();
         const state = await loadState(transactionId, env);
 
-        if (action !== 'search' && !state.bpp_id && !body.bpp_id) {
-          return json({
-            error: 'Is transaction_id ka on_search abhi nahi aaya. Pehle /search bhejein, wait karein, phir same transaction_id se agla step.',
-            transaction_id: transactionId,
-          }, 400);
-        }
-
         const payload = buildPayload(action, body, transactionId, messageId, state, env);
         const bodyString = JSON.stringify(payload);
         const authHeader = await signRequest(bodyString, env);
@@ -79,6 +72,7 @@ export default {
           message_id: messageId,
           gateway_status: res.status,
           gateway_response: safeParse(text),
+          sent_payload: payload,
         }, res.ok ? 200 : 502);
       }
 
@@ -190,7 +184,7 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
     country: DEFAULT_COUNTRY,
     city: body.city || DEFAULT_CITY,
     action,
-    core_version: env.ONDC_CORE_VERSION || '1.2.0',
+    core_version: env.ONDC_CORE_VERSION || '1.2.5',
     bap_id: env.ONDC_BAP_ID,
     bap_uri: env.ONDC_BAP_URI,
     transaction_id: transactionId,
@@ -199,11 +193,9 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
     ttl: TTL,
   };
 
-  // search = broadcast, so no bpp_id / bpp_uri. Others use values from on_search.
-  if (action !== 'search') {
-    context.bpp_id = body.bpp_id || state.bpp_id;
-    context.bpp_uri = body.bpp_uri || state.bpp_uri;
-  }
+  // Workbench sample ke hisaab se bpp_id / bpp_uri search mein bhi jaate hain.
+  context.bpp_id = body.bpp_id || state.bpp_id || env.ONDC_BPP_ID || 'workbench.ondc.tech';
+  context.bpp_uri = body.bpp_uri || state.bpp_uri || env.ONDC_BPP_URI || 'https://workbench.ondc.tech';
 
   const pincode = body.pincode || DEFAULT_PIN;
   const gps = body.gps || DEFAULT_GPS;
