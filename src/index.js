@@ -2,7 +2,7 @@ import { blake2b } from 'blakejs';
 import nacl from 'tweetnacl'; 
 
 const CORE_VERSION = "1.2.5";
-const DEFAULT_CITY = "std:011"; // Changed to specific city for better matching
+const DEFAULT_CITY = "std:011"; 
 const DEFAULT_COUNTRY = "IND";
 const TTL_DURATION = "PT30S";
 
@@ -51,11 +51,14 @@ export default {
             try { reqBody = await request.json(); } catch(e) {}
         }
 
-        🛑 DYNAMIC IDS (Workbench ke according)
+        // ✅ FIX: Syntax error theek kiya gaya hai (comment lagaya hai)
+        // 🛑 DYNAMIC IDS (Workbench ke according)
         let transactionId = "2ce4a2f8-5d88-479c-bbaf-b4b576f4ee13";
         let messageId = "346c8832-f4b7-42f7-9eff-fc00439da9ee";
-         if (reqBody.transaction_id) transactionId = reqBody.transaction_id;
+        
+        if (reqBody.transaction_id) transactionId = reqBody.transaction_id;
         if (reqBody.message_id) messageId = reqBody.message_id;
+        
         const domain = reqBody.domain || env.ONDC_DOMAIN || "ONDC:RET11";
         
         const payload = buildPayload(action, domain, reqBody, transactionId, messageId, env);
@@ -130,7 +133,6 @@ function buildPayload(action, domain, body, transactionId, messageId, env) {
     };
   } 
   else if (action === 'select') {
-    // STRICT SELECT: No billing, No fulfillments here
     message = {
       order: {
         provider: { id: "provider_workbench_1", locations: [{ id: "L1" }] },
@@ -143,7 +145,6 @@ function buildPayload(action, domain, body, transactionId, messageId, env) {
     const items = sessionOrder.items || [baseItem];
     const provider = sessionOrder.provider || { id: "provider_workbench_1", locations: [{ id: "L1" }] };
 
-    // INIT: Fulfillments and Billing go here
     message = {
       order: {
         provider: provider,
@@ -169,7 +170,6 @@ function buildPayload(action, domain, body, transactionId, messageId, env) {
     const items = sessionOrder.items || [baseItem];
     const provider = sessionOrder.provider || { id: "provider_workbench_1", locations: [{ id: "L1" }] };
     
-    // CONFIRM: State, Payment, and Billing (No quote needed here)
     message = {
       order: {
         id: transactionId,
