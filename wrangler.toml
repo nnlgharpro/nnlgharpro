@@ -6,21 +6,11 @@ compatibility_flags = ["nodejs_compat"]
 [vars]
 ENVIRONMENT = "production"
 ONDC_DOMAIN = "ONDC:RET11" 
-
-# 👇 Workbench URL (Kyunki aap abhi Workbench par test kar rahe ho)
-ONDC_GATEWAY_URL = https://workbench.ondc.tech/api-service/ONDC:RET11/1.2.5
-
-# 👇 BAP Keys (Workbench ki keys)
-ONDC_BAP_ID = "gmSw1E_2Ke4DeL_Ifn3zbzuUshWPypiF" 
-# 🚨 YAHAN CHANGE KIYA HAI 🚨
+ONDC_BAP_ID = "jPseRR5dWh6ocOZTeC6C9c7UoUKs84ME" 
 ONDC_BAP_URI = "https://nnlgharpro-ret11.nnlgharpro.workers.dev" 
-
-# 👇 BPP Keys (Aapki Seller App ki keys)
+ONDC_GATEWAY_URL = "https://workbench.ondc.tech/api-service/ONDC:RET11/1.2.5" 
 ONDC_UK_ID = "05063c66-41f2-4f75-878a-22f28d07712a"
 ONDC_SIGNING_PUBLIC_KEY = "ONGFJUVn9K609lH0a+xA1RVeMG+PL5KtrpcCiJFhV08="
-
-# ⚠️ Secrets (Cloudflare Dashboard se set karenge)
-# ONDC_SIGNING_PRIVATE_KEY
 
 [[kv_namespaces]]
 binding = "ONDC_DATA"
@@ -28,7 +18,3 @@ id = "2a7cea28b17f448eb9477bbe6df4e646"
 
 [observability]
 enabled = true
-
-[observability.logs]
-enabled = true
-invocation_logs = true
