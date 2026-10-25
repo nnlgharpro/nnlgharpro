@@ -2,11 +2,10 @@ import { blake2b } from 'blakejs';
 import nacl from 'tweetnacl'; 
 
 const CORE_VERSION = "1.2.5";
-const DEFAULT_CITY = "*"; 
+const DEFAULT_CITY = "std:011"; // Changed to specific city for better matching
 const DEFAULT_COUNTRY = "IND";
 const TTL_DURATION = "PT30S";
 
-// Session store to save on_select data for init and confirm
 const sessionStore = {};
 
 export default {
@@ -27,24 +26,22 @@ export default {
         return jsonResponse({ status: 'active', version: '100.0.0' }, corsHeaders);
       }
       
-      // 1. Callbacks from Gateway (on_search, on_select, etc.)
+      // 1. Callbacks
       if (path.startsWith('on_')) {
         let reqBody = {};
         if (request.method === 'POST') {
             try { reqBody = await request.json(); } catch(e) {}
         }
         
-        // Save selected items in memory to pass in init/confirm
         if (path === 'on_select' && reqBody.message && reqBody.message.order) {
             const txId = reqBody.context.transaction_id;
             sessionStore[txId] = reqBody.message.order;
         }
         
-        // Always ACK the callbacks
         return jsonResponse({ message: { ack: { status: "ACK" } } }, corsHeaders);
       }
 
-      // 2. Frontend calls (client_search, client_select, client_init, client_confirm)
+      // 2. Main Actions
       if (path.startsWith('client_') || path === 'search' || path === 'select' || path === 'init' || path === 'confirm') {
         
         const action = path.startsWith('client_') ? path.replace('client_', '') : path;
@@ -54,18 +51,15 @@ export default {
             try { reqBody = await request.json(); } catch(e) {}
         }
 
-        // Use IDs passed from frontend, or fallback to fixed ones
-       // 🛑 Hardcoded IDs for Workbench Testing
-        const transactionId = "2ce4a2f8-5d88-479c-bbaf-b4b576f4ee13";
-        const messageId = "346c8832-f4b7-42f7-9eff-fc00439da9ee";
+        🛑 DYNAMIC IDS (Workbench ke according)
+        let transactionId = "2ce4a2f8-5d88-479c-bbaf-b4b576f4ee13";
+        let messageId = "346c8832-f4b7-42f7-9eff-fc00439da9ee";
         const domain = reqBody.domain || env.ONDC_DOMAIN || "ONDC:RET11";
         
         const payload = buildPayload(action, domain, reqBody, transactionId, messageId, env);
         
-        // Gateway URL
         const gatewayUrl = `${env.ONDC_GATEWAY_URL}/${action}`;
 
-        // Send to ONDC Gateway (Workbench)
         ctx.waitUntil(
           fetch(gatewayUrl, {
             method: 'POST',
@@ -82,8 +76,7 @@ export default {
         return jsonResponse({ 
             success: true, 
             transactionId: transactionId,
-            messageId: messageId,
-            message: { catalog: { "bpp/providers": [] } }
+            messageId: messageId
         }, corsHeaders);
       }
       
@@ -104,7 +97,7 @@ function buildPayload(action, domain, body, transactionId, messageId, env) {
   const context = {
     domain: domain, 
     country: "IND", 
-    city: "*", // Workbench uses * for mock callbacks
+    city: "std:011", 
     action: action, 
     core_version: '1.2.5',
     bap_id: env.ONDC_BAP_ID, 
@@ -119,15 +112,11 @@ function buildPayload(action, domain, body, transactionId, messageId, env) {
 
   let message = {};
   
-  // Fixed Item with Tags (Crucial for avoiding NACK)
   const baseItem = { 
     id: "item_veg_thali", 
     location_id: "L1", 
     quantity: { count: 1 },
-    tags: [{ 
-        code: "type", 
-        list: [{ code: "type", value: "item" }] 
-    }]
+    tags: [{ code: "type", list: [{ code: "type", value: "item" }] }]
   };
 
   if (action === 'search') {
@@ -139,6 +128,7 @@ function buildPayload(action, domain, body, transactionId, messageId, env) {
     };
   } 
   else if (action === 'select') {
+    // STRICT SELECT: No billing, No fulfillments here
     message = {
       order: {
         provider: { id: "provider_workbench_1", locations: [{ id: "L1" }] },
@@ -147,13 +137,14 @@ function buildPayload(action, domain, body, transactionId, messageId, env) {
     };
   } 
   else if (action === 'init') {
-    // Retrieve saved order from on_select
     const sessionOrder = sessionStore[transactionId] || {};
     const items = sessionOrder.items || [baseItem];
+    const provider = sessionOrder.provider || { id: "provider_workbench_1", locations: [{ id: "L1" }] };
 
+    // INIT: Fulfillments and Billing go here
     message = {
       order: {
-        provider: sessionOrder.provider || { id: "provider_workbench_1", locations: [{ id: "L1" }] },
+        provider: provider,
         items: items,
         billing: { 
             name: "Test User", 
@@ -173,13 +164,16 @@ function buildPayload(action, domain, body, transactionId, messageId, env) {
   } 
   else if (action === 'confirm') {
     const sessionOrder = sessionStore[transactionId] || {};
+    const items = sessionOrder.items || [baseItem];
+    const provider = sessionOrder.provider || { id: "provider_workbench_1", locations: [{ id: "L1" }] };
     
+    // CONFIRM: State, Payment, and Billing (No quote needed here)
     message = {
       order: {
         id: transactionId,
         state: "Created",
-        provider: sessionOrder.provider || { id: "provider_workbench_1", locations: [{ id: "L1" }] },
-        items: sessionOrder.items || [baseItem],
+        provider: provider,
+        items: items,
         billing: { 
             name: "Test User", 
             address: { name: "Test User", building: "Main Road", locality: "Test Locality", city: "Delhi", state: "Delhi", country: "IND", area_code: "110001" }, 
@@ -193,10 +187,10 @@ function buildPayload(action, domain, body, transactionId, messageId, env) {
                 contact: { phone: "9876543210", email: "test@nnlgharpro.com" } 
             } 
         }],
-        payment: { type: "POST-FULFILLMENT", status: "NOT-PAID", collected_by: "BPP" },
-        quote: { 
-            price: { currency: "INR", value: "199.00" },
-            breakup: [{ title: "Item", price: { currency: "INR", value: "199.00" } }]
+        payment: { 
+            type: "POST-FULFILLMENT", 
+            status: "NOT-PAID", 
+            collected_by: "BPP" 
         }
       }
     };
