@@ -64,7 +64,7 @@ export default {
         
         const payload = buildPayload(action, domain, reqBody, transactionId, messageId, env);
         
-        const gatewayUrl = `${env.ONDC_GATEWAY_URL}/${action}`;
+       const gatewayUrl = `https://workbench.ondc.tech/api-service/ONDC:RET11/1.2.5/${action}`;
 
         ctx.waitUntil(
           fetch(gatewayUrl, {
