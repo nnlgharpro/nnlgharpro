@@ -48,8 +48,8 @@ export default {
           try { body = await request.json(); } catch (e) {}
         }
 
-        const transactionId = body.transaction_id || crypto.randomUUID();
-        const messageId = body.message_id || crypto.randomUUID();
+        const transactionId = body.transaction_id || env.ONDC_TRANSACTION_ID || crypto.randomUUID();
+        const messageId = body.message_id || (action === 'search' && env.ONDC_MESSAGE_ID) || crypto.randomUUID();
         const state = await loadState(transactionId, env);
 
         const payload = buildPayload(action, body, transactionId, messageId, state, env);
@@ -233,6 +233,10 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
       intent: {
         item: { descriptor: { name: body.query || 'Food' } },
         fulfillment: { type: 'Delivery', end: { location: { gps, address: { area_code: pincode } } } },
+        payment: {
+          '@ondc/org/buyer_app_finder_fee_type': body.fee_type || 'percent',
+          '@ondc/org/buyer_app_finder_fee_amount': String(body.fee_amount || '3'),
+        },
       },
     };
   } else if (action === 'select') {
