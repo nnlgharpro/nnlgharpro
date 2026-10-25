@@ -55,8 +55,9 @@ export default {
         }
 
         // Use IDs passed from frontend, or fallback to fixed ones
-        const transactionId = reqBody.transactionId || "2ce4a2f8-5d88-479c-bbaf-b4b576f4ee13";
-        const messageId = reqBody.messageId || "346c8832-f4b7-42f7-9eff-fc00439da9ee"; 
+       // 🛑 Hardcoded IDs for Workbench Testing
+        const transactionId = "2ce4a2f8-5d88-479c-bbaf-b4b576f4ee13";
+        const messageId = "346c8832-f4b7-42f7-9eff-fc00439da9ee";
         const domain = reqBody.domain || env.ONDC_DOMAIN || "ONDC:RET11";
         
         const payload = buildPayload(action, domain, reqBody, transactionId, messageId, env);
