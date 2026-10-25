@@ -48,11 +48,16 @@ export default {
           try { body = await request.json(); } catch (e) {}
         }
 
-        const transactionId = body.transaction_id || env.ONDC_TRANSACTION_ID || crypto.randomUUID();
-        const messageId = body.message_id || (action === 'search' && env.ONDC_MESSAGE_ID) || crypto.randomUUID();
+        // Agar body mein Workbench ka banaya poora payload ({context, message}) ho, to wahi bhejo.
+        const given = body && body.context && body.message ? body : null;
+
+        const transactionId = given?.context?.transaction_id || body.transaction_id || env.ONDC_TRANSACTION_ID || crypto.randomUUID();
+        const messageId = given?.context?.message_id || body.message_id || (action === 'search' && env.ONDC_MESSAGE_ID) || crypto.randomUUID();
         const state = await loadState(transactionId, env);
 
-        const payload = buildPayload(action, body, transactionId, messageId, state, env);
+        const payload = given
+          ? { ...given, context: { ...given.context, timestamp: new Date().toISOString() } }
+          : buildPayload(action, body, transactionId, messageId, state, env);
         const bodyString = JSON.stringify(payload);
         const authHeader = await signRequest(bodyString, env);
         const gatewayUrl = `${env.ONDC_GATEWAY_URL}/${action}`;
