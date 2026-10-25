@@ -6,13 +6,8 @@ const DEFAULT_CITY = "std:011";
 const DEFAULT_COUNTRY = "IND";
 const TTL_DURATION = "PT30S";
 
-// Helper to generate UUID
-function generateUUID() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
-}
+// Temporary in-memory store for session (Workers mein ye volatile hota hai, but for testing it works)
+const sessionStore = {};
 
 export default {
   async fetch(request, env, ctx) {
@@ -32,12 +27,24 @@ export default {
         return jsonResponse({ status: 'active', version: '100.0.0' }, corsHeaders);
       }
       
-      // Gateway se aane wale callbacks (ACK dena zaroori hai)
+      // 1. Gateway Callbacks (on_)
       if (path.startsWith('on_')) {
+        let reqBody = {};
+        if (request.method === 'POST') {
+            try { reqBody = await request.json(); } catch(e) {}
+        }
+        
+        // Session mein data save karein agar on_select aaye
+        if (path === 'on_select' && reqBody.message && reqBody.message.order) {
+            const txId = reqBody.context.transaction_id;
+            sessionStore[txId] = reqBody.message.order;
+            console.log("Session saved for tx:", txId);
+        }
+        
         return jsonResponse({ message: { ack: { status: "ACK" } } }, corsHeaders);
       }
 
-      // Frontend ya Workbench se aane wali request
+      // 2. Frontend/Workbench Trigger APIs
       if (path.startsWith('client_') || path === 'search' || path === 'select' || path === 'init' || path === 'confirm') {
         
         const action = path.startsWith('client_') ? path.replace('client_', '') : path;
@@ -47,9 +54,12 @@ export default {
             try { reqBody = await request.json(); } catch(e) {}
         }
 
-        // Dynamic IDs generate karein agar frontend se nahi aaye
-        const transactionId = reqBody.transactionId || generateUUID();
-        const messageId = generateUUID();
+        const transactionId = reqBody.transactionId || "e496f730-8c9f-4152-a993-83f187cbdfbd";
+        
+        // 🛑 FIX: message_id Workbench se aana chahiye ya fixed hona chahiye
+        // Agar frontend se nahi aa raha, to hum fixed ID use karenge jisse mismatch na ho
+        const messageId = reqBody.messageId || "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d"; 
+
         const domain = reqBody.domain || env.ONDC_DOMAIN || "ONDC:RET11";
         
         // Payload Build Karein
@@ -58,6 +68,7 @@ export default {
         // Gateway URL
         const gatewayUrl = `${env.ONDC_GATEWAY_URL}/${action}`;
 
+        // Gateway ko request bhejein
         ctx.waitUntil(
           fetch(gatewayUrl, {
             method: 'POST',
@@ -75,6 +86,7 @@ export default {
         return jsonResponse({ 
             success: true, 
             transactionId: transactionId,
+            messageId: messageId, // Frontend ko bata dein
             message: { catalog: { "bpp/providers": [] } }
         }, corsHeaders);
       }
@@ -97,7 +109,7 @@ function buildPayload(action, domain, body, transactionId, messageId, env) {
   const context = {
     domain: domain, 
     country: "IND", 
-    city: "std:011", 
+    city: "*", // Workbench often uses * for city in callbacks
     action: action, 
     core_version: '1.2.5',
     bap_id: env.ONDC_BAP_ID, 
@@ -112,7 +124,7 @@ function buildPayload(action, domain, body, transactionId, messageId, env) {
 
   let message = {};
   
-  // Common Item Structure with Tags
+  // Base Item
   const baseItem = { 
     id: "item_veg_thali", 
     location_id: "L1", 
@@ -132,7 +144,6 @@ function buildPayload(action, domain, body, transactionId, messageId, env) {
     };
   } 
   else if (action === 'select') {
-    // ✅ PURE SELECT PAYLOAD (No billing, No fulfillments)
     message = {
       order: {
         provider: { id: "provider_workbench_1", locations: [{ id: "L1" }] },
@@ -141,10 +152,14 @@ function buildPayload(action, domain, body, transactionId, messageId, env) {
     };
   } 
   else if (action === 'init') {
+    // Agar session mein pehle se data hai to use karein, warna baseItem
+    const sessionOrder = sessionStore[transactionId] || {};
+    const items = sessionOrder.items || [baseItem];
+
     message = {
       order: {
-        provider: { id: "provider_workbench_1", locations: [{ id: "L1" }] },
-        items: [baseItem],
+        provider: sessionOrder.provider || { id: "provider_workbench_1", locations: [{ id: "L1" }] },
+        items: items,
         billing: { 
             name: "Test User", 
             address: { name: "Test User", building: "Main Road", locality: "Test Locality", city: "Delhi", state: "Delhi", country: "IND", area_code: "110001" }, 
@@ -162,12 +177,14 @@ function buildPayload(action, domain, body, transactionId, messageId, env) {
     };
   } 
   else if (action === 'confirm') {
+    const sessionOrder = sessionStore[transactionId] || {};
+    
     message = {
       order: {
-        id: transactionId, // Order ID can be same as transaction ID for mock
+        id: transactionId,
         state: "Created",
-        provider: { id: "provider_workbench_1", locations: [{ id: "L1" }] },
-        items: [baseItem],
+        provider: sessionOrder.provider || { id: "provider_workbench_1", locations: [{ id: "L1" }] },
+        items: sessionOrder.items || [baseItem],
         billing: { 
             name: "Test User", 
             address: { name: "Test User", building: "Main Road", locality: "Test Locality", city: "Delhi", state: "Delhi", country: "IND", area_code: "110001" }, 
@@ -181,7 +198,11 @@ function buildPayload(action, domain, body, transactionId, messageId, env) {
                 contact: { phone: "9876543210", email: "test@nnlgharpro.com" } 
             } 
         }],
-        payment: { type: "POST-FULFILLMENT", status: "NOT-PAID", collected_by: "BPP" }
+        payment: { type: "POST-FULFILLMENT", status: "NOT-PAID", collected_by: "BPP" },
+        quote: sessionOrder.quote || { // Mock quote if not present
+            price: { currency: "INR", value: "100.00" },
+            breakup: [{ title: "Item", price: { currency: "INR", value: "100.00" } }]
+        }
       }
     };
   }
