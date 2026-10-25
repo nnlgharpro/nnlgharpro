@@ -6,6 +6,14 @@ const DEFAULT_CITY = "std:011";
 const DEFAULT_COUNTRY = "IND";
 const TTL_DURATION = "PT30S";
 
+// Helper to generate UUID
+function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -39,16 +47,17 @@ export default {
             try { reqBody = await request.json(); } catch(e) {}
         }
 
-        const transactionId = reqBody.transactionId || "e496f730-8c9f-4152-a993-83f187cbdfbd";
+        // Dynamic IDs generate karein agar frontend se nahi aaye
+        const transactionId = reqBody.transactionId || generateUUID();
+        const messageId = generateUUID();
         const domain = reqBody.domain || env.ONDC_DOMAIN || "ONDC:RET11";
         
         // Payload Build Karein
-        const payload = buildPayload(action, domain, reqBody, transactionId, env);
+        const payload = buildPayload(action, domain, reqBody, transactionId, messageId, env);
         
         // Gateway URL
         const gatewayUrl = `${env.ONDC_GATEWAY_URL}/${action}`;
 
-        // Gateway ko request bhejein (bina signature ke, kyunki Workbench mock hai)
         ctx.waitUntil(
           fetch(gatewayUrl, {
             method: 'POST',
@@ -81,7 +90,7 @@ function jsonResponse(data, headers, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { ...headers, 'Content-Type': 'application/json' } });
 }
 
-function buildPayload(action, domain, body, transactionId, env) {
+function buildPayload(action, domain, body, transactionId, messageId, env) {
   const timestamp = new Date().toISOString();
   
   // Context Setup
@@ -96,12 +105,23 @@ function buildPayload(action, domain, body, transactionId, env) {
     bpp_id: "workbench.ondc.tech", 
     bpp_uri: "https://workbench.ondc.tech", 
     transaction_id: transactionId, 
-    message_id: "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d", // Fixed ID for Workbench to match
+    message_id: messageId,
     timestamp: timestamp, 
     ttl: 'PT30S'
   };
 
   let message = {};
+  
+  // Common Item Structure with Tags
+  const baseItem = { 
+    id: "item_veg_thali", 
+    location_id: "L1", 
+    quantity: { count: 1 },
+    tags: [{ 
+        code: "type", 
+        list: [{ code: "type", value: "item" }] 
+    }]
+  };
 
   if (action === 'search') {
     message = {
@@ -110,44 +130,57 @@ function buildPayload(action, domain, body, transactionId, env) {
         fulfillment: { type: "Delivery", end: { location: { gps: "28.6139,77.2090", address: { area_code: "110001" } } } }
       }
     };
-  } else if (action === 'select') {
-    // ✅ PURE SELECT PAYLOAD (No billing, No fulfillments, Just items and tags)
+  } 
+  else if (action === 'select') {
+    // ✅ PURE SELECT PAYLOAD (No billing, No fulfillments)
     message = {
       order: {
         provider: { id: "provider_workbench_1", locations: [{ id: "L1" }] },
-        items: [{ 
-            id: "item_veg_thali", 
-            location_id: "L1", 
-            quantity: { count: 1 },
-            tags: [{ 
-                code: "type", 
-                list: [{ code: "type", value: "item" }] 
-            }]
+        items: [baseItem]
+      }
+    };
+  } 
+  else if (action === 'init') {
+    message = {
+      order: {
+        provider: { id: "provider_workbench_1", locations: [{ id: "L1" }] },
+        items: [baseItem],
+        billing: { 
+            name: "Test User", 
+            address: { name: "Test User", building: "Main Road", locality: "Test Locality", city: "Delhi", state: "Delhi", country: "IND", area_code: "110001" }, 
+            phone: "9876543210", email: "test@nnlgharpro.com" 
+        },
+        fulfillments: [{ 
+            id: "F1", 
+            type: "Delivery", 
+            end: { 
+                location: { gps: "28.6139,77.2090", address: { area_code: "110001" } }, 
+                contact: { phone: "9876543210", email: "test@nnlgharpro.com" } 
+            } 
         }]
       }
     };
-  } else if (action === 'init') {
+  } 
+  else if (action === 'confirm') {
     message = {
       order: {
-        provider: { id: "provider_workbench_1", locations: [{ id: "L1" }] },
-        items: [{ id: "item_veg_thali", quantity: { count: 1 }, location_id: "L1", tags: [{ code: "type", list: [{ code: "type", value: "item" }] }] }],
-        billing: { 
-            name: "Test User", 
-            address: { name: "Test User", building: "Main Road", locality: "Test", city: "Delhi", state: "Delhi", country: "IND", area_code: "110001" }, 
-            phone: "9876543210", email: "test@test.com" 
-        },
-        fulfillments: [{ id: "F1", type: "Delivery", end: { location: { gps: "28.6139,77.2090", address: { area_code: "110001" } }, contact: { phone: "9876543210" } } }]
-      }
-    };
-  } else if (action === 'confirm') {
-    message = {
-      order: {
-        id: "e496f730-8c9f-4152-a993-83f187cbdfbd", 
+        id: transactionId, // Order ID can be same as transaction ID for mock
         state: "Created",
         provider: { id: "provider_workbench_1", locations: [{ id: "L1" }] },
-        items: [{ id: "item_veg_thali", quantity: { count: 1 }, location_id: "L1", tags: [{ code: "type", list: [{ code: "type", value: "item" }] }] }],
-        billing: { name: "Test User", phone: "9876543210", address: { building: "Main Road", city: "Delhi", area_code: "110001" } },
-        fulfillments: [{ id: "F1", type: "Delivery", end: { location: { gps: "28.6139,77.2090", address: { area_code: "110001" } }, contact: { phone: "9876543210" } } }],
+        items: [baseItem],
+        billing: { 
+            name: "Test User", 
+            address: { name: "Test User", building: "Main Road", locality: "Test Locality", city: "Delhi", state: "Delhi", country: "IND", area_code: "110001" }, 
+            phone: "9876543210", email: "test@nnlgharpro.com" 
+        },
+        fulfillments: [{ 
+            id: "F1", 
+            type: "Delivery", 
+            end: { 
+                location: { gps: "28.6139,77.2090", address: { area_code: "110001" } }, 
+                contact: { phone: "9876543210", email: "test@nnlgharpro.com" } 
+            } 
+        }],
         payment: { type: "POST-FULFILLMENT", status: "NOT-PAID", collected_by: "BPP" }
       }
     };
