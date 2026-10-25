@@ -2,11 +2,11 @@ import { blake2b } from 'blakejs';
 import nacl from 'tweetnacl'; 
 
 const CORE_VERSION = "1.2.5";
-const DEFAULT_CITY = "std:011"; 
+const DEFAULT_CITY = "*"; 
 const DEFAULT_COUNTRY = "IND";
 const TTL_DURATION = "PT30S";
 
-// Data save karne ke liye temporary memory
+// Session store to save on_select data for init and confirm
 const sessionStore = {};
 
 export default {
@@ -27,28 +27,24 @@ export default {
         return jsonResponse({ status: 'active', version: '100.0.0' }, corsHeaders);
       }
       
-      // ==========================================
-      // 1. CALLBACKS (ON_SELECT, ON_INIT, ETC.)
-      // ==========================================
+      // 1. Callbacks from Gateway (on_search, on_select, etc.)
       if (path.startsWith('on_')) {
         let reqBody = {};
         if (request.method === 'POST') {
             try { reqBody = await request.json(); } catch(e) {}
         }
         
-        // Jab on_select aaye, toh data ko save karein
+        // Save selected items in memory to pass in init/confirm
         if (path === 'on_select' && reqBody.message && reqBody.message.order) {
             const txId = reqBody.context.transaction_id;
             sessionStore[txId] = reqBody.message.order;
-            console.log(`[SESSION SAVED] Transaction: ${txId}`);
         }
         
+        // Always ACK the callbacks
         return jsonResponse({ message: { ack: { status: "ACK" } } }, corsHeaders);
       }
 
-      // ==========================================
-      // 2. MAIN ACTIONS (SEARCH, SELECT, INIT)
-      // ==========================================
+      // 2. Frontend calls (client_search, client_select, client_init, client_confirm)
       if (path.startsWith('client_') || path === 'search' || path === 'select' || path === 'init' || path === 'confirm') {
         
         const action = path.startsWith('client_') ? path.replace('client_', '') : path;
@@ -58,18 +54,17 @@ export default {
             try { reqBody = await request.json(); } catch(e) {}
         }
 
-        // 🛑 FIX 1: Fixed Transaction & Message IDs (Workbench ke liye zaroori)
+        // Use IDs passed from frontend, or fallback to fixed ones
         const transactionId = reqBody.transactionId || "2ce4a2f8-5d88-479c-bbaf-b4b576f4ee13";
-        const messageId = "346c8832-f4b7-42f7-9eff-fc00439da9ee"; 
+        const messageId = reqBody.messageId || "346c8832-f4b7-42f7-9eff-fc00439da9ee"; 
         const domain = reqBody.domain || env.ONDC_DOMAIN || "ONDC:RET11";
         
-        // Payload Build Karein
         const payload = buildPayload(action, domain, reqBody, transactionId, messageId, env);
         
         // Gateway URL
         const gatewayUrl = `${env.ONDC_GATEWAY_URL}/${action}`;
 
-        // Gateway ko request bhejein
+        // Send to ONDC Gateway (Workbench)
         ctx.waitUntil(
           fetch(gatewayUrl, {
             method: 'POST',
@@ -108,7 +103,7 @@ function buildPayload(action, domain, body, transactionId, messageId, env) {
   const context = {
     domain: domain, 
     country: "IND", 
-    city: "*", // Callback ke time Workbench "*" bhejta hai
+    city: "*", // Workbench uses * for mock callbacks
     action: action, 
     core_version: '1.2.5',
     bap_id: env.ONDC_BAP_ID, 
@@ -123,7 +118,7 @@ function buildPayload(action, domain, body, transactionId, messageId, env) {
 
   let message = {};
   
-  // Tags ke sath base item (Yeh error solve karta hai)
+  // Fixed Item with Tags (Crucial for avoiding NACK)
   const baseItem = { 
     id: "item_veg_thali", 
     location_id: "L1", 
@@ -138,7 +133,7 @@ function buildPayload(action, domain, body, transactionId, messageId, env) {
     message = {
       intent: {
         item: { descriptor: { name: "Food" } },
-        fulfillment: { type: "Delivery", end: { location: { gps: "28.6139,77.2090", address: { area_code: "110001" } } } }
+        fulfillment: { type: "Delivery", end: { location: { gps: "28.6139,77.2090", address: { area_code: body.pincode || "110001" } } } }
       }
     };
   } 
@@ -151,7 +146,7 @@ function buildPayload(action, domain, body, transactionId, messageId, env) {
     };
   } 
   else if (action === 'init') {
-    // Agar session mein select ka data hai to use karein
+    // Retrieve saved order from on_select
     const sessionOrder = sessionStore[transactionId] || {};
     const items = sessionOrder.items || [baseItem];
 
@@ -198,9 +193,9 @@ function buildPayload(action, domain, body, transactionId, messageId, env) {
             } 
         }],
         payment: { type: "POST-FULFILLMENT", status: "NOT-PAID", collected_by: "BPP" },
-        quote: { // Mock Quote (Confirm ke liye zaroori)
-            price: { currency: "INR", value: "100.00" },
-            breakup: [{ title: "Item", price: { currency: "INR", value: "100.00" } }]
+        quote: { 
+            price: { currency: "INR", value: "199.00" },
+            breakup: [{ title: "Item", price: { currency: "INR", value: "199.00" } }]
         }
       }
     };
