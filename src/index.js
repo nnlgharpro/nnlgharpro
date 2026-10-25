@@ -1,3 +1,11 @@
+import { blake2b } from 'blakejs'; 
+import nacl from 'tweetnacl'; 
+
+const CORE_VERSION = "1.2.5";
+const DEFAULT_CITY = "std:011"; 
+const DEFAULT_COUNTRY = "IND";
+const TTL_DURATION = "PT30S";
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
