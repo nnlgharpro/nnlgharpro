@@ -11,17 +11,13 @@ ONDC_DOMAIN = "ONDC:RET11"
 ONDC_GATEWAY_URL = "https://workbench.ondc.tech/api-service/ONDC:RET11/1.2.5/seller"
 
 # Workbench Settings (gear icon) wala Subscriber ID. Session ID nahi.
-ONDC_BAP_ID = "nnlgharpro-ret11.nnlgharpro.workers.dev"
+ONDC_BAP_ID = "jPseRR5dWh6ocOZTeC6C9c7UoUKs84ME"
 ONDC_BAP_URI = "https://nnlgharpro-ret11.nnlgharpro.workers.dev"
 
 # Workbench ke sample payload ke hisaab se
 ONDC_CORE_VERSION = "1.2.5"
 ONDC_BPP_ID = "workbench.ondc.tech"
 ONDC_BPP_URI = "https://workbench.ondc.tech"
-
-# Workbench flow ki asli IDs (flow delete/naya banane par badal jaati hain)
-ONDC_TRANSACTION_ID = "2ce4a2f8-5d88-479c-bbaf-b4b576f4ee13"
-ONDC_MESSAGE_ID = "346c8832-f4b7-42f7-9eff-fc00439da9ee"
 
 ONDC_UK_ID = "05063c66-41f2-4f75-878a-22f28d07712a"
 ONDC_SIGNING_PUBLIC_KEY = "ONGFJUVn9K609lH0a+xA1RVeMG+PL5KtrpcCiJFhV08="
