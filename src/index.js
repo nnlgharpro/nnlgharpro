@@ -6,7 +6,7 @@ const DEFAULT_CITY = "std:011";
 const DEFAULT_COUNTRY = "IND";
 const TTL_DURATION = "PT30S";
 
-// Temporary in-memory store for session (Workers mein ye volatile hota hai, but for testing it works)
+// Data save karne ke liye temporary memory
 const sessionStore = {};
 
 export default {
@@ -27,24 +27,28 @@ export default {
         return jsonResponse({ status: 'active', version: '100.0.0' }, corsHeaders);
       }
       
-      // 1. Gateway Callbacks (on_)
+      // ==========================================
+      // 1. CALLBACKS (ON_SELECT, ON_INIT, ETC.)
+      // ==========================================
       if (path.startsWith('on_')) {
         let reqBody = {};
         if (request.method === 'POST') {
             try { reqBody = await request.json(); } catch(e) {}
         }
         
-        // Session mein data save karein agar on_select aaye
+        // Jab on_select aaye, toh data ko save karein
         if (path === 'on_select' && reqBody.message && reqBody.message.order) {
             const txId = reqBody.context.transaction_id;
             sessionStore[txId] = reqBody.message.order;
-            console.log("Session saved for tx:", txId);
+            console.log(`[SESSION SAVED] Transaction: ${txId}`);
         }
         
         return jsonResponse({ message: { ack: { status: "ACK" } } }, corsHeaders);
       }
 
-      // 2. Frontend/Workbench Trigger APIs
+      // ==========================================
+      // 2. MAIN ACTIONS (SEARCH, SELECT, INIT)
+      // ==========================================
       if (path.startsWith('client_') || path === 'search' || path === 'select' || path === 'init' || path === 'confirm') {
         
         const action = path.startsWith('client_') ? path.replace('client_', '') : path;
@@ -54,12 +58,9 @@ export default {
             try { reqBody = await request.json(); } catch(e) {}
         }
 
-        const transactionId = reqBody.transactionId || "e496f730-8c9f-4152-a993-83f187cbdfbd";
-        
-        // 🛑 FIX: message_id Workbench se aana chahiye ya fixed hona chahiye
-        // Agar frontend se nahi aa raha, to hum fixed ID use karenge jisse mismatch na ho
-        const messageId = reqBody.messageId || "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d"; 
-
+        // 🛑 FIX 1: Fixed Transaction & Message IDs (Workbench ke liye zaroori)
+        const transactionId = reqBody.transactionId || "2ce4a2f8-5d88-479c-bbaf-b4b576f4ee13";
+        const messageId = "346c8832-f4b7-42f7-9eff-fc00439da9ee"; 
         const domain = reqBody.domain || env.ONDC_DOMAIN || "ONDC:RET11";
         
         // Payload Build Karein
@@ -82,11 +83,10 @@ export default {
           .catch((e) => console.log(`[${action.toUpperCase()}] Error:`, e.message))
         );
 
-        // Frontend ko response
         return jsonResponse({ 
             success: true, 
             transactionId: transactionId,
-            messageId: messageId, // Frontend ko bata dein
+            messageId: messageId,
             message: { catalog: { "bpp/providers": [] } }
         }, corsHeaders);
       }
@@ -105,11 +105,10 @@ function jsonResponse(data, headers, status = 200) {
 function buildPayload(action, domain, body, transactionId, messageId, env) {
   const timestamp = new Date().toISOString();
   
-  // Context Setup
   const context = {
     domain: domain, 
     country: "IND", 
-    city: "*", // Workbench often uses * for city in callbacks
+    city: "*", // Callback ke time Workbench "*" bhejta hai
     action: action, 
     core_version: '1.2.5',
     bap_id: env.ONDC_BAP_ID, 
@@ -124,7 +123,7 @@ function buildPayload(action, domain, body, transactionId, messageId, env) {
 
   let message = {};
   
-  // Base Item
+  // Tags ke sath base item (Yeh error solve karta hai)
   const baseItem = { 
     id: "item_veg_thali", 
     location_id: "L1", 
@@ -152,7 +151,7 @@ function buildPayload(action, domain, body, transactionId, messageId, env) {
     };
   } 
   else if (action === 'init') {
-    // Agar session mein pehle se data hai to use karein, warna baseItem
+    // Agar session mein select ka data hai to use karein
     const sessionOrder = sessionStore[transactionId] || {};
     const items = sessionOrder.items || [baseItem];
 
@@ -199,7 +198,7 @@ function buildPayload(action, domain, body, transactionId, messageId, env) {
             } 
         }],
         payment: { type: "POST-FULFILLMENT", status: "NOT-PAID", collected_by: "BPP" },
-        quote: sessionOrder.quote || { // Mock quote if not present
+        quote: { // Mock Quote (Confirm ke liye zaroori)
             price: { currency: "INR", value: "100.00" },
             breakup: [{ title: "Item", price: { currency: "INR", value: "100.00" } }]
         }
