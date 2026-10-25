@@ -26,7 +26,7 @@ export default {
     try {
       // Health
       if (path === '' || path === 'api/health') {
-        return json({ status: 'active', domain: env.ONDC_DOMAIN, bap_id: env.ONDC_BAP_ID });
+        return json({ status: 'active', domain: env.ONDC_DOMAIN, bap_id: env.ONDC_BAP_ID, has_private_key: !!getPrivateKey(env) });
       }
 
       // 1. Callbacks from workbench: /on_search, /on_select, /on_init, /on_confirm ...
@@ -103,6 +103,11 @@ function safeParse(t) {
   try { return JSON.parse(t); } catch (e) { return t; }
 }
 
+// Dashboard mein jo naam ho, dono chalenge
+function getPrivateKey(env) {
+  return env.ONDC_SIGNING_PRIVATE_KEY || env.ONDC_PRIVATE_KEY || '';
+}
+
 function b64ToBytes(b64) {
   return Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
 }
@@ -115,7 +120,8 @@ function bytesToB64(bytes) {
 
 // ONDC signature: ed25519 over (created)/(expires)/digest, digest = BLAKE-512
 async function signRequest(bodyString, env) {
-  if (!env.ONDC_PRIVATE_KEY) throw new Error('ONDC_PRIVATE_KEY secret set nahi hai (wrangler secret put ONDC_PRIVATE_KEY)');
+  const rawKey = getPrivateKey(env);
+  if (!rawKey) throw new Error('Private key secret nahi mila. Cloudflare mein ONDC_SIGNING_PRIVATE_KEY (Secret) add karein.');
 
   const created = Math.floor(Date.now() / 1000);
   const expires = created + 300;
@@ -123,7 +129,7 @@ async function signRequest(bodyString, env) {
   const digest = bytesToB64(blake2b(new TextEncoder().encode(bodyString), null, 64));
   const signingString = `(created): ${created}\n(expires): ${expires}\ndigest: BLAKE-512=${digest}`;
 
-  const priv = b64ToBytes(env.ONDC_PRIVATE_KEY.trim());
+  const priv = b64ToBytes(rawKey.trim());
   const secretKey = priv.length === 32 ? nacl.sign.keyPair.fromSeed(priv).secretKey : priv;
 
   const signature = bytesToB64(nacl.sign.detached(new TextEncoder().encode(signingString), secretKey));
