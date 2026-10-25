@@ -3,43 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-<title>NnlGharPro - Super App</title>
+<title>NnlGharPro - Premium App</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
 <style>
 :root { --primary: #FF6B35; --secondary: #4ECDC4; --bg: #0f0c29; --card: rgba(255,255,255,0.06); }
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
 body { background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); min-height: 100vh; color: #fff; overflow-x: hidden; }
-.container { max-width: 480px; margin: 0 auto; padding: 15px; display: none; }
-.container.active { display: block; animation: fadeIn 0.4s ease; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-input, textarea { -webkit-user-select: text; user-select: text; }
+.container { max-width: 480px; margin: 0 auto; padding: 15px; }
 
-/* PREMIUM LOGIN */
-.login-screen { position: fixed; inset: 0; background: linear-gradient(135deg, #0f0c29, #302b63); display: flex; justify-content: center; align-items: center; z-index: 9999; padding: 20px; }
-.login-box { background: var(--card); backdrop-filter: blur(15px); padding: 30px 25px; border-radius: 24px; width: 100%; max-width: 360px; text-align: center; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
-.login-box h2 { margin-bottom: 25px; font-size: 26px; background: linear-gradient(135deg, var(--primary), #FFD93D); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 700; }
-.login-box input { width: 100%; padding: 15px; margin-bottom: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: #fff; outline: none; font-size: 14px; transition: 0.3s; }
-.login-box input:focus { border-color: var(--secondary); box-shadow: 0 0 10px rgba(78,205,196,0.2); }
-.login-box button { width: 100%; padding: 15px; background: linear-gradient(135deg, var(--primary), #FF8C42); border: none; border-radius: 12px; color: #fff; font-weight: 600; font-size: 16px; cursor: pointer; transition: 0.3s; }
-.login-box button:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(255,107,53,0.4); }
-.login-box p { margin-top: 20px; font-size: 13px; color: var(--secondary); cursor: pointer; font-weight: 500; }
-
-/* HEADER */
-.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+/* HEADER & SEARCH */
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; margin-top: 20px;}
 .logo { font-size: 24px; font-weight: 800; background: linear-gradient(135deg, var(--primary), #FFD93D); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.header-actions { display: flex; gap: 12px; }
-.icon-btn { position: relative; background: var(--card); padding: 12px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; }
-.icon-btn:hover { background: rgba(255,255,255,0.1); }
+.icon-btn { background: var(--card); padding: 12px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; }
 .icon-btn i { font-size: 18px; color: var(--secondary); }
-.cart-badge { position: absolute; top: -4px; right: -4px; background: #FF4757; color: #fff; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 10px; display: none; }
-
-/* SEARCH BAR */
 .search-bar { display: flex; gap: 10px; margin-bottom: 25px; }
 .search-bar input { flex: 1; padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); background: var(--card); color: #fff; font-size: 14px; outline: none; }
 .search-bar button { padding: 14px 20px; background: linear-gradient(135deg, var(--secondary), #44B3A8); border: none; border-radius: 14px; color: #fff; font-weight: 600; cursor: pointer; }
@@ -48,208 +26,174 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .section-title { font-size: 16px; font-weight: 600; margin-bottom: 15px; color: #fff; display: flex; align-items: center; gap: 8px; }
 .section-title i { color: var(--primary); }
 
-/* SPECIAL CARDS */
-.special-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px; }
-.special-card { background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02)); border: 1px solid rgba(255,255,255,0.1); padding: 20px 15px; border-radius: 18px; text-align: center; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden; }
-.special-card:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.2); }
-.special-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(255,107,53,0.1), transparent); opacity: 0; transition: 0.3s; }
-.special-card:hover::before { opacity: 1; }
-.special-card i { font-size: 28px; color: #FFD93D; margin-bottom: 10px; position: relative; z-index: 1; }
-.special-card h4 { font-size: 15px; margin-bottom: 5px; position: relative; z-index: 1; }
-.special-card p { font-size: 11px; color: #aaa; position: relative; z-index: 1; }
+/* 🌟 NEW PREMIUM GRID LAYOUT 🌟 */
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 Icons in a row */
+    gap: 15px 10px;
+    margin-bottom: 30px;
+}
 
-/* SERVICE SCROLL */
-.services-scroll { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 15px; scrollbar-width: none; margin-bottom: 20px; }
-.services-scroll::-webkit-scrollbar { display: none; }
-.service-card { min-width: 85px; background: var(--card); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 15px 8px; text-align: center; cursor: pointer; transition: 0.3s; flex-shrink: 0; }
-.service-card:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
-.service-card i { font-size: 24px; margin-bottom: 8px; display: block; color: var(--primary); }
-.service-card span { font-size: 11px; font-weight: 500; color: #eee; display: block; line-height: 1.3; }
+.grid-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
 
-/* MODALS */
-.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: flex-end; z-index: 9998; }
-.modal.show { display: flex; }
-.modal-content { background: #1a1a2e; width: 100%; max-width: 480px; border-radius: 24px 24px 0 0; padding: 25px 20px; max-height: 90vh; overflow-y: auto; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); border-top: 1px solid rgba(255,255,255,0.1); }
-@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.modal-header h3 { font-size: 18px; font-weight: 600; }
-.close-btn { background: rgba(255,255,255,0.05); border: none; color: #fff; font-size: 20px; cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.grid-card:active { transform: scale(0.95); } /* Click effect */
 
-/* CART ITEMS */
-.cart-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 14px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.05); }
-.qty-control { display: flex; align-items: center; gap: 12px; background: rgba(78,205,196,0.1); padding: 5px 12px; border-radius: 8px; border: 1px solid rgba(78,205,196,0.2); }
-.qty-btn { background: none; border: none; color: var(--secondary); font-size: 18px; font-weight: 700; cursor: pointer; }
-.qty-num { font-weight: 600; font-size: 14px; }
-.btn-primary { background: linear-gradient(135deg, var(--secondary), #44B3A8); border: none; padding: 12px 20px; border-radius: 10px; color: #fff; font-weight: 600; cursor: pointer; transition: 0.3s; }
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(78,205,196,0.3); }
-.btn-pay { background: linear-gradient(135deg, #5F259F, #8B5CF6); width: 100%; padding: 16px; font-size: 16px; border-radius: 14px; border: none; color: #fff; font-weight: 600; margin-top: 15px; cursor: pointer; transition: 0.3s; }
-.btn-pay:hover { box-shadow: 0 8px 25px rgba(95,37,159,0.4); }
-.btn-pay:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+/* Icon Circle */
+.icon-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 20px; /* Squircle shape */
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.03));
+    border: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+    position: relative;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
 
-/* FORM INPUTS */
-.form-group { margin-bottom: 15px; }
-.form-group label { display: block; font-size: 12px; color: #aaa; margin-bottom: 6px; }
-.form-group input, .form-group textarea { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); color: #fff; font-size: 14px; outline: none; }
-.form-group input:focus, .form-group textarea:focus { border-color: var(--secondary); }
+.icon-circle i {
+    font-size: 26px;
+    color: #FFD93D; /* Premium Gold */
+}
 
-/* RECHARGE PLAN CARDS */
-.plans-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 15px; margin-bottom: 15px; scrollbar-width: none; }
-.plans-scroll::-webkit-scrollbar { display: none; }
-.plan-card { min-width: 130px; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 15px 12px; cursor: pointer; transition: 0.3s; position: relative; flex-shrink: 0; }
-.plan-card.selected { border-color: var(--secondary); background: rgba(78,205,196,0.1); box-shadow: 0 0 15px rgba(78,205,196,0.2); }
-.plan-card .pop-tag { position: absolute; top: -8px; right: 8px; background: linear-gradient(135deg, #FF6B35, #FFD93D); color: #fff; font-size: 8px; font-weight: 800; padding: 2px 8px; border-radius: 10px; }
-.plan-card .amount { font-size: 22px; font-weight: 700; color: #FFD93D; }
-.plan-card .validity { font-size: 11px; color: var(--secondary); margin: 5px 0; font-weight: 600; }
-.plan-card .desc { font-size: 10px; color: #aaa; line-height: 1.3; }
+/* Coming Soon Style (Faded & Grey) */
+.grid-card.coming-soon .icon-circle {
+    background: rgba(255,255,255,0.02);
+    border: 1px dashed rgba(255,255,255,0.2);
+    opacity: 0.6;
+}
+.grid-card.coming-soon .icon-circle i {
+    color: #888; /* Grey icon */
+}
+.grid-card.coming-soon span {
+    color: #888;
+}
 
-/* TOAST & RECEIPT */
+/* Red Soon Badge */
+.soon-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: linear-gradient(135deg, #FF4757, #ff6b81);
+    color: #fff;
+    font-size: 8px;
+    font-weight: 700;
+    padding: 3px 6px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(255,71,87,0.4);
+}
+
+.grid-card span {
+    font-size: 11px;
+    font-weight: 500;
+    color: #eee;
+    line-height: 1.2;
+}
+
+/* TOAST */
 .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--secondary); color: #000; padding: 12px 24px; border-radius: 30px; font-weight: 600; font-size: 13px; z-index: 99999; display: none; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-.receipt { background: #fff; color: #333; padding: 25px 20px; border-radius: 20px; max-width: 350px; margin: auto; margin-top: 15vh; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-.receipt h2 { text-align: center; color: #1a237e; margin-bottom: 20px; font-size: 20px; }
-.receipt .row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px; border-bottom: 1px dashed #eee; }
-.receipt .total { font-size: 18px; font-weight: 800; color: #1a237e; border-top: 2px solid #1a237e; padding-top: 12px; margin-top: 12px; }
 </style>
 </head>
 <body>
 
 <div class="toast" id="toast">Message</div>
 
-<!-- LOGIN SCREEN -->
-<div class="login-screen" id="loginScreen">
-    <div class="login-box">
-        <h2>NnlGharPro</h2>
-        <input type="email" id="loginEmail" placeholder="Email Address">
-        <input type="password" id="loginPassword" placeholder="Password (min 6 chars)">
-        <button onclick="handleLogin()" id="loginBtn">Login / Sign Up</button>
-        <p onclick="handleGoogleLogin()">Continue with Google</p>
-    </div>
-</div>
-
-<!-- MAIN APP -->
-<div class="container" id="mainApp">
+<div class="container">
     <div class="header">
         <div class="logo">NnlGharPro</div>
-        <div class="header-actions">
-            <div class="icon-btn" onclick="openCart()">
-                <i class="fas fa-shopping-cart"></i>
-                <span class="cart-badge" id="cartBadge">0</span>
-            </div>
-            <div class="icon-btn" onclick="handleLogout()" style="background:rgba(255,71,87,0.1);">
-                <i class="fas fa-sign-out-alt" style="color:#FF4757;"></i>
-            </div>
-        </div>
+        <div class="icon-btn"><i class="fas fa-shopping-cart"></i></div>
     </div>
 
     <div class="search-bar">
         <input type="text" id="pincode" placeholder="Enter Pincode" maxlength="6" value="110001">
-        <button onclick="searchCategory(currentCategory, currentDomain)"><i class="fas fa-search"></i></button>
+        <button><i class="fas fa-search"></i></button>
     </div>
 
-    <div class="special-grid">
-        <div class="special-card" onclick="openModal('rechargeModal')">
-            <i class="fas fa-mobile-alt"></i>
-            <h4>Recharge</h4>
-            <p>Mobile & DTH</p>
-        </div>
-        <div class="special-card" onclick="openModal('insuranceModal')">
-            <i class="fas fa-shield-alt"></i>
-            <h4>Insurance</h4>
-            <p>Bike, Car, Health</p>
-        </div>
-    </div>
-
-    <div class="section-title"><i class="fas fa-store"></i> Explore Services</div>
-    <div class="services-scroll">
-        <div class="service-card" onclick="searchCategory('Food', 'ONDC:RET11')"><i class="fas fa-utensils"></i><span>Food</span></div>
-        <div class="service-card" onclick="searchCategory('Grocery', 'ONDC:RET10')"><i class="fas fa-shopping-basket"></i><span>Grocery</span></div>
-        <div class="service-card" onclick="searchCategory('Fashion', 'ONDC:RET12')"><i class="fas fa-tshirt"></i><span>Fashion</span></div>
-        <div class="service-card" onclick="searchCategory('Electronics', 'ONDC:RET14')"><i class="fas fa-laptop"></i><span>Electronics</span></div>
-        <div class="service-card" onclick="searchCategory('Beauty', 'ONDC:RET13')"><i class="fas fa-spa"></i><span>Beauty</span></div>
-    </div>
-</div>
-
-<!-- MODALS START -->
-
-<!-- MENU ITEMS -->
-<div class="modal" id="menuModal">
-    <div class="modal-content">
-        <div class="modal-header"><h3 id="menuTitle">Store Menu</h3><button class="close-btn" onclick="closeModal('menuModal')">×</button></div>
-        <div id="menuList"></div>
-    </div>
-</div>
-
-<!-- CART -->
-<div class="modal" id="cartModal">
-    <div class="modal-content">
-        <div class="modal-header"><h3>Your Cart</h3><button class="close-btn" onclick="closeModal('cartModal')">×</button></div>
-        <div id="cartItemsList"></div>
-        <div style="margin-top:15px; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px;">
-            <div style="display:flex; justify-content:space-between; font-weight:700; font-size:18px; margin-bottom:15px;">
-                <span>Total:</span><span id="cartTotal" style="color:#4ECDC4;">₹0</span>
-            </div>
-            <button class="btn-pay" onclick="proceedToCheckout()">Proceed to Pay</button>
-        </div>
-    </div>
-</div>
-
-<!-- CHECKOUT FORM -->
-<div class="modal" id="checkoutModal">
-    <div class="modal-content">
-        <div class="modal-header"><h3>Delivery Details</h3><button class="close-btn" onclick="closeModal('checkoutModal')">×</button></div>
-        <div class="form-group"><label>Full Name</label><input type="text" id="custName" placeholder="Your Name"></div>
-        <div class="form-group"><label>Mobile Number</label><input type="tel" id="custMobile" placeholder="10-digit Mobile" maxlength="10"></div>
-        <div class="form-group"><label>Full Address</label><textarea id="custAddress" rows="2" placeholder="House No, Street, Area"></textarea></div>
-        <button class="btn-pay" onclick="initiateRazorpay()"><i class="fas fa-lock"></i> Pay Securely</button>
-    </div>
-</div>
-
-<!-- RECEIPT -->
-<div class="modal" id="receiptModal">
-    <div class="modal-content" style="background:transparent; box-shadow:none;">
-        <div class="receipt">
-            <h2>NnlGharPro</h2>
-            <div class="row"><span>Order ID</span><span id="rcptId">-</span></div>
-            <div class="row"><span>Name</span><span id="rcptName">-</span></div>
-            <div class="row"><span>Items</span><span id="rcptItems">-</span></div>
-            <div class="row total"><span>Total Paid</span><span id="rcptTotal">₹0</span></div>
-            <button class="btn-primary" style="width:100%; margin-top:20px;" onclick="closeModal('receiptModal')">Close</button>
-        </div>
-    </div>
-</div>
-
-<!-- RECHARGE MODAL -->
-<div class="modal" id="rechargeModal">
-    <div class="modal-content">
-        <div class="modal-header"><h3>Mobile Recharge</h3><button class="close-btn" onclick="closeModal('rechargeModal')">×</button></div>
+    <div class="section-title"><i class="fas fa-th-large"></i> Our Services</div>
+    
+    <!-- 🌟 NEW GRID START 🌟 -->
+    <div class="services-grid">
         
-        <div id="rechargeServiceWarning" style="display:none; background:rgba(255,71,87,0.1); border:1px solid rgba(255,71,87,0.3); color:#FF4757; padding:10px; border-radius:8px; font-size:12px; text-align:center; margin-bottom:15px;"></div>
-
-        <div class="form-group"><label>Mobile Number</label><input type="tel" id="rcNumber" placeholder="10-digit Number" maxlength="10" oninput="loadRechargePlans()"></div>
+        <!-- Active Services -->
+        <div class="grid-card" onclick="showToast('Food Selected')">
+            <div class="icon-circle"><i class="fas fa-utensils" style="color: #FF6B35;"></i></div>
+            <span>Food</span>
+        </div>
         
-        <div class="form-group"><label>Select Operator</label>
-            <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px;" id="operatorGrid">
-                <div class="op-card" onclick="selectOp('Jio', event)" style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; text-align:center; cursor:pointer; border:1px solid transparent; font-size:12px;">Jio</div>
-                <div class="op-card" onclick="selectOp('Airtel', event)" style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; text-align:center; cursor:pointer; border:1px solid transparent; font-size:12px;">Airtel</div>
-                <div class="op-card" onclick="selectOp('Vi', event)" style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; text-align:center; cursor:pointer; border:1px solid transparent; font-size:12px;">Vi</div>
-                <div class="op-card" onclick="selectOp('BSNL', event)" style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; text-align:center; cursor:pointer; border:1px solid transparent; font-size:12px;">BSNL</div>
+        <div class="grid-card" onclick="showToast('Grocery Selected')">
+            <div class="icon-circle"><i class="fas fa-shopping-basket" style="color: #4ECDC4;"></i></div>
+            <span>Grocery</span>
+        </div>
+
+        <div class="grid-card" onclick="showToast('Fashion Selected')">
+            <div class="icon-circle"><i class="fas fa-tshirt" style="color: #9b5de5;"></i></div>
+            <span>Fashion</span>
+        </div>
+
+        <div class="grid-card" onclick="showToast('Electronics Selected')">
+            <div class="icon-circle"><i class="fas fa-laptop" style="color: #00b4d8;"></i></div>
+            <span>Electronics</span>
+        </div>
+
+        <!-- Coming Soon Services -->
+        <div class="grid-card coming-soon" onclick="showComingSoon('Mobility')">
+            <div class="icon-circle">
+                <span class="soon-badge">Soon</span>
+                <i class="fas fa-taxi"></i>
             </div>
+            <span>Mobility</span>
         </div>
 
-        <div class="section-title" style="font-size:13px; margin-top:15px; margin-bottom:10px;"><i class="fas fa-fire" style="color:#FF6B35;"></i> Popular Plans</div>
-        <div class="plans-scroll" id="plansList">
-            <div style="color:#aaa; font-size:12px; text-align:center; width:100%; padding:20px;">Select operator to view plans</div>
+        <div class="grid-card coming-soon" onclick="showComingSoon('Logistics')">
+            <div class="icon-circle">
+                <span class="soon-badge">Soon</span>
+                <i class="fas fa-truck"></i>
+            </div>
+            <span>Logistics</span>
         </div>
 
-        <div class="form-group"><label>Or Enter Amount Manually</label><input type="number" id="rcAmount" placeholder="Amount ₹" min="10"></div>
+        <div class="grid-card coming-soon" onclick="showComingSoon('Loans')">
+            <div class="icon-circle">
+                <span class="soon-badge">Soon</span>
+                <i class="fas fa-hand-holding-usd"></i>
+            </div>
+            <span>Loans</span>
+        </div>
 
-        <button class="btn-pay" id="rechargePayBtn" onclick="processRecharge()"><i class="fas fa-lock"></i> Pay Now</button>
+        <div class="grid-card coming-soon" onclick="showComingSoon('Travel')">
+            <div class="icon-circle">
+                <span class="soon-badge">Soon</span>
+                <i class="fas fa-plane"></i>
+            </div>
+            <span>Travel</span>
+        </div>
+
     </div>
+    <!-- 🌟 NEW GRID END 🌟 -->
+
 </div>
 
-<!-- INSURANCE MODAL -->
-<div class="modal" id="insuranceModal">
-    <div class="modal-content">
-        <div class="modal-header"><h3>Insurance Services</h3><button class="close-btn" onclick="closeModal('insuranceModal')">×</button></div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-            <button class="btn-primary" style="background:linear-gradient(135deg, #FF6B35, #FF8C42);" onclick="window.open('https://pro.turtlemintinsurance.com/v2/two-wheeler-insurance/create?posp=DP-4378968', '_blank')"><i class="fas fa-motorcycle"></i> Bike</button>
-            <button class="btn-primary" style="background:linear-gradient(135deg, #4ECDC4, #44B3A8);" onclick="window.open
+<script>
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.display = 'block';
+    setTimeout(() => t.style.display = 'none', 2500);
+}
+
+function showComingSoon(serviceName) {
+    showToast(`${serviceName} service coming soon! 🚀`);
+}
+</script>
+</body>
+</html>
