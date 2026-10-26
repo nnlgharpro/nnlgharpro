@@ -1,4 +1,4 @@
-// ONDC BAP worker (RET11 / Workbench) - FINAL TESTED CODE
+// ONDC BAP worker (RET11 / Workbench) - FINAL WORKING CODE
 import { blake2b } from 'blakejs';
 import nacl from 'tweetnacl';
 
@@ -27,6 +27,7 @@ export default {
         return json({ status: 'active', domain: env.ONDC_DOMAIN, bap_id: env.ONDC_BAP_ID, has_private_key: !!getPrivateKey(env) });
       }
 
+      // Callbacks
       if (path.startsWith('on_')) {
         let body = {};
         if (request.method === 'POST') {
@@ -221,7 +222,6 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
     },
   };
 
-  // ✅ FIX: Dummy Quote for Init/Confirm
   const dummyQuote = {
     price: { currency: "INR", value: "150.00" },
     breakup: [{ title: "Item", price: { currency: "INR", value: "150.00" } }]
@@ -242,11 +242,21 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
     };
   } 
   else if (action === 'select') {
-    // ✅ FIX: Strict Select (No billing, No extra fulfillments here)
+    // ✅ FIX: Added fulfillments for select (as per Workbench error)
     message = {
       order: {
         provider: provider,
-        items: [baseItem]
+        items: [baseItem],
+        fulfillments: [{
+          id: "F1",
+          type: "Delivery",
+          end: {
+            location: {
+              gps: gps,
+              address: { area_code: pincode }
+            }
+          }
+        }]
       },
     };
   } 
