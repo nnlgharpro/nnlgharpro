@@ -1,4 +1,5 @@
-// ONDC BAP worker (RET11 / Workbench) - FINAL FIX
+// ONDC BAP worker (RET11 / Workbench) - v3
+// Install: npm install blakejs tweetnacl
 import { blake2b } from 'blakejs';
 import nacl from 'tweetnacl';
 
@@ -23,10 +24,12 @@ export default {
     if (request.method === 'OPTIONS') return new Response(null, { headers: CORS });
 
     try {
+      // Health
       if (path === '' || path === 'api/health') {
         return json({ status: 'active', domain: env.ONDC_DOMAIN, bap_id: env.ONDC_BAP_ID, has_private_key: !!getPrivateKey(env) });
       }
 
+      // 1. Callbacks from workbench: /on_search, /on_select, /on_init, /on_confirm ...
       if (path.startsWith('on_')) {
         let body = {};
         if (request.method === 'POST') {
@@ -37,6 +40,7 @@ export default {
         return json({ message: { ack: { status: 'ACK' } } });
       }
 
+      // 2. Actions you trigger: /search, /select, /init, /confirm (or /client_search ...)
       const action = path.startsWith('client_') ? path.replace('client_', '') : path;
       if (ACTIONS.includes(action)) {
         let body = {};
@@ -44,18 +48,16 @@ export default {
           try { body = await request.json(); } catch (e) {}
         }
 
+        // Agar body mein Workbench ka banaya poora payload ({context, message}) ho, to wahi bhejo.
         const given = body && body.context && body.message ? body : null;
-        
-        // ✅ FIX 1: Workbench ki IDs context ke andar se nikalein
-        const transactionId = given?.context?.transaction_id || body?.context?.transaction_id || body.transaction_id || crypto.randomUUID();
-        const messageId = given?.context?.message_id || body?.context?.message_id || body.message_id || crypto.randomUUID();
-        
+
+        const transactionId = given?.context?.transaction_id || body.transaction_id || env.ONDC_TRANSACTION_ID || crypto.randomUUID();
+        const messageId = given?.context?.message_id || body.message_id || (action === 'search' && env.ONDC_MESSAGE_ID) || crypto.randomUUID();
         const state = await loadState(transactionId, env);
 
         const payload = given
           ? { ...given, context: { ...given.context, timestamp: new Date().toISOString() } }
           : buildPayload(action, body, transactionId, messageId, state, env);
-          
         const bodyString = JSON.stringify(payload);
         const authHeader = await signRequest(bodyString, env);
         const gatewayUrl = `${env.ONDC_GATEWAY_URL}/${action}`;
@@ -87,6 +89,8 @@ export default {
   },
 };
 
+/* ---------------- helpers ---------------- */
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -98,6 +102,7 @@ function safeParse(t) {
   try { return JSON.parse(t); } catch (e) { return t; }
 }
 
+// Dashboard mein jo naam ho, dono chalenge
 function getPrivateKey(env) {
   return env.ONDC_SIGNING_PRIVATE_KEY || env.ONDC_PRIVATE_KEY || '';
 }
@@ -112,6 +117,7 @@ function bytesToB64(bytes) {
   return btoa(s);
 }
 
+// ONDC signature: ed25519 over (created)/(expires)/digest, digest = BLAKE-512
 async function signRequest(bodyString, env) {
   const rawKey = getPrivateKey(env);
   if (!rawKey) throw new Error('Private key secret nahi mila. Cloudflare mein ONDC_SIGNING_PRIVATE_KEY (Secret) add karein.');
@@ -133,6 +139,8 @@ async function signRequest(bodyString, env) {
     `headers="(created) (expires) digest",signature="${signature}"`
   );
 }
+
+/* ---------------- state (KV) ---------------- */
 
 async function loadState(txId, env) {
   try {
@@ -173,6 +181,8 @@ async function saveCallback(path, body, env) {
   }
 }
 
+/* ---------------- payload builder ---------------- */
+
 function buildPayload(action, body, transactionId, messageId, state, env) {
   const context = {
     domain: body.domain || env.ONDC_DOMAIN || 'ONDC:RET11',
@@ -188,19 +198,18 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
     ttl: TTL,
   };
 
+  // Workbench sample ke hisaab se bpp_id / bpp_uri search mein bhi jaate hain.
   context.bpp_id = body.bpp_id || state.bpp_id || env.ONDC_BPP_ID || 'workbench.ondc.tech';
   context.bpp_uri = body.bpp_uri || state.bpp_uri || env.ONDC_BPP_URI || 'https://workbench.ondc.tech';
 
   const pincode = body.pincode || DEFAULT_PIN;
   const gps = body.gps || DEFAULT_GPS;
+
   const provider = state.provider || { id: 'provider_workbench_1', locations: [{ id: 'L1' }] };
-  
-  // ✅ FIX 2: Added tags
   const baseItem = {
     id: state.item?.id || 'item_veg_thali',
     location_id: state.item?.location_id || 'L1',
     quantity: { count: body.quantity || 1 },
-    tags: [{ code: "type", list: [{ code: "type", value: "item" }] }]
   };
 
   const billing = {
@@ -235,26 +244,15 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
         },
       },
     };
-  } 
-  else if (action === 'select') {
+  } else if (action === 'select') {
     message = {
       order: {
-        provider: provider,
+        provider,
         items: [baseItem],
-        fulfillments: [{
-          id: "F1",
-          type: "Delivery",
-          end: {
-            location: {
-              gps: gps,
-              address: { area_code: pincode }
-            }
-          }
-        }]
+        fulfillments: [{ end: { location: { gps, address: { area_code: pincode } } } }],
       },
     };
-  } 
-  else if (action === 'init') {
+  } else if (action === 'init') {
     const sel = state.on_select_order || {};
     message = {
       order: {
@@ -265,8 +263,7 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
         payment: { type: 'POST-FULFILLMENT', collected_by: 'BPP' },
       },
     };
-  } 
-  else if (action === 'confirm') {
+  } else if (action === 'confirm') {
     const ini = state.on_init_order || {};
     const now = new Date().toISOString();
     message = {
