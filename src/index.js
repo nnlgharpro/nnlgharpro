@@ -1,6 +1,6 @@
 // ONDC BAP worker (RET11 / Workbench) - FINAL FIX
 import { blake2b } from 'blakejs';
-import nacl from 'tweetnacl'; 
+import nacl from 'tweetnacl';
 
 const TTL = 'PT30S';
 const DEFAULT_CITY = 'std:011';
@@ -45,8 +45,11 @@ export default {
         }
 
         const given = body && body.context && body.message ? body : null;
+        
+        // ✅ FIX 1: Workbench ki IDs context ke andar se nikalein
         const transactionId = given?.context?.transaction_id || body?.context?.transaction_id || body.transaction_id || crypto.randomUUID();
         const messageId = given?.context?.message_id || body?.context?.message_id || body.message_id || crypto.randomUUID();
+        
         const state = await loadState(transactionId, env);
 
         const payload = given
@@ -115,11 +118,13 @@ async function signRequest(bodyString, env) {
 
   const created = Math.floor(Date.now() / 1000);
   const expires = created + 300;
+
   const digest = bytesToB64(blake2b(new TextEncoder().encode(bodyString), null, 64));
   const signingString = `(created): ${created}\n(expires): ${expires}\ndigest: BLAKE-512=${digest}`;
 
   const priv = b64ToBytes(rawKey.trim());
   const secretKey = priv.length === 32 ? nacl.sign.keyPair.fromSeed(priv).secretKey : priv;
+
   const signature = bytesToB64(nacl.sign.detached(new TextEncoder().encode(signingString), secretKey));
 
   return (
@@ -190,7 +195,7 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
   const gps = body.gps || DEFAULT_GPS;
   const provider = state.provider || { id: 'provider_workbench_1', locations: [{ id: 'L1' }] };
   
-  // ✅ FIX: Added tags
+  // ✅ FIX 2: Added tags
   const baseItem = {
     id: state.item?.id || 'item_veg_thali',
     location_id: state.item?.location_id || 'L1',
@@ -232,24 +237,23 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
     };
   } 
   else if (action === 'select') {
-    // ✅ FIX: Added fulfillments for select (as per Workbench error)
     message = {
       order: {
-        provider: provider, // Ye aapke purane code se aayega
-        items: [baseItem],  // Ye aapke purane code se aayega
+        provider: provider,
+        items: [baseItem],
         fulfillments: [{
           id: "F1",
           type: "Delivery",
           end: {
             location: {
-              gps: "28.6139,77.2090",
-              address: { area_code: "110001" }
+              gps: gps,
+              address: { area_code: pincode }
             }
           }
         }]
       },
     };
-  }
+  } 
   else if (action === 'init') {
     const sel = state.on_select_order || {};
     message = {
@@ -267,7 +271,7 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
     const now = new Date().toISOString();
     message = {
       order: {
-        id: transactionId,
+        id: crypto.randomUUID(),
         state: 'Created',
         provider: ini.provider ? { id: ini.provider.id, locations: provider.locations } : provider,
         items: ini.items || [baseItem],
