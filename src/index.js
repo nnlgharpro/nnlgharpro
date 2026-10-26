@@ -45,8 +45,8 @@ export default {
         }
 
         const given = body && body.context && body.message ? body : null;
-        const transactionId = given?.context?.transaction_id || body.transaction_id || crypto.randomUUID();
-        const messageId = given?.context?.message_id || body.message_id || crypto.randomUUID();
+        const transactionId = given?.context?.transaction_id || body?.context?.transaction_id || body.transaction_id || crypto.randomUUID();
+        const messageId = given?.context?.message_id || body?.context?.message_id || body.message_id || crypto.randomUUID();
         const state = await loadState(transactionId, env);
 
         const payload = given
