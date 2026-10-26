@@ -232,14 +232,24 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
     };
   } 
   else if (action === 'select') {
-    // ✅ FIX: Strict Select (No fulfillments, No billing here)
+    // ✅ FIX: Added fulfillments for select (as per Workbench error)
     message = {
       order: {
-        provider,
-        items: [baseItem]
+        provider: provider, // Ye aapke purane code se aayega
+        items: [baseItem],  // Ye aapke purane code se aayega
+        fulfillments: [{
+          id: "F1",
+          type: "Delivery",
+          end: {
+            location: {
+              gps: "28.6139,77.2090",
+              address: { area_code: "110001" }
+            }
+          }
+        }]
       },
     };
-  } 
+  }
   else if (action === 'init') {
     const sel = state.on_select_order || {};
     message = {
