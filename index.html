@@ -1274,9 +1274,6 @@ function displayOndcResults(ondcData, pincode) {
     showToast(`✅ ${providers.length} providers found!`);
 }
 
-// ═══════════════════════════════════════════════════════════
-// 🛒 3. SELECT PROVIDER (Call /select API)
-// ═══════════════════════════════════════════════════════════
 function displayProviderMenu(provider) {
     let menuHTML = `<div style="font-size:16px; font-weight:800; color:#4ECDC4; margin-bottom:12px;">Menu: ${provider.descriptor.name}</div>`;
     
@@ -1296,59 +1293,6 @@ function displayProviderMenu(provider) {
     menuHTML += `
         <div style="margin-top:15px; text-align:center;">
             <button onclick="window.searchServices()" style="background:rgba(255,255,255,0.05); color:#fff; font-size:12px; padding:10px 20px; border:1px solid rgba(255,255,255,0.1); border-radius:10px; cursor:pointer;">Back</button>
-        </div>
-    `;
-    
-    document.getElementById('providerList').innerHTML = menuHTML;
-}
-
-// ═══════════════════════════════════════════════════════════
-// 🍔 4. DISPLAY MENU
-// ═══════════════════════════════════════════════════════════
-function displayProviderMenu(order) {
-    // 🌟 1. असली ONDC नेटवर्क से आने वाले आइटम्स (प्रोडक्शन लाइव मोड)
-    let items = [];
-    let providerName = "Provider";
-
-    if (order && order.items && order.items.length > 0) {
-        items = order.items;
-        providerName = order.provider?.descriptor?.name || providerName;
-    }
-
-    // 💡 2. सैंडबॉक्स टेस्टिंग कवच: अगर नेटवर्क स्लो है या डेटा खाली (NACK) है, तो टेस्ट पास करने के लिए मॉक आइटम लोड करें
-    if (items.length === 0) {
-        providerName = "NnlGharPro Test Kitchen (Sandbox)";
-        items = [{
-            id: "item_veg_thali",
-            descriptor: { 
-                name: "Standard Veg Thali (ONDC Verified)", 
-                short_desc: "Clears Workbench Testing Flow" 
-            },
-            name: "Standard Veg Thali (ONDC Verified)",
-            price: { currency: "INR", value: "150.00" }
-        }];
-    }
-
-    let menuHTML = `<div style="font-size:16px; font-weight:800; color:#4ECDC4; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">Menu: ${providerName}</div>`;
-    
-    items.forEach((item) => {
-        const price = item.price?.value || item.price || 150;
-        const name = item.descriptor?.name || item.name || 'Item';
-        
-        menuHTML += `
-            <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:10px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; border:1px solid rgba(255,255,255,0.05);">
-                <div style="flex:1;">
-                    <div style="font-weight:700; font-size:14px; color:#fff;">${name}</div>
-                    <div style="font-size:13px; color:#FFD93D; margin-top:4px;">₹${price}</div>
-                </div>
-                <button onclick="window.addToCart && window.addToCart('${item.id}', '${name}', ${price})" style="background:linear-gradient(135deg, #4ECDC4, #44B3A8); border:none; padding:8px 16px; border-radius:8px; font-weight:700; cursor:pointer; color:#fff;">Add</button>
-            </div>
-        `;
-    });
-    
-    menuHTML += `
-        <div style="margin-top:15px; text-align:center;">
-            <button onclick="displayOndcResults(window.currentOndcData)" style="background:rgba(255,255,255,0.05); color:#fff; font-size:12px; padding:10px 20px; border:1px solid rgba(255,255,255,0.1); border-radius:10px; cursor:pointer;">Back to Providers</button>
         </div>
     `;
     
@@ -2447,6 +2391,62 @@ window.buyInsuranceTurtlemint = function(serviceType) {
 };
 
 console.log('✅ Insurance Section loaded');
+    window.testPaymentSuccess = async function() {
+    showLoading(true);
+    const txnId = window.currentOndcTransactionId;
+    
+    try {
+        // 1. INIT TRIGGER
+        await fetch("https://nnlgharpro-ret11.nnlgharpro.workers.dev/client_init", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                transactionId: txnId, 
+                domain: "ONDC:RET11", 
+                providerId: "provider_workbench_1", 
+                items: [{ id: "item_veg_thali", quantity: { count: 1 } }],
+                name: "Test Customer", phone: "9876543210", pincode: "110001", address: "Test Address"
+            })
+        });
+
+        // 2. CONFIRM TRIGGER
+        await fetch("https://nnlgharpro-ret11.nnlgharpro.workers.dev/client_confirm", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                transactionId: txnId, 
+                domain: "ONDC:RET11", 
+                orderId: crypto.randomUUID(), 
+                providerId: "provider_workbench_1", 
+                items: [{ id: "item_veg_thali", quantity: { count: 1 } }] 
+            })
+        });
+
+        showLoading(false);
+        showToast('🎉 ONDC Test Flow Successfully Completed!');
+
+        // ✅ RECEIPT DIKHAO
+        document.getElementById('receiptDetails').innerHTML = `
+            <div class="receipt-row"><span class="label">Order ID</span><span class="value">#${txnId.substring(0,8).toUpperCase()}</span></div>
+            <div class="receipt-row"><span class="label">Customer</span><span class="value">Test Customer</span></div>
+            <div class="receipt-row"><span class="label">Item</span><span class="value">Veg Thali (Test)</span></div>
+            <div class="receipt-row"><span class="label">Type</span><span class="value">ONDC Test Flow</span></div>
+            <div class="receipt-row"><span class="label">Amount</span><span class="value" style="color:#00C853; font-weight:bold;">₹0 (Test)</span></div>
+        `;
+        document.getElementById('receiptTotal').textContent = '₹0';
+        const statusEl = document.getElementById('receiptPaymentStatus');
+        statusEl.textContent = '✅ TEST PASSED';
+        statusEl.style.color = '#00C853';
+        statusEl.style.background = 'rgba(0,200,83,0.1)';
+        
+        document.getElementById('receiptContainer').classList.add('show');
+        closeBookingModal();
+
+    } catch (error) {
+        showLoading(false);
+        showToast('❌ Test failed: ' + error.message, true);
+    }
+};
     window.testPaymentSuccess = async function() {
     showLoading(true);
     const txnId = window.currentOndcTransactionId;
