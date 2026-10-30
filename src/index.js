@@ -1,4 +1,4 @@
-// ONDC BAP worker (RET11 / Workbench) - FINAL WORKING CODE
+// ONDC BAP worker (RET11 / Workbench) - FIXED BUYER VERSION
 import { blake2b } from 'blakejs'; 
 import nacl from 'tweetnacl'; 
 
@@ -27,6 +27,7 @@ export default {
         return json({ status: 'active', domain: env.ONDC_DOMAIN, bap_id: env.ONDC_BAP_ID, has_private_key: !!getPrivateKey(env) });
       }
 
+      // Callback handler (on_search, on_select, on_init, on_confirm)
       if (path.startsWith('on_')) {
         let body = {};
         if (request.method === 'POST') {
@@ -35,6 +36,14 @@ export default {
         console.log(`[CALLBACK ${path}]`, JSON.stringify(body).slice(0, 3000));
         ctx.waitUntil(saveCallback(path, body, env));
         return json({ message: { ack: { status: 'ACK' } } });
+      }
+
+      // ✅ FIX: Add cache/state retrieval endpoint for frontend polling
+      if (path === 'get_state') {
+        const txId = url.searchParams.get('tx');
+        if (!txId) return json({ error: 'tx param required' }, 400);
+        const state = await loadState(txId, env);
+        return json({ success: true, state });
       }
 
       const action = path.startsWith('client_') ? path.replace('client_', '') : path;
@@ -59,13 +68,17 @@ export default {
         const authHeader = await signRequest(bodyString, env);
         const gatewayUrl = `${env.ONDC_GATEWAY_URL}/${action}`;
 
+        console.log(`[${action.toUpperCase()}] Sending to ${gatewayUrl}`);
         const res = await fetch(gatewayUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: authHeader },
           body: bodyString,
         });
         const text = await res.text();
-        console.log(`[${action.toUpperCase()}] ${gatewayUrl} | Status: ${res.status} | Response: ${text}`);
+        console.log(`[${action.toUpperCase()}] Status: ${res.status} | Response: ${text}`);
+
+        // Save state so callbacks can be correlated
+        await saveState(transactionId, { last_action: action, last_action_at: new Date().toISOString() }, env);
 
         return json({
           success: res.ok,
@@ -80,7 +93,7 @@ export default {
 
       return json({ error: 'Route not mapped' }, 404);
     } catch (error) {
-      console.log('[ERROR]', error.message);
+      console.log('[ERROR]', error.message, error.stack);
       return json({ error: error.message }, 500);
     }
   },
@@ -153,19 +166,29 @@ async function saveCallback(path, body, env) {
     if (!txId) return;
 
     if (path === 'on_search') {
+      // Save the full catalog so frontend can retrieve it
       const providers = body.message?.catalog?.['bpp/providers'] || [];
-      const prov = providers[0];
-      const item = prov?.items?.[0];
       await saveState(txId, {
         bpp_id: body.context.bpp_id,
         bpp_uri: body.context.bpp_uri,
-        provider: prov ? { id: prov.id, locations: prov.locations?.[0] ? [{ id: prov.locations[0].id }] : [] } : undefined,
-        item: item ? { id: item.id, location_id: item.location_id || prov.locations?.[0]?.id } : undefined,
+        on_search_catalog: body.message?.catalog || {},
+        on_search_at: new Date().toISOString(),
       }, env);
     } else if (path === 'on_select' && body.message?.order) {
-      await saveState(txId, { on_select_order: body.message.order }, env);
+      const order = body.message.order;
+      const prov = order.provider;
+      const firstItem = order.items?.[0];
+      await saveState(txId, {
+        on_select_order: order,
+        bpp_id: body.context.bpp_id || undefined,
+        bpp_uri: body.context.bpp_uri || undefined,
+        provider: prov ? { id: prov.id, locations: prov.locations || [{ id: 'L1' }] } : undefined,
+        item: firstItem ? { id: firstItem.id, location_id: firstItem.location_id || 'L1' } : undefined,
+      }, env);
     } else if (path === 'on_init' && body.message?.order) {
       await saveState(txId, { on_init_order: body.message.order }, env);
+    } else if (path === 'on_confirm' && body.message?.order) {
+      await saveState(txId, { on_confirm_order: body.message.order }, env);
     }
   } catch (e) {
     console.log('[saveCallback error]', e.message);
@@ -187,38 +210,42 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
     ttl: TTL,
   };
 
-  context.bpp_id = body.bpp_id || state.bpp_id || env.ONDC_BPP_ID || 'workbench.ondc.tech';
-  context.bpp_uri = body.bpp_uri || state.bpp_uri || env.ONDC_BPP_URI || 'https://workbench.ondc.tech';
+  // ✅ FIX 2: bpp_id/bpp_uri sirf select/init/confirm ke liye (search broadcast hai)
+  if (action !== 'search') {
+    context.bpp_id = body.bpp_id || state.bpp_id || env.ONDC_BPP_ID || 'workbench.ondc.tech';
+    context.bpp_uri = body.bpp_uri || state.bpp_uri || env.ONDC_BPP_URI || 'https://workbench.ondc.tech';
+  }
 
   const pincode = body.pincode || DEFAULT_PIN;
   const gps = body.gps || DEFAULT_GPS;
-  const provider = state.provider || { id: 'provider_workbench_1', locations: [{ id: 'L1' }] };
+  const provider = state.provider || { id: body.providerId || 'provider_workbench_1', locations: [{ id: 'L1' }] };
   
   const baseItem = {
-    id: state.item?.id || 'item_veg_thali',
+    id: state.item?.id || body.itemId || 'item_veg_thali',
     location_id: state.item?.location_id || 'L1',
     quantity: { count: body.quantity || 1 },
     tags: [{ code: "type", list: [{ code: "type", value: "item" }] }]
   };
 
   const billing = {
-    name: 'Test User',
+    name: body.name || 'Test User',
     address: {
-      name: 'Test User', building: 'Main Road', locality: 'Test Locality',
+      name: body.name || 'Test User', building: 'Main Road', locality: 'Test Locality',
       city: 'Delhi', state: 'Delhi', country: DEFAULT_COUNTRY, area_code: pincode,
     },
-    phone: '9876543210',
-    email: 'test@nnlgharpro.com',
+    phone: body.phone || '9876543210',
+    email: body.email || 'test@nnlgharpro.com',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   };
 
-  // ✅ FIX: Added person name as per ONDC 1.2.5 clarification
   const fulfillment = {
     id: 'F1',
-    type: 'Delivery',
+    type: body.fulfillmentType || 'Delivery',
     end: {
       location: { gps, address: { area_code: pincode } },
-      person: { name: "Test User" }, 
-      contact: { phone: '9876543210', email: 'test@nnlgharpro.com' },
+      person: { name: body.name || 'Test User' }, 
+      contact: { phone: body.phone || '9876543210', email: body.email || 'test@nnlgharpro.com' },
     },
   };
 
@@ -245,13 +272,9 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
           id: "F1",
           type: "Delivery",
           end: {
-            location: {
-              gps: gps,
-              address: { area_code: pincode }
-            },
-            // ✅ FIX: Added person name here too
-            person: { name: "Test User" }, 
-            contact: { phone: "9876543210", email: "test@nnlgharpro.com" }
+            location: { gps: gps, address: { area_code: pincode } },
+            person: { name: body.name || 'Test User' }, 
+            contact: { phone: body.phone || "9876543210", email: body.email || "test@nnlgharpro.com" }
           }
         }]
       },
@@ -266,7 +289,7 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
         billing,
         fulfillments: [fulfillment],
         payment: { type: 'POST-FULFILLMENT', collected_by: 'BPP' },
-        quote: {
+        quote: sel.quote || {
           price: { currency: "INR", value: "150.00" },
           breakup: [{ title: "Item", price: { currency: "INR", value: "150.00" } }]
         }
@@ -293,6 +316,9 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
           type: 'POST-FULFILLMENT',
           status: 'NOT-PAID',
           collected_by: 'BPP',
+          // ✅ FIX 3: RET11 1.2.5 mandatory settlement fields
+          '@ondc/org/settlement_basis': 'delivery',
+          '@ondc/org/settlement_window': 'PT24H',
         },
         created_at: now,
         updated_at: now,
