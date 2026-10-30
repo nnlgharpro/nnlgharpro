@@ -1,23 +1,28 @@
 name = "nnlgharpro-ret11"
 main = "src/index.js"
 compatibility_date = "2024-10-01"
-compatibility_flags = ["nodejs_compat"]   
+compatibility_flags = ["nodejs_compat"]
 
-[vars] 
+[vars]
 ENVIRONMENT = "preprod"
 ONDC_DOMAIN = "ONDC:RET11"
 
 # Workbench "Send your calls to" ka base. Action (search/select/init/confirm) code mein judta hai.
 ONDC_GATEWAY_URL = "https://workbench.ondc.tech/api-service/ONDC:RET11/1.2.5/seller"
 
-# Workbench Settings (gear icon) wala Subscriber ID. Session ID nahi.
-ONDC_BAP_ID = "dqU2lW-0pOH_JZEz9ZtWNW57gfzBiUXD" 
+# Workbench logs mein bap_id = Session ID tha, isliye yahan Session ID hi.
+ONDC_BAP_ID = "dqU2lW-0pOH_JZEz9ZtWNW57gfzBiUXD"
 ONDC_BAP_URI = "https://nnlgharpro-ret11.nnlgharpro.workers.dev"
 
 # Workbench ke sample payload ke hisaab se
 ONDC_CORE_VERSION = "1.2.5"
 ONDC_BPP_ID = "workbench.ondc.tech"
 ONDC_BPP_URI = "https://workbench.ondc.tech"
+
+# Naye session mein abhi koi flow nahi hai, isliye purani IDs hata di hain.
+# Flow shuru karne ke baad Workbench ki IDs yahan daalein (ya payload.json se bhejein):
+# ONDC_TRANSACTION_ID = ""
+# ONDC_MESSAGE_ID = ""
 
 ONDC_UK_ID = "05063c66-41f2-4f75-878a-22f28d07712a"
 ONDC_SIGNING_PUBLIC_KEY = "ONGFJUVn9K609lH0a+xA1RVeMG+PL5KtrpcCiJFhV08="
