@@ -5,7 +5,7 @@ compatibility_flags = ["nodejs_compat"]
 
 [vars]
 ENVIRONMENT = "preprod"
-ONDC_DOMAIN = "ONDC:RET11"
+ONDC_DOMAIN = "ONDC:RET11" 
 
 # Workbench "Send your calls to" ka base. Action (search/select/init/confirm) code mein judta hai.
 ONDC_GATEWAY_URL = "https://workbench.ondc.tech/api-service/ONDC:RET11/1.2.5/seller"
