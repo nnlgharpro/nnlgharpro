@@ -1,8 +1,6 @@
 // ONDC BAP worker (RET11 / Workbench) - FINAL WORKING CODE
-// @ts-ignore
-import { blake2b } from 'https://esm.sh/blakejs';
-// @ts-ignore
-import nacl from 'https://esm.sh/tweetnacl';
+import { blake2b } from 'blakejs'; 
+import nacl from 'tweetnacl'; 
 
 const TTL = 'PT30S';
 const DEFAULT_CITY = 'std:011';
@@ -120,7 +118,8 @@ async function signRequest(bodyString, env) {
   const created = Math.floor(Date.now() / 1000);
   const expires = created + 300;
 
-  const digest = bytesToB64(blake2b(new TextEncoder().encode(bodyString), null, 64));
+  // ✅ FIX: blake2b usage corrected
+  const digest = bytesToB64(blake2b(bodyString, null, 64));
   const signingString = `(created): ${created}\n(expires): ${expires}\ndigest: BLAKE-512=${digest}`;
 
   const priv = b64ToBytes(rawKey.trim());
@@ -189,7 +188,6 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
     ttl: TTL,
   };
 
-  // ✅ FIX: Context mein bpp_id aur bpp_uri add kiya
   context.bpp_id = body.bpp_id || state.bpp_id || env.ONDC_BPP_ID || 'workbench.ondc.tech';
   context.bpp_uri = body.bpp_uri || state.bpp_uri || env.ONDC_BPP_URI || 'https://workbench.ondc.tech';
 
@@ -226,7 +224,6 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
   let message = {};
 
   if (action === 'search') {
-    // ✅ FIX: Search mein payment field add ki
     message = {
       intent: {
         item: { descriptor: { name: body.query || 'Food' } },
