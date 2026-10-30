@@ -5,25 +5,19 @@ compatibility_flags = ["nodejs_compat"]
 
 [vars]
 ENVIRONMENT = "preprod"
-ONDC_DOMAIN = "ONDC:RET11" 
+ONDC_DOMAIN = "ONDC:RET11"
 
-# Workbench "Send your calls to" ka base. Action (search/select/init/confirm) code mein judta hai.
 ONDC_GATEWAY_URL = "https://workbench.ondc.tech/api-service/ONDC:RET11/1.2.5/seller"
 
-# Workbench Settings (gear icon) wala Subscriber ID. Session ID nahi.
 ONDC_BAP_ID = "dQU2lW-0pOH_JZe9Z1WNW57gfz8lUXD" 
 ONDC_BAP_URI = "https://nnlgharpro-ret11.nnlgharpro.workers.dev"
 
-# Workbench ke sample payload ke hisaab se
 ONDC_CORE_VERSION = "1.2.5"
 ONDC_BPP_ID = "workbench.ondc.tech"
 ONDC_BPP_URI = "https://workbench.ondc.tech"
 
 ONDC_UK_ID = "05063c66-41f2-4f75-878a-22f28d07712a"
 ONDC_SIGNING_PUBLIC_KEY = "ONGFJUVn9K609lH0a+xA1RVeMG+PL5KtrpcCiJFhV08="
-
-# Private key yahan NAHI. Cloudflare mein Secret ke roop mein rakhein:
-#   ONDC_SIGNING_PRIVATE_KEY   (ya terminal: npx wrangler secret put ONDC_SIGNING_PRIVATE_KEY)
 
 [[kv_namespaces]]
 binding = "ONDC_DATA"
