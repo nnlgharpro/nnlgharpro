@@ -47,7 +47,6 @@ export default {
 
         const given = body && body.context && body.message ? body : null;
         
-        // ✅ FIX: Context se IDs uthana
         const transactionId = given?.context?.transaction_id || body?.context?.transaction_id || body.transaction_id || crypto.randomUUID();
         const messageId = given?.context?.message_id || body?.context?.message_id || body.message_id || crypto.randomUUID();
         
@@ -222,15 +221,22 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
     },
   };
 
-  const dummyQuote = {
-    price: { currency: "INR", value: "150.00" },
-    breakup: [{ title: "Item", price: { currency: "INR", value: "150.00" } }]
-  };
-
   let message = {};
 
-    else if (action === 'select') {
-    // ✅ Added proper fulfillments with contact
+  // ✅ SEARCH BLOCK (Jo missing tha)
+  if (action === 'search') {
+    message = {
+      intent: {
+        item: { descriptor: { name: body.query || 'Food' } },
+        fulfillment: { type: 'Delivery', end: { location: { gps, address: { area_code: pincode } } } },
+        payment: {
+          '@ondc/org/buyer_app_finder_fee_type': body.fee_type || 'percent',
+          '@ondc/org/buyer_app_finder_fee_amount': String(body.fee_amount || '3'),
+        },
+      },
+    };
+  } 
+  else if (action === 'select') {
     message = {
       order: {
         provider: provider,
@@ -258,7 +264,6 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
         billing,
         fulfillments: [fulfillment],
         payment: { type: 'POST-FULFILLMENT', collected_by: 'BPP' },
-        // ✅ Added dummy quote
         quote: {
           price: { currency: "INR", value: "150.00" },
           breakup: [{ title: "Item", price: { currency: "INR", value: "150.00" } }]
@@ -277,7 +282,6 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
         items: ini.items || [baseItem],
         billing,
         fulfillments: [fulfillment],
-        // ✅ Added quote (fallback to dummy if not present)
         quote: ini.quote || {
           price: { currency: "INR", value: "150.00" },
           breakup: [{ title: "Item", price: { currency: "INR", value: "150.00" } }]
@@ -293,3 +297,6 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
       },
     };
   }
+
+  return { context, message };
+}
