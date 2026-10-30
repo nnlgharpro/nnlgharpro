@@ -9,8 +9,8 @@ ONDC_DOMAIN = "ONDC:RET11"
 
 ONDC_GATEWAY_URL = "https://workbench.ondc.tech/api-service/ONDC:RET11/1.2.5/seller"
 
-ONDC_BAP_ID = "MPbbRqo6ID0tv87DKQFFv-PfGQ_1FBbu" 
-ONDC_BAP_URI = "https://nnlgharpro-ret11.nnlgharpro.workers.dev"
+ONDC_BAP_ID = "M0yt_Zt0_CN9asby03h5U2eJurmnjDUR" 
+ONDC_BAP_URI = "https://nnlgharpro-ondc.nnlgharpro.workers.dev/<action>"
 
 ONDC_CORE_VERSION = "1.2.5"
 ONDC_BPP_ID = "workbench.ondc.tech"
