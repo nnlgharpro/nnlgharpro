@@ -2,7 +2,7 @@
 import { blake2b } from 'blakejs'; 
 import nacl from 'tweetnacl'; 
 
-const TTL = 'PT30S';
+const TTL = 'PT30S';   
 const DEFAULT_CITY = 'std:011';
 const DEFAULT_COUNTRY = 'IND';
 const DEFAULT_GPS = '28.6139,77.2090';
