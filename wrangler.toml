@@ -6,29 +6,31 @@ compatibility_flags = ["nodejs_compat"]
 [vars]
 ENVIRONMENT = "preprod"
 ONDC_DOMAIN = "ONDC:RET11"
+ONDC_CORE_VERSION = "1.2.5"
 
-# Workbench "Send your calls to" ka base. Action (search/select/init/confirm) code mein judta hai.
+# Workbench "Send your calls to" base URL.
+# Worker appends /search, /select, /init, /confirm.
 ONDC_GATEWAY_URL = "https://workbench.ondc.tech/api-service/ONDC:RET11/1.2.5/seller"
 
-# Workbench logs mein bap_id = Session ID tha, isliye yahan Session ID hi.
+# Workbench session/subscriber values: verify these against the CURRENT
+# Workbench session and the key registered for that session.
 ONDC_BAP_ID = "dqU2lW-0pOH_JZEz9ZtWNW57gfzBiUXD"
 ONDC_BAP_URI = "https://nnlgharpro-ret11.nnlgharpro.workers.dev"
-
-# Workbench ke sample payload ke hisaab se
-ONDC_CORE_VERSION = "1.2.5"
-ONDC_BPP_ID = "workbench.ondc.tech"
-ONDC_BPP_URI = "https://workbench.ondc.tech"
-
-# Naye session mein abhi koi flow nahi hai, isliye purani IDs hata di hain.
-# Flow shuru karne ke baad Workbench ki IDs yahan daalein (ya payload.json se bhejein):
-# ONDC_TRANSACTION_ID = ""
-# ONDC_MESSAGE_ID = ""
-
 ONDC_UK_ID = "05063c66-41f2-4f75-878a-22f28d07712a"
 ONDC_SIGNING_PUBLIC_KEY = "ONGFJUVn9K609lH0a+xA1RVeMG+PL5KtrpcCiJFhV08="
 
-# Private key yahan NAHI. Cloudflare mein Secret ke roop mein rakhein:
-#   ONDC_SIGNING_PRIVATE_KEY   (ya terminal: npx wrangler secret put ONDC_SIGNING_PRIVATE_KEY)
+# Workbench BPP identity shown in the supplied configuration/logs.
+ONDC_BPP_ID = "workbench.ondc.tech"
+ONDC_BPP_URI = "https://workbench.ondc.tech"
+
+# IMPORTANT: Set these to ONE REAL, MATCHING delivery location.
+# Do not mix Delhi city code with Mumbai GPS/pincode.
+ONDC_CITY = "std:011"
+ONDC_DEFAULT_GPS = ""
+ONDC_DEFAULT_PIN = ""
+
+# Private key MUST be stored as a Cloudflare Secret, never here:
+# npx wrangler secret put ONDC_SIGNING_PRIVATE_KEY
 
 [[kv_namespaces]]
 binding = "ONDC_DATA"
