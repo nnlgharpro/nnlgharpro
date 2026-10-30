@@ -1,16 +1,17 @@
 name = "nnlgharpro-ret11"
 main = "src/index.js"
 compatibility_date = "2024-10-01"
-compatibility_flags = ["nodejs_compat"] 
+compatibility_flags = ["nodejs_compat"]
 
 [vars]
 ENVIRONMENT = "preprod"
 ONDC_DOMAIN = "ONDC:RET11"
 
-ONDC_GATEWAY_URL = "https://workbench.ondc.tech/api-service/ONDC:RET11/1.2.5/seller"
+# ✅ FIX 1: Buyer endpoint (seller nahi)
+ONDC_GATEWAY_URL = "https://workbench.ondc.tech/api-service/ONDC:RET11/1.2.5/buyer"
 
-ONDC_BAP_ID = "M0yt_Zt0_CN9asby03h5U2eJurmnjDUR" 
-ONDC_BAP_URI = "https://nnlgharpro-ondc.nnlgharpro.workers.dev/<action>"
+ONDC_BAP_ID = "M0yt_Zt0_CN9asby03h5U2eJurmnjDUR"
+ONDC_BAP_URI = "https://nnlgharpro-ondc.nnlgharpro.workers.dev"
 
 ONDC_CORE_VERSION = "1.2.5"
 ONDC_BPP_ID = "workbench.ondc.tech"
