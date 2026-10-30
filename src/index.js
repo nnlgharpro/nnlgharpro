@@ -1,6 +1,6 @@
 // ONDC BAP worker (RET11 / Workbench) - FINAL WORKING CODE
 import { blake2b } from 'blakejs'; 
-import nacl from 'tweetnacl';  
+import nacl from 'tweetnacl'; 
 
 const TTL = 'PT30S';
 const DEFAULT_CITY = 'std:011';
@@ -118,7 +118,6 @@ async function signRequest(bodyString, env) {
   const created = Math.floor(Date.now() / 1000);
   const expires = created + 300;
 
-  // ✅ FIX: blake2b usage corrected
   const digest = bytesToB64(blake2b(bodyString, null, 64));
   const signingString = `(created): ${created}\n(expires): ${expires}\ndigest: BLAKE-512=${digest}`;
 
@@ -212,11 +211,13 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
     email: 'test@nnlgharpro.com',
   };
 
+  // ✅ FIX: Added person name as per ONDC 1.2.5 clarification
   const fulfillment = {
     id: 'F1',
     type: 'Delivery',
     end: {
       location: { gps, address: { area_code: pincode } },
+      person: { name: "Test User" }, 
       contact: { phone: '9876543210', email: 'test@nnlgharpro.com' },
     },
   };
@@ -248,6 +249,8 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
               gps: gps,
               address: { area_code: pincode }
             },
+            // ✅ FIX: Added person name here too
+            person: { name: "Test User" }, 
             contact: { phone: "9876543210", email: "test@nnlgharpro.com" }
           }
         }]
