@@ -3,7 +3,7 @@
 //   POST /search, /select, /init, /confirm
 //   POST /on_search, /on_select, /on_init, /on_confirm
 //   GET  / or /api/health
-//
+// 
 // Install dependencies:
 //   npm install blakejs tweetnacl
 //
