@@ -11,7 +11,7 @@ ONDC_DOMAIN = "ONDC:RET11"
 ONDC_GATEWAY_URL = "https://workbench.ondc.tech/api-service/ONDC:RET11/1.2.5/seller"
 
 # Workbench Settings (gear icon) wala Subscriber ID. Session ID nahi.
-ONDC_BAP_ID = "TpaiKR98V4CZP9IFgulazuod2Li9grkR" 
+ONDC_BAP_ID = "dqU2lW-0pOH_JZEz9ZtWNW57gfzBiUXD" 
 ONDC_BAP_URI = "https://nnlgharpro-ret11.nnlgharpro.workers.dev"
 
 # Workbench ke sample payload ke hisaab se
