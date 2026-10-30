@@ -229,20 +229,8 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
 
   let message = {};
 
-  if (action === 'search') {
-    message = {
-      intent: {
-        item: { descriptor: { name: body.query || 'Food' } },
-        fulfillment: { type: 'Delivery', end: { location: { gps, address: { area_code: pincode } } } },
-        payment: {
-          '@ondc/org/buyer_app_finder_fee_type': body.fee_type || 'percent',
-          '@ondc/org/buyer_app_finder_fee_amount': String(body.fee_amount || '3'),
-        },
-      },
-    };
-  } 
-  else if (action === 'select') {
-    // ✅ FIX: Added fulfillments for select (as per Workbench error)
+    else if (action === 'select') {
+    // ✅ Added proper fulfillments with contact
     message = {
       order: {
         provider: provider,
@@ -254,7 +242,8 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
             location: {
               gps: gps,
               address: { area_code: pincode }
-            }
+            },
+            contact: { phone: "9876543210", email: "test@nnlgharpro.com" }
           }
         }]
       },
@@ -269,6 +258,11 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
         billing,
         fulfillments: [fulfillment],
         payment: { type: 'POST-FULFILLMENT', collected_by: 'BPP' },
+        // ✅ Added dummy quote
+        quote: {
+          price: { currency: "INR", value: "150.00" },
+          breakup: [{ title: "Item", price: { currency: "INR", value: "150.00" } }]
+        }
       },
     };
   } 
@@ -283,7 +277,11 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
         items: ini.items || [baseItem],
         billing,
         fulfillments: [fulfillment],
-        quote: ini.quote || dummyQuote, // ✅ FIX: Dummy quote added
+        // ✅ Added quote (fallback to dummy if not present)
+        quote: ini.quote || {
+          price: { currency: "INR", value: "150.00" },
+          breakup: [{ title: "Item", price: { currency: "INR", value: "150.00" } }]
+        },
         payment: {
           ...(ini.payment || {}),
           type: 'POST-FULFILLMENT',
@@ -295,6 +293,3 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
       },
     };
   }
-
-  return { context, message };
-}
