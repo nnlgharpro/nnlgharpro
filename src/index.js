@@ -1,6 +1,8 @@
 // ONDC BAP worker (RET11 / Workbench) - FINAL WORKING CODE
-import { blake2b } from 'blakejs'; 
-import nacl from 'tweetnacl'; 
+// @ts-ignore
+import { blake2b } from 'https://esm.sh/blakejs';
+// @ts-ignore
+import nacl from 'https://esm.sh/tweetnacl';
 
 const TTL = 'PT30S';
 const DEFAULT_CITY = 'std:011';
