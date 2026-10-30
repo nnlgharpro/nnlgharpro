@@ -1182,57 +1182,44 @@ function triggerOrderSuccessUI(txnId) {
 // ═══════════════════════════════════════════════════════════
 // 🔍 1. SEARCH SERVICES (NnlGharPro Secure Search)
 // ═══════════════════════════════════════════════════════════
-window.searchServices = async function() {
-    if (!selectedService) { showToast('Select service first!', true); return; }
-    const pincode = document.getElementById('pincode').value.trim();
-    if (!pincode || pincode.length !== 6) { showToast('Valid pincode!', true); return; }
-
-    document.getElementById('bookingModal').classList.add('show');
-    document.getElementById('providerList').innerHTML = '<div style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin" style="font-size:24px;"></i><br><br>Finding best options near you...</div>';
-    document.getElementById('modalServiceName').textContent = selectedService;
-    document.getElementById('modalPincode').textContent = pincode;
-    document.getElementById('bookingForm').style.display = 'none';
-    document.getElementById('providerListContainer').style.display = 'block';
-
-    let domain = "ONDC:RET11";
-    let category = "Food";
-    if (selectedService === 'Grocery') { domain = "ONDC:RET10"; category = "Grocery"; }
-
-    // 💡 WORKBENCH SEARCH TRIGGER
-    try {
-        await fetch("https://nnlgharpro-ret11.nnlgharpro.workers.dev/client_search", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ domain: domain, category: category, pincode: pincode })
-        });
+// ✅ SEARCH CALL (Frontend se Backend ko)
+try {
+    await fetch("https://nnlgharpro-ret11.nnlgharpro.workers.dev/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+            domain: domain, 
+            category: category, 
+            pincode: pincode 
+        })
+    });
+    
+    // Search ke baad Dummy Kitchen dikhao
+    setTimeout(() => {
+        const mockProviders = [{
+            id: "provider_workbench_1",
+            descriptor: { name: "NnlGharPro Dummy Kitchen (ONDC Test)" },
+            locations: [{ id: "L1", gps: "28.6139,77.2090" }]
+        }];
+        window.currentOndcProviders = mockProviders;
         
-        // Workbench Search ke baad hum Dummy Kitchen dikhayenge
-        setTimeout(() => {
-            const mockProviders = [{
-                id: "provider_workbench_1",
-                descriptor: { name: "NnlGharPro Dummy Kitchen (ONDC Test)" },
-                locations: [{ id: "L1", gps: "28.6139,77.2090" }]
-            }];
-            window.currentOndcProviders = mockProviders;
-            
-            let html = '';
-            mockProviders.forEach((p, index) => {
-                html += `<div class="provider-item" onclick="selectProvider(${index})" style="cursor:pointer; background:rgba(255,255,255,0.03); padding:12px; border-radius:12px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; border:1px solid rgba(255,255,255,0.05);">
-                    <div style="flex:1;">
-                        <div class="p-name" style="font-weight:700; font-size:14px; color:#fff;">${p.descriptor.name}</div>
-                        <div class="p-detail" style="font-size:12px; color:#4ECDC4; margin-top:4px;">⭐ 4.5 • 📍 ${pincode} • 30 min delivery</div>
-                    </div>
-                    <div class="p-select-icon" style="color:#FF6B35;"><i class="fas fa-chevron-right"></i></div>
-                </div>`;
-            });
-            document.getElementById('providerList').innerHTML = html;
-            showToast(`✅ Dummy Kitchen found!`);
-        }, 1500); // Thoda wait taaki Search request ja sake
+        let html = '';
+        mockProviders.forEach((p, index) => {
+            html += `<div class="provider-item" onclick="selectProvider(${index})" style="...">
+                <div style="flex:1;">
+                    <div class="p-name" style="...">${p.descriptor.name}</div>
+                    <div class="p-detail" style="...">⭐ 4.5 • 📍 ${pincode} • 30 min delivery</div>
+                </div>
+                <div class="p-select-icon" style="..."><i class="fas fa-chevron-right"></i></div>
+            </div>`;
+        });
+        document.getElementById('providerList').innerHTML = html;
+        showToast(`✅ Dummy Kitchen found!`);
+    }, 1500);
 
-    } catch (e) {
-        document.getElementById('providerList').innerHTML = '<div style="text-align:center; color:#FF4757; padding:20px;">Network Error</div>';
-    }
-};
+} catch (e) {
+    document.getElementById('providerList').innerHTML = '<div style="text-align:center; color:#FF4757; padding:20px;">Network Error</div>';
+}
 
 // ═══════════════════════════════════════════════════════════
 // 📋 2. DISPLAY PROVIDERS
@@ -1273,7 +1260,42 @@ function displayOndcResults(ondcData, pincode) {
     document.getElementById('providerList').innerHTML = html;
     showToast(`✅ ${providers.length} providers found!`);
 }
+window.selectProvider = async function(index) {
+    const provider = window.currentOndcProviders[index];
+    if (!provider) return;
 
+    document.getElementById('providerList').innerHTML = `
+        <div style="text-align:center; padding:30px; color:#FFD93D;">
+            <i class="fas fa-spinner fa-spin" style="font-size:24px; margin-bottom:10px;"></i><br>
+            <strong>Loading menu...</strong>
+        </div>`;
+
+    try {
+        const txnId = window.currentOndcTransactionId || crypto.randomUUID();
+        window.currentOndcTransactionId = txnId;
+
+        // ✅ SELECT CALL
+        await fetch("https://nnlgharpro-ret11.nnlgharpro.workers.dev/select", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                domain: "ONDC:RET11",
+                transactionId: txnId,
+                providerId: provider.id,
+                pincode: document.getElementById('pincode').value.trim() || "110001",
+                items: [{ id: "item_veg_thali", quantity: { count: 1 } }]
+            })
+        });
+
+        // Select ke baad Menu dikhao
+        setTimeout(() => {
+            displayProviderMenu(provider);
+        }, 1000);
+
+    } catch (error) {
+        document.getElementById('providerList').innerHTML = `<div style="text-align:center;color:#FF4757;padding:20px;">Network Error.</div>`;
+    }
+};
 function displayProviderMenu(provider) {
     let menuHTML = `<div style="font-size:16px; font-weight:800; color:#4ECDC4; margin-bottom:12px;">Menu: ${provider.descriptor.name}</div>`;
     
@@ -2482,6 +2504,54 @@ console.log('✅ Insurance Section loaded');
         showToast('🎉 ONDC Test Flow Successfully Completed!');
 
         // ✅ RECEIPT DIKHAO
+        document.getElementById('receiptDetails').innerHTML = `
+            <div class="receipt-row"><span class="label">Order ID</span><span class="value">#${txnId.substring(0,8).toUpperCase()}</span></div>
+            <div class="receipt-row"><span class="label">Customer</span><span class="value">Test Customer</span></div>
+            <div class="receipt-row"><span class="label">Item</span><span class="value">Veg Thali (Test)</span></div>
+            <div class="receipt-row"><span class="label">Type</span><span class="value">ONDC Test Flow</span></div>
+            <div class="receipt-row"><span class="label">Amount</span><span class="value" style="color:#00C853; font-weight:bold;">₹0 (Test)</span></div>
+        `;
+        document.getElementById('receiptTotal').textContent = '₹0';
+        const statusEl = document.getElementById('receiptPaymentStatus');
+        statusEl.textContent = '✅ TEST PASSED';
+        statusEl.style.color = '#00C853';
+        statusEl.style.background = 'rgba(0,200,83,0.1)';
+        
+        document.getElementById('receiptContainer').classList.add('show');
+        closeBookingModal();
+
+    } catch (error) {
+        showLoading(false);
+        showToast('❌ Test failed: ' + error.message, true);
+    }
+};
+window.testPaymentSuccess = async function() {
+    showLoading(true);
+    const txnId = window.currentOndcTransactionId;
+    
+    try {
+        await fetch("https://nnlgharpro-ret11.nnlgharpro.workers.dev/init", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                transactionId: txnId, domain: "ONDC:RET11", providerId: "provider_workbench_1", 
+                items: [{ id: "item_veg_thali", quantity: { count: 1 } }],
+                name: "Test Customer", phone: "9876543210", pincode: "110001", address: "Test Address"
+            })
+        });
+
+        await fetch("https://nnlgharpro-ret11.nnlgharpro.workers.dev/confirm", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                transactionId: txnId, domain: "ONDC:RET11", orderId: crypto.randomUUID(), 
+                providerId: "provider_workbench_1", items: [{ id: "item_veg_thali", quantity: { count: 1 } }] 
+            })
+        });
+
+        showLoading(false);
+        showToast('🎉 ONDC Test Flow Successfully Completed!');
+
         document.getElementById('receiptDetails').innerHTML = `
             <div class="receipt-row"><span class="label">Order ID</span><span class="value">#${txnId.substring(0,8).toUpperCase()}</span></div>
             <div class="receipt-row"><span class="label">Customer</span><span class="value">Test Customer</span></div>
