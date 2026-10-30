@@ -113,7 +113,7 @@ function bytesToB64(bytes) {
 
 async function signRequest(bodyString, env) {
   const rawKey = getPrivateKey(env);
-  if (!rawKey) throw new Error('Private key secret nahi mila.');
+  if (!rawKey) throw new Error('Private key secret nahi mila. Cloudflare mein ONDC_SIGNING_PRIVATE_KEY (Secret) add karein.');
 
   const created = Math.floor(Date.now() / 1000);
   const expires = created + 300;
@@ -187,6 +187,7 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
     ttl: TTL,
   };
 
+  // ✅ FIX: Context mein bpp_id aur bpp_uri add kiya
   context.bpp_id = body.bpp_id || state.bpp_id || env.ONDC_BPP_ID || 'workbench.ondc.tech';
   context.bpp_uri = body.bpp_uri || state.bpp_uri || env.ONDC_BPP_URI || 'https://workbench.ondc.tech';
 
@@ -223,6 +224,7 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
   let message = {};
 
   if (action === 'search') {
+    // ✅ FIX: Search mein payment field add ki
     message = {
       intent: {
         item: { descriptor: { name: body.query || 'Food' } },
