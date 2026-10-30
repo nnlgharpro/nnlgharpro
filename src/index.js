@@ -2,7 +2,7 @@
 import { blake2b } from 'blakejs'; 
 import nacl from 'tweetnacl'; 
 
-const TTL = 'PT30S';   
+const TTL = 'PT30S';
 const DEFAULT_CITY = 'std:011';
 const DEFAULT_COUNTRY = 'IND';
 const DEFAULT_GPS = '28.6139,77.2090';
@@ -27,7 +27,6 @@ export default {
         return json({ status: 'active', domain: env.ONDC_DOMAIN, bap_id: env.ONDC_BAP_ID, has_private_key: !!getPrivateKey(env) });
       }
 
-      // Callbacks
       if (path.startsWith('on_')) {
         let body = {};
         if (request.method === 'POST') {
@@ -114,7 +113,7 @@ function bytesToB64(bytes) {
 
 async function signRequest(bodyString, env) {
   const rawKey = getPrivateKey(env);
-  if (!rawKey) throw new Error('Private key secret nahi mila. Cloudflare mein ONDC_SIGNING_PRIVATE_KEY (Secret) add karein.');
+  if (!rawKey) throw new Error('Private key secret nahi mila.');
 
   const created = Math.floor(Date.now() / 1000);
   const expires = created + 300;
@@ -223,7 +222,6 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
 
   let message = {};
 
-  // ✅ SEARCH BLOCK (Jo missing tha)
   if (action === 'search') {
     message = {
       intent: {
