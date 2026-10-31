@@ -325,28 +325,46 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
 Step 3: Ctrl + S save karo
 Step 4: Screenshot bhejo
 /* ITEMS POPUP */
-.popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 10001; padding: 16px; }
+.popup-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+    backdrop-filter: blur(10px); display: none; justify-content: center;
+    align-items: center; z-index: 10001; padding: 16px;
+}
 .popup-overlay.show { display: flex; }
-.popup-box { background: #1a1a2e; padding: 24px; border-radius: 20px; max-width: 420px; width: 100%; max-height: 80vh; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.08); animation: slideUp 0.3s ease; }
-.popup-box .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-.popup-box .modal-header h3 { font-size: 18px; margin: 0; display: flex; align-items: center; gap: 8px; }
+.popup-box {
+    background: #1a1a2e; padding: 24px; border-radius: 20px;
+    max-width: 420px; width: 100%; max-height: 80vh;
+    display: flex; flex-direction: column;
+    border: 1px solid rgba(255,255,255,0.08); animation: slideUp 0.3s ease;
+}
+.popup-box .modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 15px; padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.popup-box .modal-header h3 {
+    font-size: 18px; margin: 0; display: flex; align-items: center; gap: 8px;
+}
 .popup-box .modal-header h3 i { color: #FF6B35; }
-.popup-box .modal-header .close-btn { background: none; border: none; color: rgba(255,255,255,0.4); font-size: 22px; cursor: pointer; }
+.popup-box .modal-header .close-btn {
+    background: none; border: none; color: rgba(255,255,255,0.4);
+    font-size: 22px; cursor: pointer;
+}
 .popup-items-list { flex: 1; overflow-y: auto; margin-bottom: 10px; }
-.popup-main-item { border-bottom: 1px solid rgba(255,255,255,0.04); margin-bottom: 10px; }
-.main-item-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; cursor: pointer; color: #FFD93D; font-size: 14px; font-weight: 600; }
-.main-item-header .main-count { color: rgba(255,255,255,0.3); font-weight: 400; font-size: 11px; }
-.sub-items { display: block !important; padding: 4px 0 10px 10px; }
-.sub-item-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(255,255,255,0.03); border-radius: 8px; margin-bottom: 6px; border-left: 3px solid rgba(78,205,196,0.2); }
-.sub-item-row .sub-name { flex: 1; font-size: 13px; color: #fff; font-weight: 500; }
-.sub-item-row .sub-category { font-size: 10px; color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 10px; margin-right: 5px; }
-.sub-item-row .sub-price { font-weight: 700; font-size: 14px; color: #FFD93D; margin: 0 10px; min-width: 50px; text-align: right; }
-.qty-control { display: flex; align-items: center; gap: 6px; }
-.btn-minus, .btn-plus { width: 26px; height: 26px; border: none; background: rgba(78,205,196,0.15); color: #4ECDC4; font-weight: 700; border-radius: 6px; cursor: pointer; font-size: 14px; }
-.qty-num { min-width: 24px; text-align: center; font-size: 14px; font-weight: 600; color: #fff; }
-.popup-footer { border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; display: flex; justify-content: space-between; align-items: center; }
-.popup-footer .popup-total { font-size: 16px; font-weight: 700; color: #FFD93D; }
-.popup-footer .btn-primary { padding: 10px 20px; background: linear-gradient(135deg, #4ECDC4, #44B3A8); border: none; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; }
+.popup-footer {
+    border-top: 1px solid rgba(255,255,255,0.05);
+    padding-top: 10px; display: flex;
+    justify-content: space-between; align-items: center;
+}
+.popup-footer .popup-total {
+    font-size: 16px; font-weight: 700; color: #FFD93D;
+}
+.popup-footer .btn-primary {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #4ECDC4, #44B3A8);
+    border: none; border-radius: 10px; color: #fff;
+    font-weight: 700; cursor: pointer;
+}
 .popup-footer .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
 @media (max-width:600px) {
