@@ -76,27 +76,30 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
 .service-btn:hover { transform: translateY(-3px); }
 .service-btn.active { border-color: #FFD93D; box-shadow: 0 0 20px rgba(255,217,61,0.2); }
 .service-btn i { font-size: 26px; margin-bottom: 8px; }
+.service-btn i { font-size: 26px; margin-bottom: 8px; }
+//* ✅ Sahi CSS Classes (Ditto HTML Sequence) */
 .s-recharge { background: linear-gradient(135deg, #5F259F, #8B5CF6); }
-.s-Grocery { background: linear-gradient(135deg, #0077b6, #00b4d8); }
-.s-Fashion & Footwear { background: linear-gradient(135deg, #f77f00, #fcbf49); }
-.s-Electronics  { background: linear-gradient(135deg, #2a9d8f, #52b788); }
+.s-grocery { background: linear-gradient(135deg, #0077b6, #00b4d8); }
+.s-fashion { background: linear-gradient(135deg, #f77f00, #fcbf49); }
+.s-electronics { background: linear-gradient(135deg, #2a9d8f, #52b788); }
 .s-home-decor { background: linear-gradient(135deg, #9b5de5, #f15bb5); }
-.s-Beauty & Personal Care { background: linear-gradient(135deg, #ef476f, #ff6b6b); }
-.s-Health & Wellness { background: linear-gradient(135deg, #118ab2, #06d6a0); }
-.s-Gift Cards{ background: linear-gradient(135deg, #264653, #2a9d8f); }
+.s-beauty { background: linear-gradient(135deg, #ef476f, #ff6b6b); }
+.s-health { background: linear-gradient(135deg, #118ab2, #06d6a0); }
+.s-gift { background: linear-gradient(135deg, #264653, #2a9d8f); }
 .s-food-restaurant { background: linear-gradient(135deg, #e63946, #f4a261); }
-.s-Mobility & Taxi{ background: linear-gradient(135deg, #1b4332, #40916c); }
-.s-Financial Services  { background: linear-gradient(135deg, #0077b6, #48cae4); }
+.s-mobility { background: linear-gradient(135deg, #1b4332, #40916c); }
+.s-financial { background: linear-gradient(135deg, #0077b6, #48cae4); }
 .s-cinema { background: linear-gradient(135deg, #6d597a, #b56576); }
 .s-hospital { background: linear-gradient(135deg, #d90429, #ef233c); }
 .s-lab { background: linear-gradient(135deg, #3a0ca3, #7209b7); }
 .s-school { background: linear-gradient(135deg, #3d5a80, #98c1d9); }
 .s-hotel { background: linear-gradient(135deg, #e65100, #f57c00); }
 .s-insurance { background: linear-gradient(135deg, #0d47a1, #1976d2); }
-.s-Immigration services { background: linear-gradient(135deg, #FF6B35, #FF8C42); }
-.s-Toys{ background: linear-gradient(135deg, #b5179e, #7209b7); }
-.s-Pharma { background: linear-gradient(135deg, #0096c7, #023e8a); }
-.s- Services { background: linear-gradient(135deg, #e85d04, #dc2f02); }
+.s-immigration { background: linear-gradient(135deg, #1e3a8a, #3b82f6); }
+.s-services { background: linear-gradient(135deg, #e85d04, #dc2f02); }
+.s-onest { background: linear-gradient(135deg, #3a0ca3, #4361ee); }
+.s-toys { background: linear-gradient(135deg, #b5179e, #7209b7); }
+.s-pharma { background: linear-gradient(135deg, #0096c7, #023e8a); }
 .s-other { background: linear-gradient(135deg, #455a64, #78909c); }
 
 /* MODALS */
@@ -415,32 +418,32 @@ Step 4: Screenshot bhejo
         <input type="text" id="pincode" placeholder="Enter 6-digit pincode" maxlength="6" inputmode="numeric" value="123001">
         <button onclick="searchServices()"><i class="fas fa-search"></i> Search</button>
     </div>
+  <div class="section-title"><i class="fas fa-tools" style="color:#FF6B35;"></i> Select Service</div>
+<div class="service-grid">
+    <div class="service-btn s-recharge" onclick="openRechargeModal()"><i class="fas fa-mobile-alt"></i> Recharge</div>
+    <div class="service-btn s-grocery" onclick="selectService('Grocery')"><i class="fas fa-shopping-basket"></i> Grocery</div>
+    <div class="service-btn s-fashion" onclick="selectService('Fashion')"><i class="fas fa-tshirt"></i> Fashion</div>
+    <div class="service-btn s-electronics" onclick="selectService('Electronics')"><i class="fas fa-laptop"></i> Electronics</div>
+    <div class="service-btn s-home-decor" onclick="selectService('Home Decor')"><i class="fas fa-couch"></i> Home Decor</div>
+    <div class="service-btn s-beauty" onclick="selectService('Beauty & Personal Care')"><i class="fas fa-spa"></i> Beauty</div>
+    <div class="service-btn s-health" onclick="selectService('Health & Wellness')"><i class="fas fa-heartbeat"></i> Health</div>
+    <div class="service-btn s-gift" onclick="selectService('Gift Cards')"><i class="fas fa-gift"></i> Gift Cards</div>
+    <div class="service-btn s-food-restaurant" onclick="selectService('Food & Restaurant')"><i class="fas fa-utensils"></i> Food</div>
+    <div class="service-btn s-mobility" onclick="selectService('Mobility & Taxi')"><i class="fas fa-taxi"></i> Taxi</div>
+    <div class="service-btn s-financial" onclick="selectService('Financial Services')"><i class="fas fa-chart-line"></i> Finance</div>
+    <div class="service-btn s-cinema" onclick="selectService('Cinema')"><i class="fas fa-film"></i> Cinema</div>
+    <div class="service-btn s-hospital" onclick="selectService('Hospital')"><i class="fas fa-hospital"></i> Hospital</div>
+    <div class="service-btn s-lab" onclick="selectService('Lab')"><i class="fas fa-flask"></i> Lab</div>
+    <div class="service-btn s-school" onclick="selectService('School')"><i class="fas fa-school"></i> School</div>
+    <div class="service-btn s-hotel" onclick="selectService('Hotel')"><i class="fas fa-hotel"></i> Hotel</div>
+    <div class="service-btn s-insurance" onclick="openInsuranceSection()"><i class="fas fa-shield-alt"></i> Insurance</div>
+    <div class="service-btn s-immigration" onclick="openImmigrationModal()"><i class="fas fa-passport"></i> Immigration</div>
+    <div class="service-btn s-services" onclick="selectService('Services')"><i class="fas fa-tools"></i> Services</div>
+    <div class="service-btn s-onest" onclick="selectService('ONEST')"><i class="fas fa-graduation-cap"></i> ONEST</div>
+    <div class="service-btn s-toys" onclick="selectService('Toys & Games')"><i class="fas fa-gamepad"></i> Toys</div>
+    <div class="service-btn s-pharma" onclick="selectService('Pharma')"><i class="fas fa-pills"></i> Pharma</div>
+</div>
 
-    <div class="section-title"><i class="fas fa-tools" style="color:#FF6B35;"></i> Select Service</div>
-    <div class="service-grid">
-         <div class="service-btn s-recharge" onclick="openRechargeModal()"><i class="fas fa-mobile-alt"></i> Recharge</div>
-        <div class="service-btn s-plumbing" onclick="selectService('Plumbing')"><i class="fas fa-wrench"></i> Plumbing</div>
-        <div class="service-btn s-electrician" onclick="selectService('Electrician')"><i class="fas fa-bolt"></i> Electrician</div>
-        <div class="service-btn s-mobile-laptop" onclick="selectService('Mobile & Laptop')"><i class="fas fa-laptop"></i> Mobile & Laptop</div>
-        <div class="service-btn s-home-decor" onclick="selectService('Home Decor')"><i class="fas fa-paint-brush"></i> Home Decor</div>
-        <div class="service-btn s-painting" onclick="selectService('Painting')"><i class="fas fa-paint-roller"></i> Painting</div>
-        <div class="service-btn s-ac-repair" onclick="selectService('AC Repair')"><i class="fas fa-snowflake"></i> AC Repair</div>
-        <div class="service-btn s-cctv" onclick="selectService('CCTV')"><i class="fas fa-video"></i> CCTV</div>
-        <div class="service-btn s-food-restaurant" onclick="selectService('Food & Restaurant')"><i class="fas fa-utensils"></i> Food & Restaurant</div>
-        <div class="service-btn s-taxi" onclick="selectService('Taxi')"><i class="fas fa-taxi"></i> Taxi</div>
-        <div class="service-btn s-ro-service" onclick="selectService('RO Service')"><i class="fas fa-tint"></i> RO Service</div>
-        <div class="service-btn s-cinema" onclick="selectService('Cinema')"><i class="fas fa-film"></i> Cinema</div>
-        <div class="service-btn s-hospital" onclick="selectService('Hospital')"><i class="fas fa-hospital"></i> Hospital</div>
-        <div class="service-btn s-lab" onclick="selectService('Lab')"><i class="fas fa-flask"></i> Lab</div>
-        <div class="service-btn s-school" onclick="selectService('School')"><i class="fas fa-school"></i> School</div>
-        <div class="service-btn s-hotel" onclick="selectService('Hotel')"><i class="fas fa-hotel"></i> Hotel</div>
-        <div class="service-btn s-insurance" onclick="openInsuranceSection()"><i class="fas fa-shield-alt"></i> Insurance</div>
-        <div class="service-btn s-ecommerce" onclick="openEcommerceModal()"><i class="fas fa-store"></i> E-Commerce</div>
-        <div class="service-btn s-tv" onclick="selectService('TV Repair')"><i class="fas fa-tv"></i> TV Repair</div>
-        <div class="service-btn s-local-bazar" onclick="selectService('Local Bazar')"><i class="fas fa-shopping-basket"></i> Local Bazar</div>
-        <div class="service-btn s-gym-fitness" onclick="selectService('Gym & Fitness')"><i class="fas fa-dumbbell"></i> Gym & Fitness</div>
-        <div class="service-btn s-other" onclick="selectService('Other')"><i class="fas fa-ellipsis-h"></i> Other</div>
-    </div>
 
     <div class="footer">
         <p><i class="fas fa-crown"></i> Managed by <span class="brand-highlight">Randhawa Enterprises</span> <i class="fas fa-crown"></i></p>
@@ -1045,7 +1048,7 @@ async function loadBroadcast() {
 }
 function closeBroadcast() { document.getElementById('broadcastBanner').classList.remove('show'); }
 
-// Immigration services
+// Insurance
 window.openEcommerceModal = async function() {
     if (!currentUser) { showToast('Please login first!', true); return; }
     document.getElementById('ecommerceModal').classList.add('show');
@@ -2493,6 +2496,10 @@ window.buyInsuranceTurtlemint = function(serviceType) {
 };
 
 console.log('✅ Insurance Section loaded');
+    window.openImmigrationModal = function() {
+    showToast('Immigration services jald aa rahi hain!');
+    // Aap yahan aage chalkar apna form ya API integrate kar sakte hain
+};
 </script>
 </body>
 </html>
