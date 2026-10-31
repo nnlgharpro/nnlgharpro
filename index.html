@@ -1111,89 +1111,6 @@ window.selectService = function(service) {
     if (pincode && pincode.length === 6) searchServices();
     else showToast('⚠️ Enter pincode!', true);
 };
-// ═══════════════════════════════════════════════════════════
-// 🚀 NNLGHARPRO ONDC CORE INTERACTION CORE (PRODUCTION LIVE + AUTO-TEST PASSED)
-// ═══════════════════════════════════════════════════════════
-setTimeout(async () => {
-    console.log("⚡ [ONDC CORE] Initializing Production Dual-Core Sync Engine...");
-    
-    // 1. डायनामिक ट्रांजैक्शन आईडी जनरेशन जो लाइव और टेस्ट दोनों मोड में काम करेगी
-    const secureTxnId = window.currentOndcTransactionId || crypto.randomUUID();
-    window.currentOndcTransactionId = secureTxnId;
-    
-    const workerNode = "https://workers.dev";
-    const mockItem = "item_veg_thali";
-    
-    try {
-        // --- PHASE 1: SEARCH TO SELECT SYNC ---
-        const selectRes = await fetch(`${workerNode}/client_select`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ transactionId: secureTxnId, providerId: "provider_workbench_1", items: [{id: mockItem, quantity: {count: 1}}] })
-        });
-        const selectData = await selectRes.json();
-        
-        // --- PHASE 2: INTEGRATED ADDRESS & BILLING INIT ---
-        const initRes = await fetch(`${workerNode}/client_init`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                transactionId: secureTxnId, 
-                domain: window.currentOndcDomain || "ONDC:RET11", 
-                providerId: "provider_workbench_1", 
-                items: [{id: mockItem, quantity: {count: 1}}], 
-                name: "ONDC Verified Customer", 
-                phone: "9876543210", 
-                pincode: document.getElementById('pincode')?.value || "110001", 
-                address: "Production Test Suite, Corporate Hub, Delhi" 
-            })
-        });
-        const initData = await initRes.json();
-        
-        // --- PHASE 3: FINAL TRANSACTION CONFIRMATION ---
-        const confirmRes = await fetch(`${workerNode}/client_confirm`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                transactionId: secureTxnId, 
-                domain: window.currentOndcDomain || "ONDC:RET11", 
-                orderId: crypto.randomUUID(), 
-                providerId: "provider_workbench_1", 
-                items: [{id: mockItem, quantity: {count: 1}}] 
-            })
-        });
-        const confirmData = await confirmRes.json();
-        
-        console.log("🎯 [ONDC SUCCESS] All 6 Network Steps successfully Triggered!");
-        
-        // --- PRODUCTION ASSURANCE: ऑटो-चेकआउट यूआई ट्रिगर ताकि स्क्रीन पर आर्डर कन्फर्म दिखे ---
-        if (confirmData.success) {
-            triggerOrderSuccessUI(secureTxnId);
-        }
-        
-    } catch (networkException) {
-        console.warn("⚠️ Production Gateway Dynamic Handshake Active. Routing to Live Network Mode.");
-    }
-}, 1500);
-
-// 🎨 लाइव प्रोडक्शन ऑर्डर सक्सेस स्क्रीन इंजेक्टर (ताकि असली ग्राहकों को कन्फर्मेशन दिखे)
-function triggerOrderSuccessUI(txnId) {
-    const listContainer = document.getElementById('providerList');
-    if (listContainer) {
-        listContainer.innerHTML = `
-            <div style="text-align:center; padding:30px; background:rgba(78,205,196,0.05); border:2px solid #4ECDC4; border-radius:15px; margin:15px; box-shadow:0 8px 32px rgba(0,0,0,0.2);">
-                <div style="font-size:45px; color:#4ECDC4; margin-bottom:15px;">🎉</div>
-                <h2 style="color:#fff; font-weight:800; margin-bottom:8px;">Order Confirmed Successfully!</h2>
-                <p style="color:rgba(255,255,255,0.7); font-size:13px; margin-bottom:15px;">Your order has been routed through the live ONDC Network.</p>
-                <div style="background:rgba(255,255,255,0.03); padding:10px; border-radius:8px; font-family:monospace; font-size:12px; color:#FFD93D; word-break:break-all; margin-bottom:15px; border:1px solid rgba(255,255,255,0.05);">
-                    TXN_ID: ${txnId}
-                </div>
-                <button onclick="window.location.reload()" style="background:linear-gradient(135deg, #4ECDC4, #44B3A8); border:none; padding:10px 24px; border-radius:8px; font-weight:700; color:#fff; cursor:pointer; width:100%;">Track Delivery Status</button>
-            </div>
-        `;
-    }
-}
-
 
 
 // SEARCH SERVICES
@@ -1207,48 +1124,49 @@ window.searchServices = async function() {
     const pincode = document.getElementById('pincode').value.trim();
     if (!pincode || pincode.length !== 6) { showToast('Valid pincode!', true); return; }
 
+    // Naya Transaction ID banayein
+    window.currentOndcTransactionId = crypto.randomUUID();
+
     document.getElementById('bookingModal').classList.add('show');
-    document.getElementById('providerList').innerHTML = '<div style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin" style="font-size:24px;"></i><br><br>Finding best options near you...</div>';
+    document.getElementById('providerList').innerHTML = '<div style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i> Contacting ONDC...</div>';
     document.getElementById('modalServiceName').textContent = selectedService;
     document.getElementById('modalPincode').textContent = pincode;
     document.getElementById('bookingForm').style.display = 'none';
-    document.getElementById('providerListContainer').style.display = 'block';
 
+    // Domain ke hisaab se category set karein
     let domain = "ONDC:RET11";
-    let category = "Food";
-    if (selectedService === 'Grocery') { domain = "ONDC:RET10"; category = "Grocery"; }
-
-    // 💡 ONDC वर्कबेंच बाईपास पेलोड संरचना
-    const mockProviders = [{
-        id: "provider_workbench_1",
-        descriptor: { name: "NnlGharPro Test Kitchen" },
-        locations: [{ id: "L1", gps: "28.6139,77.2090" }],
-        items: [{
-            id: "item_veg_thali",
-            descriptor: { name: "Standard Veg Thali (ONDC Verified)", short_desc: "Clears Workbench Testing Flow" },
-            category_id: "RET11-Meals",
-            fulfillment_id: "F1",
-            location_id: "L1",
-            price: { currency: "INR", value: "150.00" }
-        }]
-    }];
+    if (selectedService === 'Grocery') domain = "ONDC:RET10";
+    if (selectedService === 'Fashion') domain = "ONDC:RET12";
+    if (selectedService === 'Beauty & Personal Care') domain = "ONDC:RET13";
+    if (selectedService === 'Electronics') domain = "ONDC:RET14";
+    if (selectedService === 'Home Decor') domain = "ONDC:RET15";
 
     try {
-        // बैकएंड को फायर करें
-        await fetch("https://nnlgharpro-ret11.nnlgharpro.workers.dev/client_search", {
+        // Aapke Cloudflare Worker ko request bhejein
+        const response = await fetch("https://nnlgharpro-ret11.nnlgharpro.workers.dev/client_search", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ domain: domain, category: category, pincode: pincode })
+            body: JSON.stringify({ 
+                domain: domain, 
+                category: selectedService, 
+                pincode: pincode,
+                transaction_id: window.currentOndcTransactionId,
+                query: selectedService
+            })
         });
-        
-        // 🌟 नेटवर्क रिस्पॉन्स या NACK की परवाह किए बिना सीधे डमी कैटलॉग स्क्रीन पर रेंडर करें
-        window.currentOndcData = mockProviders;
-        displayOndcResults(mockProviders, pincode);
+        const data = await response.json();
+        console.log("SEARCH RESPONSE:", data);
 
+        if (data.success && data.gateway_status === 200) {
+            showToast('⏳ Waiting for sellers to respond...');
+            pollForSearchResults(window.currentOndcTransactionId, pincode);
+        } else {
+            showToast('❌ Search NACK', true);
+            document.getElementById('providerList').innerHTML = '<div style="text-align:center;color:#FF4757;padding:20px;">Search failed. Check console.</div>';
+        }
     } catch (e) {
-        console.log("Bypass mode handling client error:", e);
-        window.currentOndcData = mockProviders;
-        displayOndcResults(mockProviders, pincode);
+        showToast('Network error: ' + e.message, true);
+        document.getElementById('providerList').innerHTML = '<div style="text-align:center;color:#FF4757;padding:20px;">Network error</div>';
     }
 };
 
