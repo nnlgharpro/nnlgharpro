@@ -26,7 +26,7 @@ export default {
         return json({ status: 'active', domain: env.ONDC_DOMAIN, bap_id: env.ONDC_BAP_ID });
       }
 
-      // ✅ FRONTEND POLLING ROUTE (Yeh missing tha)
+      // ✅ FRONTEND POLLING ROUTE
       if (path === 'get_state') {
         const txId = url.searchParams.get('tx');
         if (!txId) return json({ error: 'tx param required' }, 400);
@@ -34,7 +34,7 @@ export default {
         return json({ success: true, state });
       }
 
-      // ✅ CALLBACK HANDLER (Yeh bhi fix kiya gaya hai)
+      // ✅ CALLBACK HANDLER
       if (path.startsWith('on_')) {
         let body = {};
         if (request.method === 'POST') {
@@ -164,12 +164,24 @@ async function saveCallback(path, body, env) {
       await saveState(txId, {
         bpp_id: body.context.bpp_id,
         bpp_uri: body.context.bpp_uri,
-        on_search_catalog: body.message?.catalog || {}, // Save full catalog
+        on_search_catalog: body.message?.catalog || {},
       }, env);
     } else if (path === 'on_select' && body.message?.order) {
-      await saveState(txId, { on_select_order: body.message.order }, env);
+      // ✅ YEH FIX ADD KIYA GAYA HAI
+      const order = body.message.order;
+      const prov = order.provider;
+      const firstItem = order.items?.[0];
+      await saveState(txId, {
+        on_select_order: order,
+        bpp_id: body.context.bpp_id || undefined,
+        bpp_uri: body.context.bpp_uri || undefined,
+        provider: prov ? { id: prov.id, locations: prov.locations || [{ id: 'L1' }] } : undefined,
+        item: firstItem ? { id: firstItem.id, location_id: firstItem.location_id || 'L1' } : undefined,
+      }, env);
     } else if (path === 'on_init' && body.message?.order) {
       await saveState(txId, { on_init_order: body.message.order }, env);
+    } else if (path === 'on_confirm' && body.message?.order) {
+      await saveState(txId, { on_confirm_order: body.message.order }, env);
     }
   } catch (e) {
     console.log('[saveCallback error]', e.message);
