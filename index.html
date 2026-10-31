@@ -243,7 +243,7 @@ window.searchServices = async function() {
 };
 
 async function pollForSearchResults(txId, pincode, attempts = 0) {
-    if (attempts >= 15) {
+    if (attempts >= 45) {
         document.getElementById('providerList').innerHTML = '<div style="text-align:center;color:#FFD93D;padding:20px;"><i class="fas fa-exclamation-triangle"></i> Seller respond nahi kar raha (Timeout).</div>';
         return;
     }
