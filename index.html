@@ -1393,6 +1393,45 @@ function renderOrderTypeButtons() {
         </div>
     `;
 }
+// ONDC के रेस्टोरेंट्स और फूड आइटम्स सर्च करने का फंक्शन
+async function triggerONDCSearch(deliveryType) {
+    try {
+        console.log("Triggering ONDC Search for Food...");
+        
+        // आपके Cloudflare Worker का URL और ONDC Search पेलोड
+        const response = await fetch('https://workers.dev', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                "context": {
+                    "domain": "ONDC:RET11", // Food & Beverage डोमेन
+                    "action": "search"
+                },
+                "message": {
+                    "intent": {
+                        "category": {
+                            "id": "Food & Restaurant"
+                        },
+                        "fulfillment": {
+                            "type": deliveryType === 'delivery' ? "Delivery" : "Take-Away"
+                        }
+                    }
+                }
+            })
+        });
+
+        const data = await response.json();
+        console.log("ONDC Search Response (ACK):", data);
+        
+        // इसके बाद जब ONDC से on_search का रिस्पॉन्स बैकएंड पर आएगा, 
+        // तो उसे फ्रंटएंड में रेंडर करने का लॉजिक यहाँ आगे बढ़ेगा।
+        
+    } catch (error) {
+        console.error("ONDC Search failed:", error);
+    }
+}
 
 // 🎯 SELECT ORDER TYPE
 window.selectOrderType = function(type) {
@@ -1409,6 +1448,7 @@ window.selectOrderType = function(type) {
         document.getElementById('deliveryDistanceSection').classList.add('show');
         showToast('🚚 Home Delivery selected - distance chunein');
     }
+    triggerONDCSearch(type); 
     updateTotalAndPayment();
 };
 
