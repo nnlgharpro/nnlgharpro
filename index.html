@@ -1449,7 +1449,7 @@ window.selectOrderType = function(type) {
         showToast('🚚 Home Delivery selected - distance chunein');
     }
     triggerONDCSearch(type); 
-    updateTotalAndPayment();
+    updateInitialPayment();
 };
 
 // 🚚 UPDATE DELIVERY CHARGE
@@ -1458,6 +1458,21 @@ window.updateDeliveryCharge = function() {
     currentDeliveryDistance = distance;
     currentDeliveryCharge = calculateDeliveryCharge(distance);
     updateTotalAndPayment();
+};
+ 
+ document.getElementById('deliveryDistanceSection').classList.add('show');
+ showToast('🚚 Home Delivery selected - distance chunein'); 
+
+
+    // 1. पहले पुराने सही फ़ंक्शन को चलाएं ताकि फ्रंटएंड का पेमेंट स्ट्रक्चर न टूटे
+    updateInitialPayment(); 
+
+    // 2. इसके बाद ओएनडीसी सर्च को ट्रिगर करें
+    try {
+        triggerONDCSearch(type);
+    } catch(e) {
+        console.log("Search trigger waiting for function definition", e);
+    }
 };
 
 // LOAD PROVIDER ITEMS
