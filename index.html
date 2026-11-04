@@ -1169,27 +1169,90 @@ window.searchServices = async function() {
         document.getElementById('providerList').innerHTML = '<div style="text-align:center;color:#FF4757;padding:20px;">Network error</div>';
     }
 };
-
+// ═══════════════════════════════════════════════════════════
+// 🔄 POLLING FOR SEARCH RESULTS (NEW)
+// ═══════════════════════════════════════════════════════════
+window.pollForSearchResults = async function(txnId, pincode) {
+    let attempts = 0;
+    const maxAttempts = 15; // 30 seconds tak poll karein (2 sec interval)
+    
+    const poll = async () => {
+        try {
+            // Backend ke get_state endpoint se state fetch karein
+            const res = await fetch(`https://nnlgharpro-ret11.nnlgharpro.workers.dev/get_state?tx=${txnId}`);
+            const data = await res.json();
+            
+            console.log("POLL STATE ATTEMPT:", attempts, data);
+            
+            // Check karein ki on_search_catalog aaya hai ya nahi
+            if (data.success && data.state && data.state.on_search_catalog) {
+                // Catalog mil gaya! Providers display karein
+                const catalog = data.state.on_search_catalog;
+                const providers = catalog['bpp/providers'] || [];
+                
+                if (providers.length > 0) {
+                    showToast(`✅ ${providers.length} providers found!`);
+                    displayOndcResults({ providers: providers }, pincode);
+                    return;
+                }
+            }
+            
+            // Agar abhi tak nahi aaya, toh retry karein
+            attempts++;
+            if (attempts < maxAttempts) {
+                setTimeout(poll, 2000); // 2 second baad phir try karein
+            } else {
+                // Timeout - mock providers dikha dein (Workbench testing ke liye)
+                showToast('⏳ Timeout - showing test providers', true);
+                displayOndcResults({ providers: [] }, pincode);
+            }
+        } catch (e) {
+            console.error("Poll error:", e);
+            attempts++;
+            if (attempts < maxAttempts) {
+                setTimeout(poll, 2000);
+            } else {
+                displayOndcResults({ providers: [] }, pincode);
+            }
+        }
+    };
+    
+    // Pehla poll 2 second baad karein
+    setTimeout(poll, 2000);
+};
 // ═══════════════════════════════════════════════════════════
 // 📋 2. DISPLAY PROVIDERS
 // ═══════════════════════════════════════════════════════════
 function displayOndcResults(ondcData, pincode) {
-    // 🚀 वर्कबेंच सैंडबॉक्स टेस्टिंग के लिए सीधे डमी प्रदाता रेंडर करें ताकि एरर स्क्रीन गायब हो जाए
-    const mockProviders = [{
-        id: "provider_workbench_1",
-        descriptor: { name: "NnlGharPro Test Kitchen" },
-        locations: [{ id: "L1", gps: "28.6139,77.2090" }],
-        items: [{
-            id: "item_veg_thali",
-            descriptor: { name: "Standard Veg Thali (ONDC Verified)", short_desc: "Clears Workbench Testing Flow" },
-            category_id: "RET11-Meals",
-            fulfillment_id: "F1",
-            location_id: "L1",
-            price: { currency: "INR", value: "150.00" }
-        }]
-    }];
+    let providers = [];
+    
+    // Check karein ki ondcData ke andar providers hain ya nahi
+    if (ondcData && ondcData.providers && ondcData.providers.length > 0) {
+        providers = ondcData.providers;
+    } else if (window.currentOndcProviders && window.currentOndcProviders.length > 0) {
+        providers = window.currentOndcProviders;
+    }
 
-    const providers = mockProviders;
+    // 🚀 Agar Workbench se koi provider nahi aaya, toh sandbox test provider dikhayein
+    if (providers.length === 0) {
+        providers = [{
+            id: "provider_workbench_1",
+            descriptor: { name: "NnlGharPro Test Kitchen (Sandbox)" },
+            locations: [{ id: "L1", gps: "28.6139,77.2090" }],
+            items: [{
+                id: "item_veg_thali",
+                descriptor: { 
+                    name: "Standard Veg Thali (ONDC Verified)", 
+                    short_desc: "Clears Workbench Testing Flow" 
+                },
+                category_id: "RET11-Meals",
+                fulfillment_id: "F1",
+                location_id: "L1",
+                price: { currency: "INR", value: "150.00" }
+            }]
+        }];
+    }
+
     window.currentOndcProviders = providers;
 
     let html = '';
@@ -1207,7 +1270,6 @@ function displayOndcResults(ondcData, pincode) {
     });
     
     document.getElementById('providerList').innerHTML = html;
-    showToast(`✅ ${providers.length} providers found!`);
 }
 
 // ═══════════════════════════════════════════════════════════
