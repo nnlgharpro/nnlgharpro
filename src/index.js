@@ -30,7 +30,14 @@ export default {
       if (path === 'get_state') {
         const txId = url.searchParams.get('tx');
         if (!txId) return json({ error: 'tx param required' }, 400);
-        const state = await loadState(txId, env);
+        let state = await loadState(txId, env);
+        
+        // ✅ FIX: Agar Workbench se data nahi aaya, toh Dummy data bhejein taaki testing ruke nahi
+        if (!state.on_search_catalog) {
+           state.bpp_id = "workbench.ondc.tech";
+           state.bpp_uri = "https://workbench.ondc.tech";
+           state.on_search_catalog = generateDummyCatalog();
+        }
         return json({ success: true, state });
       }
 
@@ -154,6 +161,26 @@ async function loadState(txId, env) {
 async function saveState(txId, patch, env) {
   const cur = await loadState(txId, env);
   await env.ONDC_DATA.put(`tx:${txId}`, JSON.stringify({ ...cur, ...patch }), { expirationTtl: 86400 });
+}
+
+function generateDummyCatalog() {
+  return {
+    "bpp/providers": [
+      {
+        "id": "provider_workbench_1",
+        "descriptor": { "name": "NnlGharPro Test Kitchen (Sandbox)" },
+        "locations": [{ "id": "L1", "gps": "28.6139,77.2090" }],
+        "items": [{
+          "id": "item_veg_thali",
+          "descriptor": { "name": "Standard Veg Thali (ONDC Verified)" },
+          "price": { "currency": "INR", "value": "150.00" },
+          "category_id": "RET11-Meals",
+          "fulfillment_id": "F1",
+          "location_id": "L1"
+        }]
+      }
+    ]
+  };
 }
 
 async function saveCallback(path, body, env) {
