@@ -34,14 +34,17 @@ export default {
         return json({ success: true, state });
       }
 
-      // ✅ CALLBACK HANDLER
+      // ✅ CALLBACK HANDLER (UPDATED FOR WORKBENCH ACK)
       if (path.startsWith('on_')) {
         let body = {};
         if (request.method === 'POST') {
           try { body = await request.json(); } catch (e) {}
         }
         console.log(`[CALLBACK ${path}]`, JSON.stringify(body).slice(0, 3000));
-        ctx.waitUntil(saveCallback(path, body, env));
+        
+        // Background mein save karein, lekin ACK turant bhejein
+        ctx.waitUntil(saveCallback(path, body, env).catch(e => console.log('Save callback error:', e)));
+        
         return json({ message: { ack: { status: 'ACK' } } });
       }
 
@@ -81,7 +84,7 @@ export default {
           transaction_id: transactionId,
           gateway_status: res.status,
           gateway_response: safeParse(text),
-          sent_payload: payload,
+          sent_payload: payload, // Frontend isko use karega
         }, res.ok ? 200 : 502);
       }
 
@@ -167,7 +170,6 @@ async function saveCallback(path, body, env) {
         on_search_catalog: body.message?.catalog || {},
       }, env);
     } else if (path === 'on_select' && body.message?.order) {
-      // ✅ YEH FIX ADD KIYA GAYA HAI
       const order = body.message.order;
       const prov = order.provider;
       const firstItem = order.items?.[0];
@@ -238,12 +240,29 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
 
   let message = {};
 
+  // ✅ UPDATED SEARCH PAYLOAD FOR WORKBENCH
   if (action === 'search') {
+    const searchQuery = body.query || body.category || 'Food'; 
     message = {
       intent: {
-        item: { descriptor: { name: body.query || 'Food' } },
-        fulfillment: { type: 'Delivery', end: { location: { gps, address: { area_code: pincode } } } },
-        payment: { '@ondc/org/buyer_app_finder_fee_type': 'percent', '@ondc/org/buyer_app_finder_fee_amount': '3' },
+        item: { 
+          descriptor: { 
+            name: searchQuery 
+          } 
+        },
+        fulfillment: { 
+          type: 'Delivery', 
+          end: { 
+            location: { 
+              gps: gps, 
+              address: { area_code: pincode } 
+            } 
+          } 
+        },
+        payment: { 
+          '@ondc/org/buyer_app_finder_fee_type': 'percent', 
+          '@ondc/org/buyer_app_finder_fee_amount': '3' 
+        },
       },
     };
   } else if (action === 'select') {
