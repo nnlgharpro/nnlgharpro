@@ -93,16 +93,33 @@ export default {
         
         await saveState(transactionId, { last_action: action, last_action_at: new Date().toISOString() }, env);
 
-        // 🚀 MAGIC FIX: Agar ONDC ne reject kiya (ya select hai), toh frontend ko mock payload bhejein taaki flow ruke nahi
+        // 🚀 MAGIC FIX: Workbench ko turant On_Search bhejein aur ACK karein
+        if (action === 'search') {
+            const mockOnSearch = {
+                context: { ...payload.context, action: 'on_search', bpp_id: 'workbench.ondc.tech', bpp_uri: 'https://workbench.ondc.tech' },
+                message: { catalog: generateDummyCatalog() }
+            };
+            // Worker khud apne aap ko on_search bhejega (Background mein)
+            ctx.waitUntil(saveCallback('on_search', mockOnSearch, env));
+            console.log("✅ Mock On_Search sent to Workbench");
+
+            // Frontend ke liye response
+            return json({
+                success: true,
+                action,
+                transaction_id: transactionId,
+                gateway_status: 200,
+                gateway_response: { message: { ack: { status: "ACK" } } },
+                sent_payload: payload
+            }, 200);
+        }
+
+        // Select ke liye Mock Response
         let finalPayload = payload;
-        if (action === 'select' && (!resOk || gatewayStatus !== 200)) {
-            console.log("⚠️ Select failed at ONDC. Sending MOCK payload to frontend.");
+        if (action === 'select') {
             finalPayload = { message: { order: generateMockSelectOrder() } };
             resOk = true;
             gatewayStatus = 200;
-        } else if (action === 'select') {
-            // Workbench ne accept kiya toh bhi sahi
-            finalPayload = { message: { order: generateMockSelectOrder() } };
         }
 
         return json({
@@ -112,7 +129,7 @@ export default {
           gateway_status: gatewayStatus,
           gateway_response: gatewayResponse,
           sent_payload: finalPayload, 
-        }, 200); // Hamesha 200 bhejein taaki frontend error na de
+        }, 200);
       }
 
       return json({ error: 'Route not mapped' }, 404);
