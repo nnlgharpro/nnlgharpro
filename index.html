@@ -1271,7 +1271,6 @@ function displayOndcResults(ondcData, pincode) {
     
     document.getElementById('providerList').innerHTML = html;
 }
-
 // ═══════════════════════════════════════════════════════════
 // 🛒 3. SELECT PROVIDER (Call /select API)
 // ═══════════════════════════════════════════════════════════
@@ -1291,7 +1290,7 @@ window.selectProvider = async function(indexOrId) {
     const providerId = provider.id;
     const providerName = provider.descriptor?.name || 'Unknown Provider';
     const txnId = window.currentOndcTransactionId; 
-    console.log("📤 SENDING SELECT FOR TXN:", txnId);
+    
     document.getElementById('providerList').innerHTML = `
         <div style="text-align:center; padding:30px; color:#FFD93D;">
             <i class="fas fa-spinner fa-spin" style="font-size:24px; margin-bottom:10px;"></i><br>
@@ -1308,74 +1307,25 @@ window.selectProvider = async function(indexOrId) {
                 transactionId: txnId,
                 providerId: providerId,
                 pincode: document.getElementById('pincode').value.trim() || "110001",
-                items: [{ id: "item_1", quantity: { count: 1 } }] 
+                items: [{ id: "item_veg_thali", quantity: { count: 1 } }] 
             })
         });
-// // ONDC INIT PHASE (बिलिंग और एड्रेस डिटेल्स भेजना)
-window.onidcInitOrder = async function(providerId, itemsList, customerDetails) {
-    try {
-        const response = await fetch("https://workers.dev", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                domain: "ONDC:RET11",
-                providerId: providerId,
-                items: itemsList,
-                name: customerDetails.name || "Customer",
-                phone: customerDetails.phone || "9876543210",
-                pincode: document.getElementById('pincode').value.trim() || "110001",
-                address: customerDetails.address || "Main Street"
-            })
-        });
-        const initData = await response.json();
-        console.log("ONDC Init Response:", initData);
-        return initData;
-    } catch (error) {
-        console.error("Error in ONDC Init Call:", error);
-    }
-};
-
-// // ONDC CONFIRM PHASE (ऑर्डर को पक्का/कन्फर्म करना)
-window.ondcConfirmOrder = async function(orderId, providerId, itemsList, billingDetails, fulfillmentDetails) {
-    try {
-       const response = await fetch("https://workers.dev", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                domain: "ONDC:RET11",
-                orderId: orderId || crypto.randomUUID(),
-                providerId: providerId,
-                items: itemsList,
-                billing: billingDetails,
-                fulfillment: fulfillmentDetails
-            })
-        });
-        const confirmData = await response.json();
-        console.log("ONDC Confirm Response:", confirmData);
-        if(typeof showToast === "function") showToast("Order Placed Successfully via ONDC!", false);
-        return confirmData;
-    } catch (error) {
-        console.error("Error in ONDC Confirm Call:", error);
-        if(typeof showToast === "function") showToast("Failed to confirm ONDC order", true);
-    }
-};
-
 
         const data = await response.json();
+        console.log("SELECT RESPONSE:", data);
         
-                // 🚀 1 सेकंड फ़िक्स: बिना किसी पोलिंग लूप के सीधे मेनू रेंडर करें
-        if (data.success) {
-            const selectResults = data.results || [];
-            window.currentOndcData = selectResults;
-            displayProviderMenu(selectResults);
+        if (data.success && data.sent_payload) {
+            // Backend se aaya hua data menu mein dikhayein
+            displayProviderMenu(data.sent_payload.message.order);
         } else {
-            showToast('❌ Failed to load menu', true);
-            displayOndcResults(window.currentOndcData, document.getElementById('pincode').value);
+            showToast('❌ Failed to load menu. Backend error.', true);
+            displayOndcResults(window.currentOndcProviders, document.getElementById('pincode').value);
         }
 
     } catch (error) {
         console.error("Select Error:", error);
-        document.getElementById('providerList').innerHTML = `<div style="text-align:center;color:#FF4757;padding:20px;">Network Error.</div>`;
+        showToast('❌ Network Error while selecting.', true);
+        displayOndcResults(window.currentOndcProviders, document.getElementById('pincode').value);
     }
 };
 
