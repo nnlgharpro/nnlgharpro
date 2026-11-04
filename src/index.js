@@ -77,14 +77,13 @@ export default {
         
         await saveState(transactionId, { last_action: action, last_action_at: new Date().toISOString() }, env);
 
-        // Agar gateway 200 return kare toh frontend ko success bhejein
         return json({
           success: res.ok,
           action,
           transaction_id: transactionId,
           gateway_status: res.status,
           gateway_response: safeParse(text),
-          sent_payload: payload, 
+          sent_payload: payload, // Frontend isko use karega
         }, res.ok ? 200 : 502);
       }
 
@@ -163,13 +162,17 @@ async function saveCallback(path, body, env) {
     if (!txId) return;
 
     if (path === 'on_search') {
-      const bppId = body.context.bpp_id || body.message?.catalog?.['bpp/providers']?.[0]?.id || 'workbench.ondc.tech';
-      const bppUri = body.context.bpp_uri || 'https://workbench.ondc.tech';
+      // ✅ FIX: Workbench on_search se bpp_id aur bpp_uri nikalna
+      const catalog = body.message?.catalog || {};
+      const firstProvider = catalog['bpp/providers']?.[0] || {};
+      
+      const bppId = body.context?.bpp_id || firstProvider.bpp_id || 'workbench.ondc.tech';
+      const bppUri = body.context?.bpp_uri || firstProvider.bpp_uri || 'https://workbench.ondc.tech';
       
       await saveState(txId, {
         bpp_id: bppId,
         bpp_uri: bppUri,
-        on_search_catalog: body.message?.catalog || {},
+        on_search_catalog: catalog,
       }, env);
     } else if (path === 'on_select' && body.message?.order) {
       const order = body.message.order;
@@ -207,8 +210,8 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
     ttl: TTL,
   };
 
-  // ✅ FIX: Workbench ka bpp_id aur bpp_uri state se uthayein
   if (action !== 'search') {
+    // ✅ FIX: State se bpp_id aur bpp_uri uthana
     context.bpp_id = body.bpp_id || state.bpp_id || env.ONDC_BPP_ID || 'workbench.ondc.tech';
     context.bpp_uri = body.bpp_uri || state.bpp_uri || env.ONDC_BPP_URI || 'https://workbench.ondc.tech';
   }
@@ -221,13 +224,7 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
     id: state.item?.id || body.itemId || 'item_veg_thali',
     location_id: state.item?.location_id || 'L1',
     quantity: { count: body.quantity || 1 },
-    // ✅ FIX: Workbench mandatory tags
-    tags: [
-      {
-        code: "type",
-        list: [{ code: "type", value: "item" }]
-      }
-    ]
+    tags: [{ code: "type", list: [{ code: "type", value: "item" }] }]
   };
 
   const billing = {
@@ -259,13 +256,11 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
       },
     };
   } else if (action === 'select') {
-    // ✅ FIX: Select payload with mandatory fields
     message = {
       order: {
         provider: provider,
         items: [baseItem],
         fulfillments: [fulfillment],
-        // Workbench testing ke liye dummy quote
         quote: { price: { currency: "INR", value: "150.00" }, breakup: [{ title: "Item", price: { currency: "INR", value: "150.00" } }] }
       },
     };
