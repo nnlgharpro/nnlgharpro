@@ -1383,7 +1383,22 @@ function displayProviderMenu(order) {
 }
 
 window.addToCart = function(itemId, itemName, price) {
-    showToast(`✅ ${itemName} (₹${price}) added to cart!`);
+    // Item ko cart mein add karein
+    cart[itemId] = (cart[itemId] || 0) + 1;
+    providerItems = [{ id: itemId, name: itemName, price: price }]; // Provider items set karein
+
+    // Menu ko hide karke Booking Form dikhayein
+    document.getElementById('providerListContainer').style.display = 'none';
+    document.getElementById('bookingForm').style.display = 'block';
+    document.getElementById('selectedProviderName').textContent = "NnlGharPro Test Kitchen";
+    
+    // Order type ke buttons aur items summary update karein
+    renderOrderTypeButtons();
+    updateSelectedItemsSummary();
+    updateTotalAndPayment();
+
+    showToast(`✅ ${itemName} added! Ab apni details bharein.`);
+};
 };
 // 🎯 RENDER ORDER TYPE BUTTONS
 function renderOrderTypeButtons() {
