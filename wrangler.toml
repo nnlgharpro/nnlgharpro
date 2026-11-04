@@ -8,7 +8,7 @@ ENVIRONMENT = "preprod"
 ONDC_DOMAIN = "ONDC:RET11"
 
 # ✅ FIX 1: Buyer endpoint (seller nahi)
-ONDC_GATEWAY_URL = "https://workbench.ondc.tech/api-service/ONDC:RET11/1.2.5/buyer"
+ONDC_GATEWAY_URL = "https://workbench.ondc.tech/api-service/ONDC:RET11/1.2.5/seller"
 
 ONDC_BAP_ID = "NlONX2yLjbrY2Up6-0tQeH0Jyrz5k0I3"
 ONDC_BAP_URI = "https://nnlgharpro-ondc.nnlgharpro.workers.dev"
