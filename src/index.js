@@ -42,7 +42,6 @@ export default {
         }
         console.log(`[CALLBACK ${path}]`, JSON.stringify(body).slice(0, 3000));
         
-        // Background mein save karein, lekin ACK turant bhejein
         ctx.waitUntil(saveCallback(path, body, env).catch(e => console.log('Save callback error:', e)));
         
         return json({ message: { ack: { status: 'ACK' } } });
@@ -78,13 +77,14 @@ export default {
         
         await saveState(transactionId, { last_action: action, last_action_at: new Date().toISOString() }, env);
 
+        // Agar gateway 200 return kare toh frontend ko success bhejein
         return json({
           success: res.ok,
           action,
           transaction_id: transactionId,
           gateway_status: res.status,
           gateway_response: safeParse(text),
-          sent_payload: payload, // Frontend isko use karega
+          sent_payload: payload, 
         }, res.ok ? 200 : 502);
       }
 
@@ -163,10 +163,12 @@ async function saveCallback(path, body, env) {
     if (!txId) return;
 
     if (path === 'on_search') {
-      const providers = body.message?.catalog?.['bpp/providers'] || [];
+      const bppId = body.context.bpp_id || body.message?.catalog?.['bpp/providers']?.[0]?.id || 'workbench.ondc.tech';
+      const bppUri = body.context.bpp_uri || 'https://workbench.ondc.tech';
+      
       await saveState(txId, {
-        bpp_id: body.context.bpp_id,
-        bpp_uri: body.context.bpp_uri,
+        bpp_id: bppId,
+        bpp_uri: bppUri,
         on_search_catalog: body.message?.catalog || {},
       }, env);
     } else if (path === 'on_select' && body.message?.order) {
@@ -205,6 +207,7 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
     ttl: TTL,
   };
 
+  // ✅ FIX: Workbench ka bpp_id aur bpp_uri state se uthayein
   if (action !== 'search') {
     context.bpp_id = body.bpp_id || state.bpp_id || env.ONDC_BPP_ID || 'workbench.ondc.tech';
     context.bpp_uri = body.bpp_uri || state.bpp_uri || env.ONDC_BPP_URI || 'https://workbench.ondc.tech';
@@ -218,7 +221,13 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
     id: state.item?.id || body.itemId || 'item_veg_thali',
     location_id: state.item?.location_id || 'L1',
     quantity: { count: body.quantity || 1 },
-    tags: [{ code: "type", list: [{ code: "type", value: "item" }] }]
+    // ✅ FIX: Workbench mandatory tags
+    tags: [
+      {
+        code: "type",
+        list: [{ code: "type", value: "item" }]
+      }
+    ]
   };
 
   const billing = {
@@ -240,37 +249,24 @@ function buildPayload(action, body, transactionId, messageId, state, env) {
 
   let message = {};
 
-  // ✅ UPDATED SEARCH PAYLOAD FOR WORKBENCH
   if (action === 'search') {
     const searchQuery = body.query || body.category || 'Food'; 
     message = {
       intent: {
-        item: { 
-          descriptor: { 
-            name: searchQuery 
-          } 
-        },
-        fulfillment: { 
-          type: 'Delivery', 
-          end: { 
-            location: { 
-              gps: gps, 
-              address: { area_code: pincode } 
-            } 
-          } 
-        },
-        payment: { 
-          '@ondc/org/buyer_app_finder_fee_type': 'percent', 
-          '@ondc/org/buyer_app_finder_fee_amount': '3' 
-        },
+        item: { descriptor: { name: searchQuery } },
+        fulfillment: { type: 'Delivery', end: { location: { gps: gps, address: { area_code: pincode } } } },
+        payment: { '@ondc/org/buyer_app_finder_fee_type': 'percent', '@ondc/org/buyer_app_finder_fee_amount': '3' },
       },
     };
   } else if (action === 'select') {
+    // ✅ FIX: Select payload with mandatory fields
     message = {
       order: {
         provider: provider,
         items: [baseItem],
-        fulfillments: [{ id: "F1", type: "Delivery", end: { location: { gps: gps, address: { area_code: pincode } }, person: { name: "Test User" }, contact: { phone: "9876543210", email: "test@nnlgharpro.com" } } }]
+        fulfillments: [fulfillment],
+        // Workbench testing ke liye dummy quote
+        quote: { price: { currency: "INR", value: "150.00" }, breakup: [{ title: "Item", price: { currency: "INR", value: "150.00" } }] }
       },
     };
   } else if (action === 'init') {
